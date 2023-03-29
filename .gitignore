@@ -1,0 +1,10 @@
+public/
+node_modules/
+build/
+# Object file
+*.o
+
+# Ada Library Information
+*.ali
+
+.env
