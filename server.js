@@ -37,9 +37,9 @@ const READYTIME = 1000;
 const BETINGTIME = 5000;
 const GAMEENDTIME = 3000;
 let startTime = Date.now();
-let info = [];
 let gameTime;
 let currentNum;
+let info = [];
 let target;
 // here is game playing
 setInterval(() => {
@@ -72,20 +72,31 @@ setInterval(() => {
                         users[socket.id].cashouted = false;
                         users[socket.id].betamount = 0;
                         users[socket.id].cashAmount = 0;
+                        users[socket.id].auto = false;
                         socket.emit("betState", users[socket.id]);
                         info = [];
                     }
                 })
+                sendInfo(users);
             }
             break;
         case "GAMEEND":
             if (Date.now() - startTime > GAMEENDTIME) {
                 startTime = Date.now();
                 GameState = "BET";
+                info = [];
 
-                sockets.map((socket) => {
-                    socket.emit("history", { history: history });
-                });
+                history.push(target);
+                if (history.length > 18) {
+                    var data = history.slice(1, history.length);
+                    history = data;
+                    io.emit("history", { history: data });
+                } else {
+                    io.emit("history", { history: history });
+                }
+
+                // sockets.map((socket) => {
+                // });
 
             }
             break;
@@ -114,18 +125,26 @@ io.on("connection", function (socket) {
                 name: data.name,
                 betamount: 0,
                 balance: 3000,
-                cashAmount: 0
+                cashAmount: 0,
+                auto: false,
+                target: 0
             };
+            sendInfo(users);
+            console.log("Hello")
             socket.broadcast.emit("userInfo", users);
+            io.emit("history", { history: history });
         })
 
         socket.on("playerBet", (data) => {
             if (GameState === "BET") {
+                console.log(users[socket.id]);
                 if (users[socket.id].balance - data.betamount >= 0) {
                     users[socket.id].betamount = data.betamount;
                     users[socket.id].betted = true;
                     users[socket.id].balance -= data.betamount;
+                    users[socket.id].auto = data.auto;
                     socket.emit("betState", users[socket.id]);
+                    sendInfo(users);
                 }
             } else {
                 socket.emit("betState", false);
@@ -139,23 +158,15 @@ io.on("connection", function (socket) {
                     users[socket.id].cashAmount = data.num * users[socket.id].betamount;
                     users[socket.id].betted = false;
                     users[socket.id].balance += data.num * users[socket.id].betamount;
+                    users[socket.id].target = data.num;
                     socket.emit("betFinish", users[socket.id]);
+                    sendInfo(users);
                 }
             }
         });
 
         setInterval(() => {
             var time = Date.now() - startTime;
-            sockets.map((mySocket) => {
-                if (users[mySocket.id] && users[mySocket.id].betted) {
-                    info.push({
-                        username: users[mySocket.id].name,
-                        betAmount: users[mySocket.id].betamount,
-                        cashOut: users[mySocket.id].cashAmount
-                    })
-                }
-            })
-            socket.broadcast.emit("bettedUserInfo", info);
             socket.broadcast.emit("crash", { currentNum, GameState, time, });
         }, 100);
 
@@ -164,11 +175,18 @@ io.on("connection", function (socket) {
     }
 });
 
-function emitAllUserlist(user) {
-    sockets.map((_socket) => {
-        // let _users = users.filter((user) => user.id != _socket.id);
-        _socket.emit("userslist", { users: user });
-    });
+const sendInfo = (myUsers) => {
+    sockets.map((socket) => {
+        if (myUsers[socket.id] && myUsers[socket.id].betted) {
+            info.push({
+                username: myUsers[socket.id].name,
+                betAmount: myUsers[socket.id].betamount,
+                cashOut: myUsers[socket.id].cashAmount,
+                target: myUsers[socket.id].target
+            })
+        }
+    })
+    io.emit("bettedUserInfo", info);
 }
 
 function getRandom() {
