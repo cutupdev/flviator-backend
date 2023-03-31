@@ -131,6 +131,7 @@ io.on("connection", function (socket) {
             console.log("socket disconnected: " + socket.id);
         });
         socket.on("enterRoom", (data) => {
+            console.log(data);
             users[socket.id] = {
                 betted: false,
                 cashouted: false,
