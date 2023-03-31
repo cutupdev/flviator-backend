@@ -39,6 +39,7 @@ const GAMEENDTIME = 3000;
 let startTime = Date.now();
 let gameTime;
 let currentNum;
+let currentSecondNum;
 let info = [];
 let target;
 // here is game playing
@@ -49,20 +50,21 @@ setInterval(() => {
                 currentNum = 1;
                 GameState = "READY";
                 startTime = Date.now();
+                gameTime = getRandom();
             }
             break;
         case "READY":
             if (Date.now() - startTime > READYTIME) {
                 GameState = "PLAYING";
                 startTime = Date.now();
-                gameTime = getRandom();
             }
             break;
         case "PLAYING":
             var currentTime = (Date.now() - startTime) / 1000
             currentNum = 1 + 0.06 * currentTime + Math.pow((0.06 * currentTime), 2) - Math.pow((0.04 * currentTime), 3) + Math.pow((0.04 * currentTime), 4)
-
+            currentSecondNum = currentNum;
             if (currentTime > gameTime) {
+                currentSecondNum = 0;
                 currentNum = target
                 GameState = "GAMEEND";
                 startTime = Date.now();
@@ -72,12 +74,21 @@ setInterval(() => {
                         users[socket.id].cashouted = false;
                         users[socket.id].betamount = 0;
                         users[socket.id].cashAmount = 0;
-                        users[socket.id].auto = false;
                         socket.emit("betState", users[socket.id]);
                         info = [];
                     }
                 })
-                sendInfo(users);
+                sockets.map((mySocket) => {
+                    if (users[mySocket.id] && users[mySocket.id].betted) {
+                        info.push({
+                            username: users[mySocket.id].name,
+                            betAmount: users[mySocket.id].betamount,
+                            cashOut: users[mySocket.id].cashAmount,
+                            target: users[mySocket.id].target
+                        })
+                    }
+                })
+                io.emit("bettedUserInfo", info);
             }
             break;
         case "GAMEEND":
@@ -129,22 +140,40 @@ io.on("connection", function (socket) {
                 auto: false,
                 target: 0
             };
-            sendInfo(users);
-            console.log("Hello")
+            sockets.map((mySocket) => {
+                if (users[mySocket.id] && users[mySocket.id].betted) {
+                    info.push({
+                        username: users[mySocket.id].name,
+                        betAmount: users[mySocket.id].betamount,
+                        cashOut: users[mySocket.id].cashAmount,
+                        target: users[mySocket.id].target
+                    })
+                }
+            })
+            io.emit("bettedUserInfo", info);
             socket.broadcast.emit("userInfo", users);
             io.emit("history", { history: history });
         })
 
         socket.on("playerBet", (data) => {
             if (GameState === "BET") {
-                console.log(users[socket.id]);
                 if (users[socket.id].balance - data.betamount >= 0) {
                     users[socket.id].betamount = data.betamount;
                     users[socket.id].betted = true;
                     users[socket.id].balance -= data.betamount;
                     users[socket.id].auto = data.auto;
                     socket.emit("betState", users[socket.id]);
-                    sendInfo(users);
+                    sockets.map((mySocket) => {
+                        if (users[mySocket.id] && users[mySocket.id].betted) {
+                            info.push({
+                                username: users[mySocket.id].name,
+                                betAmount: users[mySocket.id].betamount,
+                                cashOut: users[mySocket.id].cashAmount,
+                                target: users[mySocket.id].target
+                            })
+                        }
+                    })
+                    io.emit("bettedUserInfo", info);
                 }
             } else {
                 socket.emit("betState", false);
@@ -152,15 +181,26 @@ io.on("connection", function (socket) {
         });
 
         socket.on("cashout", (data) => {
-            if (!users[socket.id].cashouted) {
-                if (data.num <= currentNum) {
+            if (!users[socket.id].cashouted && users[socket.id].betted) {
+                if (data.num <= currentSecondNum) {
                     users[socket.id].cashouted = true;
                     users[socket.id].cashAmount = data.num * users[socket.id].betamount;
                     users[socket.id].betted = false;
                     users[socket.id].balance += data.num * users[socket.id].betamount;
                     users[socket.id].target = data.num;
+
                     socket.emit("betFinish", users[socket.id]);
-                    sendInfo(users);
+                    sockets.map((mySocket) => {
+                        if (users[mySocket.id] && users[mySocket.id].betted) {
+                            info.push({
+                                username: users[mySocket.id].name,
+                                betAmount: users[mySocket.id].betamount,
+                                cashOut: users[mySocket.id].cashAmount,
+                                target: users[mySocket.id].target
+                            })
+                        }
+                    })
+                    io.emit("bettedUserInfo", info);
                 }
             }
         });
@@ -174,20 +214,6 @@ io.on("connection", function (socket) {
         socket.emit("error message", { "errMessage": err.message })
     }
 });
-
-const sendInfo = (myUsers) => {
-    sockets.map((socket) => {
-        if (myUsers[socket.id] && myUsers[socket.id].betted) {
-            info.push({
-                username: myUsers[socket.id].name,
-                betAmount: myUsers[socket.id].betamount,
-                cashOut: myUsers[socket.id].cashAmount,
-                target: myUsers[socket.id].target
-            })
-        }
-    })
-    io.emit("bettedUserInfo", info);
-}
 
 function getRandom() {
     var r = Math.random();
