@@ -75,16 +75,17 @@ setInterval(() => {
                         users[socket.id].betamount = 0;
                         users[socket.id].cashAmount = 0;
                         socket.emit("betState", users[socket.id]);
-                        info = [];
                     }
                 })
+                info = [];
                 sockets.map((mySocket) => {
                     if (users[mySocket.id] && users[mySocket.id].betted) {
                         info.push({
                             username: users[mySocket.id].name,
                             betAmount: users[mySocket.id].betamount,
                             cashOut: users[mySocket.id].cashAmount,
-                            target: users[mySocket.id].target
+                            target: users[mySocket.id].target,
+                            cashouted: users[mySocket.id].cashouted
                         })
                     }
                 })
@@ -140,13 +141,15 @@ io.on("connection", function (socket) {
                 auto: false,
                 target: 0
             };
+            info = [];
             sockets.map((mySocket) => {
                 if (users[mySocket.id] && users[mySocket.id].betted) {
                     info.push({
                         username: users[mySocket.id].name,
                         betAmount: users[mySocket.id].betamount,
                         cashOut: users[mySocket.id].cashAmount,
-                        target: users[mySocket.id].target
+                        target: users[mySocket.id].target,
+                        cashouted: users[mySocket.id].cashouted
                     })
                 }
             })
@@ -163,13 +166,15 @@ io.on("connection", function (socket) {
                     users[socket.id].balance -= data.betamount;
                     users[socket.id].auto = data.auto;
                     socket.emit("betState", users[socket.id]);
+                    info = [];
                     sockets.map((mySocket) => {
                         if (users[mySocket.id] && users[mySocket.id].betted) {
                             info.push({
                                 username: users[mySocket.id].name,
                                 betAmount: users[mySocket.id].betamount,
                                 cashOut: users[mySocket.id].cashAmount,
-                                target: users[mySocket.id].target
+                                target: users[mySocket.id].target,
+                                cashouted: users[mySocket.id].cashouted
                             })
                         }
                     })
@@ -190,14 +195,19 @@ io.on("connection", function (socket) {
                     users[socket.id].target = data.num;
 
                     socket.emit("betFinish", users[socket.id]);
+                    info = [];
                     sockets.map((mySocket) => {
-                        if (users[mySocket.id] && users[mySocket.id].betted) {
-                            info.push({
-                                username: users[mySocket.id].name,
-                                betAmount: users[mySocket.id].betamount,
-                                cashOut: users[mySocket.id].cashAmount,
-                                target: users[mySocket.id].target
-                            })
+                        if (users[mySocket.id]) {
+                            console.log(users[mySocket.id]);
+                            if (users[mySocket.id].betted || users[mySocket.id].cashouted) {
+                                info.push({
+                                    username: users[mySocket.id].name,
+                                    betAmount: users[mySocket.id].betamount,
+                                    cashOut: users[mySocket.id].cashAmount,
+                                    target: users[mySocket.id].target,
+                                    cashouted: users[mySocket.id].cashouted
+                                })
+                            }
                         }
                     })
                     io.emit("bettedUserInfo", info);
