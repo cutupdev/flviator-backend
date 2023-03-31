@@ -27,7 +27,7 @@ app.get('/*', function (req, res) {
     })
 })
 
-server.listen(5001, function () {
+server.listen(5000, function () {
     console.log("listening --- server is running ...");
 });
 let GameState = "BET";
