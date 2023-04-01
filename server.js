@@ -68,28 +68,18 @@ setInterval(() => {
                 currentNum = target
                 GameState = "GAMEEND";
                 startTime = Date.now();
-                sockets.map((socket) => {
-                    if (users[socket.id]) {
-                        users[socket.id].betted = false;
-                        users[socket.id].cashouted = false;
-                        users[socket.id].betamount = 0;
-                        users[socket.id].cashAmount = 0;
-                        socket.emit("betState", users[socket.id]);
-                    }
-                })
-                info = [];
-                sockets.map((mySocket) => {
-                    if (users[mySocket.id] && users[mySocket.id].betted) {
-                        info.push({
-                            username: users[mySocket.id].name,
-                            betAmount: users[mySocket.id].betamount,
-                            cashOut: users[mySocket.id].cashAmount,
-                            target: users[mySocket.id].target,
-                            cashouted: users[mySocket.id].cashouted
-                        })
-                    }
-                })
-                io.emit("bettedUserInfo", info);
+                for (let i in users) {
+                    users[i].betted = false;
+                    users[i].cashouted = false;
+                    users[i].betAmount = 0;
+                    users[i].cashAmount = 0;
+                    sockets.map((socket) => {
+                        if (socket.id === users[i].socketId) {
+                            socket.emit("finishGame", users[i]);
+                        }
+                    })
+                }
+                sendInfo();
             }
             break;
         case "GAMEEND":
@@ -131,100 +121,85 @@ io.on("connection", function (socket) {
             console.log("socket disconnected: " + socket.id);
         });
         socket.on("enterRoom", (data) => {
-            console.log(data);
-            users[socket.id] = {
+            users[data.token] = {
                 betted: false,
                 cashouted: false,
                 name: data.name,
-                betamount: 0,
+                socketId: socket.id,
+                betAmount: 0,
                 balance: 3000,
                 cashAmount: 0,
                 auto: false,
-                target: 0
+                target: 0,
+                type: data.type
             };
-            info = [];
-            sockets.map((mySocket) => {
-                if (users[mySocket.id] && users[mySocket.id].betted) {
-                    info.push({
-                        username: users[mySocket.id].name,
-                        betAmount: users[mySocket.id].betamount,
-                        cashOut: users[mySocket.id].cashAmount,
-                        target: users[mySocket.id].target,
-                        cashouted: users[mySocket.id].cashouted
-                    })
-                }
-            })
-            io.emit("bettedUserInfo", info);
-            socket.broadcast.emit("userInfo", users);
+            sendInfo();
             io.emit("history", { history: history });
         })
 
-        socket.on("playerBet", (data) => {
+        socket.on("playBet", (data) => {
             if (GameState === "BET") {
-                if (users[socket.id].balance - data.betamount >= 0) {
-                    users[socket.id].betamount = data.betamount;
-                    users[socket.id].betted = true;
-                    users[socket.id].balance -= data.betamount;
-                    users[socket.id].auto = data.auto;
-                    socket.emit("betState", users[socket.id]);
-                    info = [];
-                    sockets.map((mySocket) => {
-                        if (users[mySocket.id] && users[mySocket.id].betted) {
-                            info.push({
-                                username: users[mySocket.id].name,
-                                betAmount: users[mySocket.id].betamount,
-                                cashOut: users[mySocket.id].cashAmount,
-                                target: users[mySocket.id].target,
-                                cashouted: users[mySocket.id].cashouted
-                            })
-                        }
-                    })
-                    io.emit("bettedUserInfo", info);
+                console.log(users[data.token].balance, data.betAmount);
+                if (users[data.token].balance - data.betAmount >= 0) {
+                    users[data.token].betAmount = data.betAmount;
+                    users[data.token].betted = true;
+                    users[data.token].balance -= data.betAmount;
+                    users[data.token].auto = data.auto;
+                    socket.emit("myBetState", users[data.token]);
+                    sendInfo();
+                } else {
+                    socket.emit("error", "Your balance is not enough!");
                 }
             } else {
-                socket.emit("betState", false);
+                socket.emit("error", "You can't bet. Try again at next round!");
             }
         });
 
-        socket.on("cashout", (data) => {
-            if (!users[socket.id].cashouted && users[socket.id].betted) {
-                if (data.num <= currentSecondNum) {
-                    users[socket.id].cashouted = true;
-                    users[socket.id].cashAmount = data.num * users[socket.id].betamount;
-                    users[socket.id].betted = false;
-                    users[socket.id].balance += data.num * users[socket.id].betamount;
-                    users[socket.id].target = data.num;
-
-                    socket.emit("betFinish", users[socket.id]);
-                    info = [];
-                    sockets.map((mySocket) => {
-                        if (users[mySocket.id]) {
-                            console.log(users[mySocket.id]);
-                            if (users[mySocket.id].betted || users[mySocket.id].cashouted) {
-                                info.push({
-                                    username: users[mySocket.id].name,
-                                    betAmount: users[mySocket.id].betamount,
-                                    cashOut: users[mySocket.id].cashAmount,
-                                    target: users[mySocket.id].target,
-                                    cashouted: users[mySocket.id].cashouted
-                                })
-                            }
-                        }
-                    })
-                    io.emit("bettedUserInfo", info);
+        socket.on("cashOut", (data) => {
+            if (!users[data.token].cashouted && users[data.token].betted) {
+                if (data.at <= currentSecondNum) {
+                    users[data.token].cashouted = true;
+                    users[data.token].cashAmount = data.at * users[data.token].betAmount;
+                    users[data.token].betted = false;
+                    users[data.token].balance += data.at * users[data.token].betAmount;
+                    users[data.token].target = data.at;
+                    socket.emit("finishGame", users[data.token]);
+                    sendInfo();
+                    socket.emit("success", `Successfully CashOuted ${Number(users[data.token].cashAmount).toFixed(2)}`)
                 }
+            } else {
+                if (!users[data.token].betted) {
+                    socket.emit("error", "You didn't betted this round!");
+                } else if (users[data.token].cashouted)
+                    socket.emit("error", "You already cashouted!");
             }
         });
 
         setInterval(() => {
             var time = Date.now() - startTime;
-            socket.broadcast.emit("crash", { currentNum, GameState, time, });
+            socket.broadcast.emit("gameState", { currentNum, currentSecondNum, GameState, time, });
         }, 100);
 
     } catch (err) {
         socket.emit("error message", { "errMessage": err.message })
     }
 });
+
+const sendInfo = () => {
+    info = [];
+    for (let i in users) {
+        if (users[i] && users[i].betted || users[i].cashouted) {
+            info.push({
+                username: users[i].name,
+                betAmount: users[i].betAmount,
+                cashOut: users[i].cashAmount,
+                cashouted: users[i].cashouted,
+                target: users[i].target
+            })
+        }
+    }
+    io.emit("bettedUserInfo", info);
+}
 
 function getRandom() {
     var r = Math.random();
