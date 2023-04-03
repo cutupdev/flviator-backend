@@ -88,14 +88,14 @@ setInterval(() => {
                 GameState = "BET";
                 info = [];
 
-                history.push(target);
-                if (history.length > 18) {
-                    var data = history.slice(1, history.length);
-                    history = data;
-                    io.emit("history", { history: data });
-                } else {
-                    io.emit("history", { history: history });
-                }
+                history.unshift(target);
+                // if (history.length > 25) {
+                //     var data = history.slice(1, history.length);
+                //     history = data;
+                //     io.emit("history", { history: data });
+                // } else {
+                io.emit("history", { history: history });
+                // }
 
                 // sockets.map((socket) => {
                 // });
@@ -139,7 +139,6 @@ io.on("connection", function (socket) {
 
         socket.on("playBet", (data) => {
             if (GameState === "BET") {
-                console.log(users[data.token].balance, data.betAmount);
                 if (users[data.token].balance - data.betAmount >= 0) {
                     users[data.token].betAmount = data.betAmount;
                     users[data.token].betted = true;
