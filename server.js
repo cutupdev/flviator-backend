@@ -69,6 +69,19 @@ setInterval(() => {
                 GameState = "GAMEEND";
                 startTime = Date.now();
                 for (let i in users) {
+                    if (users[i].betted && !users[i].cashouted) {
+                        if (users[i].target < currentNum) {
+                            users[i].balance += users[i].target * users[i].betAmount;
+                            users[i].cashouted = true;
+                            users[i].cashAmount = users[i].target * users[i].betAmount;
+                            users[i].betted = false;
+                            sockets.map((socket) => {
+                                if (socket.id === users[i].socketId) {
+                                    socket.emit("finishGame", users[i]);
+                                }
+                            })
+                        }
+                    }
                     users[i].betted = false;
                     users[i].cashouted = false;
                     users[i].betAmount = 0;
@@ -87,19 +100,8 @@ setInterval(() => {
                 startTime = Date.now();
                 GameState = "BET";
                 info = [];
-
                 history.unshift(target);
-                // if (history.length > 25) {
-                //     var data = history.slice(1, history.length);
-                //     history = data;
-                //     io.emit("history", { history: data });
-                // } else {
                 io.emit("history", { history: history });
-                // }
-
-                // sockets.map((socket) => {
-                // });
-
             }
             break;
     }
@@ -144,6 +146,7 @@ io.on("connection", function (socket) {
                     users[data.token].betted = true;
                     users[data.token].balance -= data.betAmount;
                     users[data.token].auto = data.auto;
+                    users[data.token].target = data.target;
                     socket.emit("myBetState", users[data.token]);
                     sendInfo();
                 } else {
