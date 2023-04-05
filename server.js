@@ -207,6 +207,9 @@ function getRandom() {
     var r = Math.random();
     target = 1 / r;
 
+    if (target > 5000)
+        target = 5000;
+
     console.log(target);
     var time = getTime(target);
     return time;
