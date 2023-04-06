@@ -148,7 +148,7 @@ io.on("connection", function (socket) {
 
         socket.on("playBet", (data) => {
             console.log("==================================================")
-            console.log(balances, balances[users[data.token].myToken], data.token);
+            console.log(balances, users[data.token], data.token);
             if (GameState === "BET") {
                 if (users[data.token].myToken && balances[users[data.token].myToken]) {
                     if (balances[users[data.token].myToken] - data.betAmount >= 0) {
