@@ -217,10 +217,9 @@ function getRandom() {
     target = 1 / r;
 
     if (target < 24) {
-        getRandom();
-    } else {
-        console.log(target);
-        var time = getTime(target);
-        return time;
+        target = 24;
     }
+    console.log(target);
+    var time = getTime(target);
+    return time;
 }
