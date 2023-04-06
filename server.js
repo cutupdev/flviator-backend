@@ -216,13 +216,11 @@ function getRandom() {
     var r = Math.random();
     target = 1 / r;
 
-    if (target > 5000)
-        target = 5000;
-    if (target > 1.6) {
-        target /= 1.5;
+    if (target < 24) {
+        getRandom();
+    } else {
+        console.log(target);
+        var time = getTime(target);
+        return time;
     }
-
-    console.log(target);
-    var time = getTime(target);
-    return time;
 }
