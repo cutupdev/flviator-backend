@@ -149,18 +149,21 @@ io.on("connection", function (socket) {
 
         socket.on("playBet", (data) => {
             if (GameState === "BET") {
-                console.log(users[data.token]);
-                if (balances[users[data.token].myToken] - data.betAmount >= 0) {
-                    balances[users[data.token].myToken] -= data.betAmount;
-                    users[data.token].betAmount = data.betAmount;
-                    users[data.token].betted = true;
-                    users[data.token].balance = balances[users[data.token].myToken];
-                    users[data.token].auto = data.auto;
-                    users[data.token].target = data.target;
-                    socket.emit("myBetState", users[data.token]);
-                    sendInfo();
+                if (balances[users[data.token]]) {
+                    if (balances[users[data.token].myToken] - data.betAmount >= 0) {
+                        balances[users[data.token].myToken] -= data.betAmount;
+                        users[data.token].betAmount = data.betAmount;
+                        users[data.token].betted = true;
+                        users[data.token].balance = balances[users[data.token].myToken];
+                        users[data.token].auto = data.auto;
+                        users[data.token].target = data.target;
+                        socket.emit("myBetState", users[data.token]);
+                        sendInfo();
+                    } else {
+                        socket.emit("error", "Your balance is not enough!");
+                    }
                 } else {
-                    socket.emit("error", "Your balance is not enough!");
+                    socket.emit("error", "Your token is not correct! Please refresh website!");
                 }
             } else {
                 socket.emit("error", "You can't bet. Try again at next round!");
