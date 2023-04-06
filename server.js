@@ -12,6 +12,7 @@ const { getTime } = require("./math");
 let sockets = [];
 let users = [];
 let history = [];
+let balances = [];
 
 app.use(cors());
 app.use(bodyParser.json());
@@ -69,19 +70,20 @@ setInterval(() => {
                 GameState = "GAMEEND";
                 startTime = Date.now();
                 for (let i in users) {
-                    if (users[i].betted && !users[i].cashouted) {
-                        if (users[i].target < currentNum) {
-                            users[i].balance += users[i].target * users[i].betAmount;
-                            users[i].cashouted = true;
-                            users[i].cashAmount = users[i].target * users[i].betAmount;
-                            users[i].betted = false;
-                            sockets.map((socket) => {
-                                if (socket.id === users[i].socketId) {
-                                    socket.emit("finishGame", users[i]);
-                                }
-                            })
-                        }
-                    }
+                    // if (users[i].betted && !users[i].cashouted) {
+                    //     balances[users[i].myToken] += users[i].target * users[i].betAmount;
+                    //     if (users[i].target < currentNum) {
+                    //         users[i].balance += balances[users[i].myToken];
+                    //         users[i].cashouted = true;
+                    //         users[i].cashAmount = users[i].target * users[i].betAmount;
+                    //         users[i].betted = false;
+                    //         sockets.map((socket) => {
+                    //             if (socket.id === users[i].socketId) {
+                    //                 socket.emit("finishGame", users[i]);
+                    //             }
+                    //         })
+                    //     }
+                    // }
                     users[i].betted = false;
                     users[i].cashouted = false;
                     users[i].betAmount = 0;
@@ -133,18 +135,24 @@ io.on("connection", function (socket) {
                 cashAmount: 0,
                 auto: false,
                 target: 0,
-                type: data.type
+                type: data.type,
+                myToken: data.myToken
             };
+            if (balances[data.myToken])
+                balances[data.myToken] += 1250;
+            else
+                balances[data.myToken] = 1250;
             sendInfo();
             io.emit("history", { history: history });
         })
 
         socket.on("playBet", (data) => {
             if (GameState === "BET") {
-                if (users[data.token].balance - data.betAmount >= 0) {
+                if (balances[users[data.token].myToken] - data.betAmount >= 0) {
+                    balances[users[data.token].myToken] -= data.betAmount;
                     users[data.token].betAmount = data.betAmount;
                     users[data.token].betted = true;
-                    users[data.token].balance -= data.betAmount;
+                    users[data.token].balance = balances[users[data.token].myToken];
                     users[data.token].auto = data.auto;
                     users[data.token].target = data.target;
                     socket.emit("myBetState", users[data.token]);
@@ -160,10 +168,11 @@ io.on("connection", function (socket) {
         socket.on("cashOut", (data) => {
             if (!users[data.token].cashouted && users[data.token].betted) {
                 if (data.at <= currentSecondNum) {
+                    balances[users[data.token].myToken] += data.at * users[data.token].betAmount;
                     users[data.token].cashouted = true;
                     users[data.token].cashAmount = data.at * users[data.token].betAmount;
                     users[data.token].betted = false;
-                    users[data.token].balance += data.at * users[data.token].betAmount;
+                    users[data.token].balance = balances[users[data.token].myToken];
                     users[data.token].target = data.at;
                     socket.emit("finishGame", users[data.token]);
                     sendInfo();
@@ -209,6 +218,9 @@ function getRandom() {
 
     if (target > 5000)
         target = 5000;
+    if (target > 1.6) {
+        target /= 1.5;
+    }
 
     console.log(target);
     var time = getTime(target);
