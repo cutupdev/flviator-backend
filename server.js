@@ -125,21 +125,19 @@ io.on("connection", function (socket) {
             console.log("socket disconnected: " + socket.id);
         });
         socket.on("enterRoom", (data) => {
-            console.log(data);
             users[data.token] = {
                 betted: false,
                 cashouted: false,
                 name: data.name,
                 socketId: socket.id,
                 betAmount: 0,
-                balance: 3000,
+                balance: 5000,
                 cashAmount: 0,
                 auto: false,
                 target: 0,
                 type: data.type,
                 myToken: data.myToken
             };
-            console.log(users[data.token]);
             if (balances[data.myToken])
                 balances[data.myToken] += 1250;
             else
@@ -149,9 +147,10 @@ io.on("connection", function (socket) {
         })
 
         socket.on("playBet", (data) => {
+            console.log("==================================================")
+            console.log(balances, balances[users[data.token].myToken], data.token);
             if (GameState === "BET") {
-                console.log(users[data.token]);
-                if (balances[users[data.token]]) {
+                if (balances[users[data.token].myToken]) {
                     if (balances[users[data.token].myToken] - data.betAmount >= 0) {
                         balances[users[data.token].myToken] -= data.betAmount;
                         users[data.token].betAmount = data.betAmount;
