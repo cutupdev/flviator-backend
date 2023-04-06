@@ -125,6 +125,7 @@ io.on("connection", function (socket) {
             console.log("socket disconnected: " + socket.id);
         });
         socket.on("enterRoom", (data) => {
+            console.log(data);
             users[data.token] = {
                 betted: false,
                 cashouted: false,
@@ -148,6 +149,7 @@ io.on("connection", function (socket) {
 
         socket.on("playBet", (data) => {
             if (GameState === "BET") {
+                console.log(users[data.token].myToken);
                 if (balances[users[data.token].myToken] - data.betAmount >= 0) {
                     balances[users[data.token].myToken] -= data.betAmount;
                     users[data.token].betAmount = data.betAmount;
