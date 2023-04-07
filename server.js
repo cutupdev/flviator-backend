@@ -76,6 +76,11 @@ setInterval(() => {
             var currentTime = (Date.now() - startTime) / 1000
             currentNum = 1 + 0.06 * currentTime + Math.pow((0.06 * currentTime), 2) - Math.pow((0.04 * currentTime), 3) + Math.pow((0.04 * currentTime), 4)
             currentSecondNum = currentNum;
+            botIds.map((item) => {
+                if (users[item].target <= currentNum) {
+                    cashOut(item);
+                }
+            })
             if (currentTime > gameTime) {
                 currentSecondNum = 0;
                 currentNum = target
@@ -107,11 +112,22 @@ setInterval(() => {
                         }
                     })
                 }
+                botIds.map((item) => {
+                    users[item] = {
+                        betted: false,
+                        cashouted: false,
+                        betAmount: 0,
+                        cashAmount: 0,
+                    }
+                })
                 sendInfo();
             }
             break;
         case "GAMEEND":
             if (Date.now() - startTime > GAMEENDTIME) {
+                for (let i = 0; i < 100; i++) {
+                    bet(botIds[i]);
+                }
                 startTime = Date.now();
                 GameState = "BET";
                 BotState = "BET";
@@ -241,38 +257,6 @@ function getRandom() {
     var time = getTime(target);
     return time;
 }
-
-setInterval(() => {
-    switch (BotState) {
-        case "BET":
-            for (let i = 0; i < 100; i++) {
-                bet(botIds[i]);
-            }
-            BotState = "NONE";
-            break;
-        case "PLAYING":
-            botIds.map((item) => {
-                if (users[item].target <= currentNum) {
-                    cashOut(item);
-                }
-            })
-            break;
-        case "GAMEEND":
-            botIds.map((item) => {
-                users[item] = {
-                    betted: false,
-                    cashouted: false,
-                    betAmount: 0,
-                    cashAmount: 0,
-                }
-            })
-            userInfo();
-            BotState = "NONE";
-            break;
-        default:
-            break;
-    }
-}, 100);
 
 function bet(id) {
     let betAmount = (Math.random() * 1000) + 1
