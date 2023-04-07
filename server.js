@@ -54,6 +54,7 @@ let info = [];
 let target;
 let BotState = "BET"
 // here is game playing
+
 setInterval(() => {
     switch (GameState) {
         case "BET":
@@ -230,6 +231,18 @@ io.on("connection", function (socket) {
     }
 });
 
+function getRandom() {
+    var r = Math.random();
+    target = 1 / r;
+
+    // if (target < 24) {
+    //     target = 24;
+    // }
+    console.log(target);
+    var time = getTime(target);
+    return time;
+}
+
 const sendInfo = () => {
     info = [];
     for (let i in users) {
@@ -246,16 +259,8 @@ const sendInfo = () => {
     io.emit("bettedUserInfo", info);
 }
 
-function getRandom() {
-    var r = Math.random();
-    target = 1 / r;
-
-    // if (target < 24) {
-    //     target = 24;
-    // }
-    console.log(target);
-    var time = getTime(target);
-    return time;
+for (let i = 0; i < 100; i++) {
+    bet(botIds[i]);
 }
 
 function bet(id) {
