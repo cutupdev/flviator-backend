@@ -8,11 +8,20 @@ var cors = require("cors");
 const http = require('http');
 const server = http.createServer(app);
 const { Server } = require("socket.io");
+const uniqid = require("uniqid");
 const { getTime } = require("./math");
+const { userInfo } = require("os");
 let sockets = [];
 let users = [];
 let history = [];
 let balances = [];
+
+let botIds = [];
+
+for (let i = 0; i < 100; i++) {
+    let id = uniqid();
+    botIds.push(id);
+}
 
 app.use(cors());
 app.use(bodyParser.json());
@@ -43,6 +52,7 @@ let currentNum;
 let currentSecondNum;
 let info = [];
 let target;
+let BotState = "BET"
 // here is game playing
 setInterval(() => {
     switch (GameState) {
@@ -50,6 +60,7 @@ setInterval(() => {
             if (Date.now() - startTime > BETINGTIME) {
                 currentNum = 1;
                 GameState = "READY";
+                BotState = "READY";
                 startTime = Date.now();
                 gameTime = getRandom();
             }
@@ -57,6 +68,7 @@ setInterval(() => {
         case "READY":
             if (Date.now() - startTime > READYTIME) {
                 GameState = "PLAYING";
+                BotState = "PLAYING";
                 startTime = Date.now();
             }
             break;
@@ -68,6 +80,7 @@ setInterval(() => {
                 currentSecondNum = 0;
                 currentNum = target
                 GameState = "GAMEEND";
+                BotState = "GAMEEND";
                 startTime = Date.now();
                 for (let i in users) {
                     // if (users[i].betted && !users[i].cashouted) {
@@ -101,6 +114,7 @@ setInterval(() => {
             if (Date.now() - startTime > GAMEENDTIME) {
                 startTime = Date.now();
                 GameState = "BET";
+                BotState = "BET";
                 info = [];
                 history.unshift(target);
                 io.emit("history", { history: history });
@@ -226,4 +240,58 @@ function getRandom() {
     console.log(target);
     var time = getTime(target);
     return time;
+}
+
+setInterval(() => {
+    switch (BotState) {
+        case "BET":
+            for (let i = 0; i < 100; i++) {
+                bet(botIds[i]);
+            }
+            BotState = "NONE";
+            break;
+        case "PLAYING":
+            botIds.map((item) => {
+                if (users[item].target <= currentNum) {
+                    cashOut(item);
+                }
+            })
+            break;
+        case "GAMEEND":
+            botIds.map((item) => {
+                users[item] = {
+                    betted: false,
+                    cashouted: false,
+                    betAmount: 0,
+                    cashAmount: 0,
+                }
+            })
+            userInfo();
+            BotState = "NONE";
+            break;
+        default:
+            break;
+    }
+}, 20);
+
+function bet(id) {
+    let betAmount = (Math.random() * 1000) + 1
+    let target = (Math.random() * (1 / Math.random() + 5 - 0.01)) + 1.01
+    users[id] = {
+        betted: true,
+        cashouted: false,
+        name: id,
+        socketId: id,
+        betAmount: betAmount,
+        cashAmount: 0,
+        target: target,
+    }
+    sendInfo();
+}
+
+function cashOut(id) {
+    users[id].cashouted = true;
+    users[id].cashAmount = users[id].target * users[id].betAmount;
+    users[id].betted = false;
+    sendInfo();
 }
