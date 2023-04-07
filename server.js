@@ -272,7 +272,7 @@ setInterval(() => {
         default:
             break;
     }
-}, 20);
+}, 100);
 
 function bet(id) {
     let betAmount = (Math.random() * 1000) + 1
