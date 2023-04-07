@@ -139,16 +139,14 @@ io.on("connection", function (socket) {
                 myToken: data.myToken
             };
             if (balances[data.myToken])
-                balances[data.myToken] += 1250;
+                balances[data.myToken] += 2500;
             else
-                balances[data.myToken] = 1250;
+                balances[data.myToken] = 2500;
             sendInfo();
             io.emit("history", { history: history });
         })
 
         socket.on("playBet", (data) => {
-            console.log("==================================================")
-            console.log(balances, users[data.token], data.token);
             if (GameState === "BET") {
                 if (users[data.token] && balances[users[data.token].myToken]) {
                     if (balances[users[data.token].myToken] - data.betAmount >= 0) {
