@@ -1,6 +1,6 @@
 public/
 node_modules/
-build/
+# build/
 # Object file
 *.o
 
