@@ -276,7 +276,7 @@ setInterval(() => {
 
 function bet(id) {
     let betAmount = (Math.random() * 1000) + 1
-    let target = (Math.random() * (1 / Math.random() + 5 - 0.01)) + 1.01
+    let target = (Math.random() * (1 / Math.random() - 0.01)) + 1.01
     users[id] = {
         betted: true,
         cashouted: false,
