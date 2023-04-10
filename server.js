@@ -10,7 +10,6 @@ const server = http.createServer(app);
 const { Server } = require("socket.io");
 const uniqid = require("uniqid");
 const { getTime } = require("./math");
-const { userInfo } = require("os");
 let sockets = [];
 let users = [];
 let history = [];
@@ -18,8 +17,8 @@ let balances = [];
 
 let botIds = [];
 
-for (let i = 0; i < 100; i++) {
-    let id = uniqid();
+for (var i = 0; i < 100; i++) {
+    var id = uniqid();
     botIds.push(id);
 }
 
@@ -52,7 +51,6 @@ let currentNum;
 let currentSecondNum;
 let info = [];
 let target;
-let BotState = "BET"
 // here is game playing
 
 setInterval(() => {
@@ -61,7 +59,6 @@ setInterval(() => {
             if (Date.now() - startTime > BETINGTIME) {
                 currentNum = 1;
                 GameState = "READY";
-                BotState = "READY";
                 startTime = Date.now();
                 gameTime = getRandom();
             }
@@ -69,7 +66,6 @@ setInterval(() => {
         case "READY":
             if (Date.now() - startTime > READYTIME) {
                 GameState = "PLAYING";
-                BotState = "PLAYING";
                 startTime = Date.now();
             }
             break;
@@ -78,7 +74,7 @@ setInterval(() => {
             currentNum = 1 + 0.06 * currentTime + Math.pow((0.06 * currentTime), 2) - Math.pow((0.04 * currentTime), 3) + Math.pow((0.04 * currentTime), 4)
             currentSecondNum = currentNum;
             botIds.map((item) => {
-                if (users[item].target <= currentNum) {
+                if (users[item] && users[item].target <= currentNum) {
                     cashOut(item);
                 }
             })
@@ -86,7 +82,6 @@ setInterval(() => {
                 currentSecondNum = 0;
                 currentNum = target
                 GameState = "GAMEEND";
-                BotState = "GAMEEND";
                 startTime = Date.now();
                 for (let i in users) {
                     // if (users[i].betted && !users[i].cashouted) {
@@ -131,7 +126,6 @@ setInterval(() => {
                 }
                 startTime = Date.now();
                 GameState = "BET";
-                BotState = "BET";
                 info = [];
                 history.unshift(target);
                 io.emit("history", { history: history });
@@ -257,10 +251,6 @@ const sendInfo = () => {
         }
     }
     io.emit("bettedUserInfo", info);
-}
-
-for (let i = 0; i < 100; i++) {
-    bet(botIds[i]);
 }
 
 function bet(id) {
