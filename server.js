@@ -51,89 +51,10 @@ let currentNum;
 let currentSecondNum;
 let info = [];
 let target;
+
+let interval;
 // here is game playing
 
-setInterval(() => {
-    switch (GameState) {
-        case "BET":
-            if (Date.now() - startTime > BETINGTIME) {
-                currentNum = 1;
-                GameState = "READY";
-                startTime = Date.now();
-                gameTime = getRandom();
-            }
-            break;
-        case "READY":
-            if (Date.now() - startTime > READYTIME) {
-                GameState = "PLAYING";
-                startTime = Date.now();
-            }
-            break;
-        case "PLAYING":
-            var currentTime = (Date.now() - startTime) / 1000
-            currentNum = 1 + 0.06 * currentTime + Math.pow((0.06 * currentTime), 2) - Math.pow((0.04 * currentTime), 3) + Math.pow((0.04 * currentTime), 4)
-            currentSecondNum = currentNum;
-            botIds.map((item) => {
-                if (users[item] && users[item].target <= currentNum) {
-                    cashOut(item);
-                }
-            })
-            if (currentTime > gameTime) {
-                currentSecondNum = 0;
-                currentNum = target
-                GameState = "GAMEEND";
-                startTime = Date.now();
-                for (let i in users) {
-                    // if (users[i].betted && !users[i].cashouted) {
-                    //     balances[users[i].myToken] += users[i].target * users[i].betAmount;
-                    //     if (users[i].target < currentNum) {
-                    //         users[i].balance += balances[users[i].myToken];
-                    //         users[i].cashouted = true;
-                    //         users[i].cashAmount = users[i].target * users[i].betAmount;
-                    //         users[i].betted = false;
-                    //         sockets.map((socket) => {
-                    //             if (socket.id === users[i].socketId) {
-                    //                 socket.emit("finishGame", users[i]);
-                    //             }
-                    //         })
-                    //     }
-                    // }
-                    users[i].betted = false;
-                    users[i].cashouted = false;
-                    users[i].betAmount = 0;
-                    users[i].cashAmount = 0;
-                    sockets.map((socket) => {
-                        if (socket.id === users[i].socketId) {
-                            socket.emit("finishGame", users[i]);
-                        }
-                    })
-                }
-                botIds.map((item) => {
-                    users[item] = {
-                        betted: false,
-                        cashouted: false,
-                        betAmount: 0,
-                        cashAmount: 0,
-                    }
-                })
-                sendInfo();
-            }
-            break;
-        case "GAMEEND":
-            if (Date.now() - startTime > GAMEENDTIME) {
-                for (let i = 0; i < 100; i++) {
-                    bet(botIds[i]);
-                }
-                startTime = Date.now();
-                GameState = "BET";
-                info = [];
-                history.unshift(target);
-                io.emit("history", { history: history });
-            }
-            break;
-    }
-
-}, 20)
 
 const io = new Server(server, {
     cors: {
@@ -141,6 +62,93 @@ const io = new Server(server, {
     }
 });
 
+function gameRun() {
+    if (interval) {
+        clearInterval(interval);
+    }
+    interval = setInterval(() => {
+        switch (GameState) {
+            case "BET":
+                if (Date.now() - startTime > BETINGTIME) {
+                    currentNum = 1;
+                    GameState = "READY";
+                    startTime = Date.now();
+                    gameTime = getRandom();
+                }
+                break;
+            case "READY":
+                if (Date.now() - startTime > READYTIME) {
+                    GameState = "PLAYING";
+                    startTime = Date.now();
+                }
+                break;
+            case "PLAYING":
+                var currentTime = (Date.now() - startTime) / 1000
+                currentNum = 1 + 0.06 * currentTime + Math.pow((0.06 * currentTime), 2) - Math.pow((0.04 * currentTime), 3) + Math.pow((0.04 * currentTime), 4)
+                currentSecondNum = currentNum;
+                botIds.map((item) => {
+                    if (users[item] && users[item].target <= currentNum) {
+                        cashOut(item);
+                    }
+                })
+                if (currentTime > gameTime) {
+                    currentSecondNum = 0;
+                    currentNum = target
+                    GameState = "GAMEEND";
+                    startTime = Date.now();
+                    for (let i in users) {
+                        // if (users[i].betted && !users[i].cashouted) {
+                        //     balances[users[i].myToken] += users[i].target * users[i].betAmount;
+                        //     if (users[i].target < currentNum) {
+                        //         users[i].balance += balances[users[i].myToken];
+                        //         users[i].cashouted = true;
+                        //         users[i].cashAmount = users[i].target * users[i].betAmount;
+                        //         users[i].betted = false;
+                        //         sockets.map((socket) => {
+                        //             if (socket.id === users[i].socketId) {
+                        //                 socket.emit("finishGame", users[i]);
+                        //             }
+                        //         })
+                        //     }
+                        // }
+                        users[i].betted = false;
+                        users[i].cashouted = false;
+                        users[i].betAmount = 0;
+                        users[i].cashAmount = 0;
+                        sockets.map((socket) => {
+                            if (socket.id === users[i].socketId) {
+                                socket.emit("finishGame", users[i]);
+                            }
+                        })
+                    }
+                    botIds.map((item) => {
+                        users[item] = {
+                            betted: false,
+                            cashouted: false,
+                            betAmount: 0,
+                            cashAmount: 0,
+                        }
+                    })
+                    sendInfo();
+                }
+                break;
+            case "GAMEEND":
+                if (Date.now() - startTime > GAMEENDTIME) {
+                    for (let i = 0; i < 100; i++) {
+                        bet(botIds[i]);
+                    }
+                    startTime = Date.now();
+                    GameState = "BET";
+                    info = [];
+                    history.unshift(target);
+                    io.emit("history", { history: history });
+                }
+                break;
+        }
+
+    }, 20)
+}
+gameRun();
 // // Implement socket functionality
 io.on("connection", function (socket) {
     sockets.push(socket);
@@ -222,8 +230,10 @@ io.on("connection", function (socket) {
 
     } catch (err) {
         socket.emit("error message", { "errMessage": err.message })
+        gameRun();
     }
 });
+
 
 function getRandom() {
     var r = Math.random();
