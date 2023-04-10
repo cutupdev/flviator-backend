@@ -74,12 +74,14 @@ function gameRun() {
                     GameState = "READY";
                     startTime = Date.now();
                     gameTime = getRandom();
+                    currentInfos();
                 }
                 break;
             case "READY":
                 if (Date.now() - startTime > READYTIME) {
                     GameState = "PLAYING";
                     startTime = Date.now();
+                    currentInfos();
                 }
                 break;
             case "PLAYING":
@@ -95,6 +97,7 @@ function gameRun() {
                     currentSecondNum = 0;
                     currentNum = target
                     GameState = "GAMEEND";
+                    currentInfos();
                     startTime = Date.now();
                     for (let i in users) {
                         // if (users[i].betted && !users[i].cashouted) {
@@ -139,6 +142,7 @@ function gameRun() {
                     }
                     startTime = Date.now();
                     GameState = "BET";
+                    currentInfos();
                     info = [];
                     history.unshift(target);
                     io.emit("history", { history: history });
@@ -157,6 +161,7 @@ io.on("connection", function (socket) {
         socket.on("disconnect", function () {
             console.log("socket disconnected: " + socket.id);
         });
+        currentInfos();
         socket.on("enterRoom", (data) => {
             users[data.token] = {
                 betted: false,
@@ -223,10 +228,10 @@ io.on("connection", function (socket) {
             }
         });
 
-        setInterval(() => {
-            var time = Date.now() - startTime;
-            socket.broadcast.emit("gameState", { currentNum, currentSecondNum, GameState, time, });
-        }, 100);
+        // setInterval(() => {
+        //     var time = Date.now() - startTime;
+        //     socket.broadcast.emit("gameState", { currentNum, currentSecondNum, GameState, time, });
+        // }, 100);
 
     } catch (err) {
         socket.emit("error message", { "errMessage": err.message })
@@ -234,6 +239,10 @@ io.on("connection", function (socket) {
     }
 });
 
+const currentInfos = () => {
+    var time = Date.now() - startTime;
+    io.emit("gameState", { currentNum, currentSecondNum, GameState, time, });
+}
 
 function getRandom() {
     var r = Math.random();
