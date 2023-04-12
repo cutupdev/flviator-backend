@@ -1,6 +1,7 @@
 const axios = require("axios");
 
 const HistoryController = require("../controllers/historyController");
+const UserController = require("../controllers/userController");
 
 const myInfo = async (req, res) => {
     try {
@@ -29,4 +30,9 @@ const totalHistory = async (req, res) => {
     res.send({ data: result });
 }
 
-module.exports = { myInfo, topHistory, totalHistory }
+const totalUsers = async (req, res) => {
+    let result = await UserController.find();
+    res.send({ users: result });
+}
+
+module.exports = { myInfo, topHistory, totalHistory, totalUsers }
