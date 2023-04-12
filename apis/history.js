@@ -13,4 +13,20 @@ const myInfo = async (req, res) => {
     }
 }
 
-module.exports = { myInfo }
+const topHistory = async (req, res) => {
+    try {
+        let to = Date.now();
+        const current = new Date(to);
+        current.setMonth(current.getMonth - 1);
+        const from = current.toISOString();
+    } catch {
+
+    }
+}
+
+const totalHistory = async (req, res) => {
+    let result = await HistoryController.find();
+    res.send({ data: result });
+}
+
+module.exports = { myInfo, topHistory, totalHistory }
