@@ -7,6 +7,9 @@ var UserSchema = new Schema({
     },
     balance: {
         type: Number
+    },
+    img: {
+        type: String
     }
 })
 

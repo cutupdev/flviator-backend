@@ -32,7 +32,15 @@ module.exports = (io) => {
             console.log("socket disconnected " + socket.id);
         })
         socket.on("enterRoom", async (data) => {
+            console.log("New User Create");
             let userData = await UserController.find({ "name": data.myToken });
+            if (userData.length === 0) {
+                await UserController.create({
+                    name: data.myToken,
+                    balance: 5000,
+                    img: "av-5.png"
+                })
+            }
             users[data.token] = {
                 betted: false,
                 cashouted: false,
@@ -44,12 +52,7 @@ module.exports = (io) => {
                 target: 0,
                 socketId: socket.id,
                 type: data.type,
-            }
-            if (userData.length === 0) {
-                await UserController.create({
-                    name: data.myToken,
-                    balance: 5000
-                })
+                img: userData.length > 0 ? userData[0].img : ""
             }
             sendInfo();
             socket.emit("myInfo", users[data.token]);
@@ -209,7 +212,8 @@ const sendInfo = () => {
                 betAmount: users[i].betAmount,
                 cashOut: users[i].cashAmount,
                 cashouted: users[i].cashouted,
-                target: users[i].target
+                target: users[i].target,
+                img: users[i].img
             })
         }
     }
