@@ -60,19 +60,22 @@ module.exports = (io) => {
         })
         socket.on("playBet", async (data) => {
             if (GameState === "BET") {
-                let result = await UserController.find({ name: users[data.token].name });
-                let balance = result[0].balance - data.betAmount;
-                if (balance >= 0) {
-                    await UserController.update({ filter: { name: users[data.token].name }, opt: { balance: balance } });
-                    users[data.token].betAmount = data.betAmount;
-                    users[data.token].betted = true;
-                    users[data.token].balance = balance;
-                    users[data.token].auto = data.auto;
-                    users[data.token].target = data.target;
-                    socket.emit("myBetState", users[data.token]);
-                    sendInfo();
-                } else {
-                    socket.emit("error", "Your balance is not enough!");
+                if (users[data.token]) {
+                    console.log(users[data.token].name);
+                    let result = await UserController.find({ name: users[data.token].name });
+                    let balance = result[0].balance - data.betAmount;
+                    if (balance >= 0) {
+                        await UserController.update({ filter: { name: users[data.token].name }, opt: { balance: balance } });
+                        users[data.token].betAmount = data.betAmount;
+                        users[data.token].betted = true;
+                        users[data.token].balance = balance;
+                        users[data.token].auto = data.auto;
+                        users[data.token].target = data.target;
+                        socket.emit("myBetState", users[data.token]);
+                        sendInfo();
+                    } else {
+                        socket.emit("error", "Your balance is not enough!");
+                    }
                 }
             } else {
                 socket.emit("error", "You can't bet. Try again at next round!");
