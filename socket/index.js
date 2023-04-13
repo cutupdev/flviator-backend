@@ -101,7 +101,7 @@ module.exports = (io) => {
         setInterval(() => {
             const time = Date.now() - startTime;
             io.emit("gameState", { currentNum, currentSecondNum, GameState, time });
-        }, 100);
+        }, 400);
     });
 };
 
