@@ -1,18 +1,19 @@
 {
   "name": "unity-socketio-testserver",
   "version": "1.0.0",
+  "author": "DasPeTe (daspetemail@gmail.com)",
   "description": "The SocketIO testserver for the unity3d socketio package",
   "main": "server.js",
   "scripts": {
-    "start": "nodemon server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "esbuild src/app.ts --platform=node --bundle --minify --outfile=./dist/app.js ",
+    "dev": "ts-node -r tsconfig-paths/register ./src/app.ts"
   },
-  "author": "DasPeTe (daspetemail@gmail.com)",
   "license": "MIT",
   "dependencies": {
     "algebra.js": "^0.2.6",
     "axios": "^0.24.0",
     "body-parser": "^1.19.0",
+    "colors": "^1.4.0",
     "cookie-parser": "^1.4.5",
     "cors": "^2.8.5",
     "crypto": "^1.0.1",
@@ -22,6 +23,7 @@
     "express-myconnection": "^1.0.4",
     "express-useragent": "^1.0.15",
     "fs": "0.0.1-security",
+    "mongodb": "^5.2.0",
     "mongoose": "^7.0.3",
     "morgan": "^1.10.0",
     "mysql": "^2.18.1",
@@ -29,5 +31,16 @@
     "socket.io": "^4.4.1",
     "uniqid": "^5.4.0",
     "util": "^0.12.3"
+  },
+  "devDependencies": {
+    "@types/axios": "^0.14.0",
+    "@types/cors": "^2.8.13",
+    "@types/express": "^4.17.17",
+    "@types/node": "^18.15.11",
+    "@types/uniqid": "^5.3.2",
+    "esbuild": "^0.17.16",
+    "ts-node": "^10.9.1",
+    "tsconfig-paths": "^4.2.0",
+    "typescript": "^5.0.4"
   }
 }

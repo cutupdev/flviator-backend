@@ -1,10 +1,8 @@
-public/
-node_modules/
-# build/
-# Object file
-*.o
-
-# Ada Library Information
-*.ali
+node_modules
+logs/*.log
+dist
+build
 
 .env
+yarn.lock
+config.json
