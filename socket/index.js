@@ -48,7 +48,8 @@ module.exports = (io) => {
             console.log("socket disconnected " + socket.id);
         })
         socket.on("enterRoom", async (data) => {
-            console.log("New User Create");
+            let gameDatas = await GameController.find();
+            socket.emit("getBetLimits", { max: gameDatas[0].maxBetAmount, min: gameDatas[0].minBetAmount });
             let userData = await UserController.find({ "name": data.myToken });
             if (userData.length === 0) {
                 await UserController.create({
