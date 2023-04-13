@@ -193,8 +193,8 @@ const gameRun = () => {
 setInterval(() => {
     if (GameState === "PLAYING") {
         botIds.map((item) => {
-            if (users[item].betted) {
-                if (users[item] && users[item].target <= currentNum) {
+            if (users[item] && users[item].target <= currentNum) {
+                if (users[item].betted) {
                     cashOut(item);
                 }
             }
