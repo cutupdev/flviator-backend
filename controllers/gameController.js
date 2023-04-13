@@ -10,8 +10,13 @@ var GameController = {
         }
     },
     update: async (props) => {
-        const { filter, opt } = props;
-        await User.updateOne(filter, { $set: opt });
+        try {
+            const { opt } = props;
+            const gameInfo = await Game.find();
+            await Game.updateOne({ _id: gameInfo[0]._id }, { $set: opt });
+        } catch (err) {
+            console.log(err.message);
+        }
     },
     find: async (props) => {
         try {

@@ -22,10 +22,20 @@ let target;
 let interval;
 let botIds = [];
 
-GameController.create({
-    minBetAmount: 0.1,
-    maxBetAmount: 1000
-})
+const gameInfo = async () => {
+
+    let gameInfo = await GameController.find();
+
+    if (gameInfo.length === 0) {
+        GameController.create({
+            minBetAmount: 0.1,
+            maxBetAmount: 1000
+        })
+    }
+
+}
+
+gameInfo();
 
 module.exports = (io) => {
     mysocketIo = io;
@@ -67,20 +77,24 @@ module.exports = (io) => {
         socket.on("playBet", async (data) => {
             if (GameState === "BET") {
                 if (users[data.token]) {
-                    console.log(users[data.token].name);
-                    let result = await UserController.find({ name: users[data.token].name });
-                    let balance = result[0].balance - data.betAmount;
-                    if (balance >= 0) {
-                        await UserController.update({ filter: { name: users[data.token].name }, opt: { balance: balance } });
-                        users[data.token].betAmount = data.betAmount;
-                        users[data.token].betted = true;
-                        users[data.token].balance = balance;
-                        users[data.token].auto = data.auto;
-                        users[data.token].target = data.target;
-                        socket.emit("myBetState", users[data.token]);
-                        sendInfo();
+                    let gameInfo = await GameController.find();
+                    if (balance >= gameInfo[0].minBetAmount && balance <= gameInfo[0].maxBetAmount) {
+                        let result = await UserController.find({ name: users[data.token].name });
+                        let balance = result[0].balance - data.betAmount;
+                        if (balance >= 0) {
+                            await UserController.update({ filter: { name: users[data.token].name }, opt: { balance: balance } });
+                            users[data.token].betAmount = data.betAmount;
+                            users[data.token].betted = true;
+                            users[data.token].balance = balance;
+                            users[data.token].auto = data.auto;
+                            users[data.token].target = data.target;
+                            socket.emit("myBetState", users[data.token]);
+                            sendInfo();
+                        } else {
+                            socket.emit("error", "Your balance is not enough!");
+                        }
                     } else {
-                        socket.emit("error", "Your balance is not enough!");
+                        socket.emit("error", "Your bet Amount is not correct");
                     }
                 }
             } else {
