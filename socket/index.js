@@ -190,17 +190,17 @@ const gameRun = () => {
     }, 20)
 }
 
-setInterval(() => {
-    if (GameState === "PLAYING") {
-        botIds.map((item) => {
-            if (users[item] && users[item].target <= currentNum) {
-                if (users[item].betted) {
-                    cashOut(item);
-                }
-            }
-        })
-    }
-}, 500);
+// setInterval(() => {
+//     if (GameState === "PLAYING") {
+//         botIds.map((item) => {
+//             if (users[item] && users[item].target <= currentNum) {
+//                 if (users[item].betted) {
+//                     cashOut(item);
+//                 }
+//             }
+//         })
+//     }
+// }, 500);
 
 const getRandom = () => {
     var r = Math.random();
