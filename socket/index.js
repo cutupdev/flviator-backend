@@ -79,9 +79,9 @@ module.exports = (io) => {
             if (GameState === "BET") {
                 if (users[data.token]) {
                     let gameInfo = await GameController.find();
+                    let result = await UserController.find({ name: users[data.token].name });
+                    let balance = result[0].balance - data.betAmount;
                     if (balance >= gameInfo[0].minBetAmount && balance <= gameInfo[0].maxBetAmount) {
-                        let result = await UserController.find({ name: users[data.token].name });
-                        let balance = result[0].balance - data.betAmount;
                         if (balance >= 0) {
                             await UserController.update({ filter: { name: users[data.token].name }, opt: { balance: balance } });
                             users[data.token].betAmount = data.betAmount;
