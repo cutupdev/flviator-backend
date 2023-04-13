@@ -1,7 +1,7 @@
 {
   "files": {
     "main.css": "/static/css/main.db7e2aaa.css",
-    "main.js": "/static/js/main.ceebeb32.js",
+    "main.js": "/static/js/main.e64b8cd5.js",
     "static/js/787.28cb0dcd.chunk.js": "/static/js/787.28cb0dcd.chunk.js",
     "static/media/rule-1.png": "/static/media/rule-1.adb49c21e32c909e5fb5.png",
     "static/media/rul-2.png": "/static/media/rul-2.a35c083bbe66679b0891.png",
@@ -26,11 +26,11 @@
     "static/media/plus.svg": "/static/media/plus.aaddfe6c6b9d4cac5859.svg",
     "static/media/minus.svg": "/static/media/minus.c3bf53ba37b442d40de1.svg",
     "main.db7e2aaa.css.map": "/static/css/main.db7e2aaa.css.map",
-    "main.ceebeb32.js.map": "/static/js/main.ceebeb32.js.map",
+    "main.e64b8cd5.js.map": "/static/js/main.e64b8cd5.js.map",
     "787.28cb0dcd.chunk.js.map": "/static/js/787.28cb0dcd.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.db7e2aaa.css",
-    "static/js/main.ceebeb32.js"
+    "static/js/main.e64b8cd5.js"
   ]
 }
