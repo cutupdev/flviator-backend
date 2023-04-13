@@ -2,6 +2,7 @@ const uniqid = require("uniqid");
 const { getTime } = require("../math");
 const HistoryController = require("../controllers/historyController");
 const UserController = require("../controllers/userController");
+const GameController = require("../controllers/gameController");
 
 let mysocketIo;
 let sockets = [];
@@ -20,6 +21,11 @@ let info = [];
 let target;
 let interval;
 let botIds = [];
+
+GameController.create({
+    minBetAmount: 0.1,
+    maxBetAmount: 1000
+})
 
 module.exports = (io) => {
     mysocketIo = io;

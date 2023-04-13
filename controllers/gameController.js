@@ -1,10 +1,10 @@
-var User = require("../models/userModel");
+var Game = require("../models/gameInfo");
 
-var UserController = {
+var GameController = {
     create: function (props) {
         try {
-            const newUser = new User(props);
-            const result = newUser.save();
+            const newGameInfo = new Game(props);
+            newGameInfo.save();
         } catch {
 
         }
@@ -15,7 +15,7 @@ var UserController = {
     },
     find: async (props) => {
         try {
-            var result = await User.find(props);
+            var result = await Game.find(props);
             return result;
         } catch (error) {
             console.log(error.message, "Hello");
@@ -23,4 +23,4 @@ var UserController = {
     }
 }
 
-module.exports = UserController;
+module.exports = GameController;

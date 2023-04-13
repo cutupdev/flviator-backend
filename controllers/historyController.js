@@ -1,12 +1,13 @@
 var History = require("../models/historyModel");
-var crypto = require('crypto');
 
 var HistoryController = {
     create: function (props) {
         const newHistory = new History(props);
         newHistory.save();
     },
-    update: function (req, res) {
+    update: async (req, res) => {
+        const { filter, opt } = props;
+        await History.updateOne(filter, { $set: opt });
 
     },
     find: async (props) => {
