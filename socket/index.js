@@ -200,7 +200,7 @@ setInterval(() => {
             }
         })
     }
-}, 100);
+}, 500);
 
 const getRandom = () => {
     var r = Math.random();
