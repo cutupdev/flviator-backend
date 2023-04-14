@@ -1,4 +1,4 @@
-import {Server, Socket} from 'socket.io'
+import { Server, Socket } from 'socket.io'
 import uniqid from 'uniqid'
 import { getTime } from "../math"
 import { DUsers, addHistory, addUser, getBettingAmounts, updateUserBalance } from '../model'
@@ -40,7 +40,7 @@ const DEFAULT_USER = {
 
 let mysocketIo: Server;
 let sockets = [] as Socket[];
-let users = {} as {[key: string]: UserType}
+let users = {} as { [key: string]: UserType }
 let previousHand = users;
 let history = [] as number[];
 let GameState = "BET";
@@ -130,8 +130,8 @@ const gameRun = () => {
                         }
                     }
                     botIds.map((item) => {
-                        users[item] = {...DEFAULT_USER, bot: true, auto: true}
-                        
+                        users[item] = { ...DEFAULT_USER, bot: true, auto: true }
+
                         //     betted: false,
                         //     cashouted: false,
                         //     betAmount: 0,
@@ -159,7 +159,7 @@ const gameRun = () => {
 
 setInterval(() => {
     if (GameState === "PLAYING") {
-        const _bots = botIds.filter(k=>users[k] && users[k].target <= currentNum && users[k].betted)
+        const _bots = botIds.filter(k => users[k] && users[k].target <= currentNum && users[k].betted)
         if (_bots.length) {
             for (let k of _bots) {
                 users[k].cashouted = true
@@ -267,11 +267,11 @@ export const initSocket = (io: Server) => {
         socket.on("playBet", async (data) => {
             if (GameState === "BET") {
                 const u = users[data.token]
-                
+
                 if (u) {
                     let d = await DUsers.findOne({ name: u.name });
                     if (!!d) {
-                        const {minBetAmount, maxBetAmount} = await getBettingAmounts()
+                        const { minBetAmount, maxBetAmount } = await getBettingAmounts()
                         let betAmount = d.balance - data.betAmount;
                         if (betAmount >= minBetAmount && betAmount <= maxBetAmount) {
                             if (betAmount >= 0) {
@@ -322,7 +322,7 @@ export const initSocket = (io: Server) => {
             } else {
                 setlog("undefined user", data.token)
             }
-            
+
         })
         setInterval(() => {
             const time = Date.now() - startTime;

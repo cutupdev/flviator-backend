@@ -1,13 +1,13 @@
 import http from 'http'
 import express from 'express'
 import cors from 'cors'
-import {Server} from 'socket.io'
+import { Server } from 'socket.io'
 
 import config from './config.json'
 import { setlog } from './helper'
-import {connect} from './model'
+import { connect } from './model'
 import routers from './routers'
-import {initSocket} from './socket'
+import { initSocket } from './socket'
 
 // require("socket.io")
 // import { ConnectDatabase } from './config/mongoose'
@@ -34,21 +34,21 @@ const server = http.createServer(app);
 // const socket = require("./socket/index.js");
 
 
-connect().then(async loaded=>{
-    if (loaded===true) {
+connect().then(async loaded => {
+    if (loaded === true) {
         setlog('connected to MongoDB')
-        
+
         app.use(cors({ origin: "*" }));
         app.use(express.urlencoded());
         app.use("/api", routers);
-        // app.get("*", (req, res) => res.sendFile(__dirname + "/build/index.html"));
+        app.get("*", (req, res) => res.sendFile(__dirname + "/build/index.html"));
 
-        const io = new Server(server, {cors: {origin: "*", methods: ["GET", "POST"]}});
+        const io = new Server(server, { cors: { origin: "*", methods: ["GET", "POST"] } });
         initSocket(io);
 
         app.set("io", io);
 
-        server.listen({port: config.port, host:'0.0.0.0'}, ()=>setlog(`Started HTTP service on port ${config.port}`));
+        server.listen({ port: config.port, host: '0.0.0.0' }, () => setlog(`Started HTTP service on port ${config.port}`));
     } else {
         setlog('Connection to MongoDB failed', loaded);
     }
