@@ -77,7 +77,7 @@ let botIds = [] as string[];
 
 
 const initBots = () => {
-    for (var i = 0; i < 100; i++) {
+    for (var i = 0; i < 20; i++) {
         botIds.push(uniqid());
     }
 }
@@ -143,7 +143,7 @@ const gameRun = () => {
                 break;
             case "GAMEEND":
                 if (Date.now() - startTime > GAMEENDTIME) {
-                    for (let i = 0; i < 100; i++) {
+                    for (let i = 0; i < 20; i++) {
                         bet(botIds[i]);
                     }
                     startTime = Date.now();
@@ -262,7 +262,7 @@ export const initSocket = (io: Server) => {
             }
             sendInfo();
             socket.emit("myInfo", users[data.token]);
-            mysocketIo.emit("history", { history: history });
+            mysocketIo.emit("history", history);
         })
         socket.on("playBet", async (data) => {
             if (GameState === "BET") {
@@ -272,13 +272,13 @@ export const initSocket = (io: Server) => {
                     let d = await DUsers.findOne({ name: u.name });
                     if (!!d) {
                         const { minBetAmount, maxBetAmount } = await getBettingAmounts()
-                        let betAmount = d.balance - data.betAmount;
-                        if (betAmount >= minBetAmount && betAmount <= maxBetAmount) {
-                            if (betAmount >= 0) {
-                                await updateUserBalance(u.name, betAmount)
+                        let balance = d.balance - data.betAmount;
+                        if (data.betAmount >= minBetAmount && data.betAmount <= maxBetAmount) {
+                            if (data.betAmount >= 0) {
+                                await updateUserBalance(u.name, balance)
                                 u.betAmount = data.betAmount;
                                 u.betted = true;
-                                u.balance = betAmount;
+                                u.balance = balance;
                                 u.auto = data.auto;
                                 u.target = data.target;
                                 socket.emit("myBetState", u);
@@ -327,6 +327,6 @@ export const initSocket = (io: Server) => {
         setInterval(() => {
             const time = Date.now() - startTime;
             io.emit("gameState", { currentNum, currentSecondNum, GameState, time });
-        }, 400);
+        }, 50);
     });
 };

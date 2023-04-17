@@ -1,6 +1,7 @@
 import http from 'http'
 import express from 'express'
 import cors from 'cors'
+import bodyParser from "body-parser";
 import { Server } from 'socket.io'
 
 import config from './config.json'
@@ -40,7 +41,11 @@ connect().then(async loaded => {
 
         app.use(cors({ origin: "*" }));
         app.use(express.urlencoded());
-        app.use("/api", routers);
+        // app.use("/api", routers);
+        app.use(bodyParser.json({ type: "application/json" }));
+        app.use(bodyParser.raw({ type: "application/vnd.custom-type" }));
+        app.use(bodyParser.text({ type: "text/html" }));
+        app.use("/api", routers)
         app.get("*", (req, res) => res.sendFile(__dirname + "/build/index.html"));
 
         const io = new Server(server, { cors: { origin: "*", methods: ["GET", "POST"] } });
