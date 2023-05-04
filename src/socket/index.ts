@@ -53,6 +53,9 @@ let currentNum: number;
 let currentSecondNum: number;
 let info = [];
 let target: number;
+let RTP = 5;
+let cashoutAmount = 0;
+let totalBetAmount = 0;
 
 let interval: NodeJS.Timer;
 let botIds = [] as string[];
@@ -106,11 +109,16 @@ const gameRun = () => {
                 var currentTime = (Date.now() - startTime) / 1000;
                 currentNum = 1 + 0.06 * currentTime + Math.pow((0.06 * currentTime), 2) - Math.pow((0.04 * currentTime), 3) + Math.pow((0.04 * currentTime), 4)
                 currentSecondNum = currentNum;
-                if (currentTime > gameTime) {
+                let RTPAmount = cashoutAmount / totalBetAmount * 100;
+                if (RTPAmount >= RTP)
+                    target = currentNum;
+                if (currentTime > gameTime || RTPAmount >= RTP) {
                     sendPreviousHand();
                     currentSecondNum = 0;
                     currentNum = target;
                     GameState = "GAMEEND";
+                    totalBetAmount = 0;
+                    cashoutAmount = 0;
                     startTime = Date.now();
                     for (const k in users) {
                         const i = users[k]
@@ -162,9 +170,11 @@ setInterval(() => {
         const _bots = botIds.filter(k => users[k] && users[k].target <= currentNum && users[k].betted)
         if (_bots.length) {
             for (let k of _bots) {
-                users[k].cashouted = true
-                users[k].cashAmount = users[k].target * users[k].betAmount
-                users[k].betted = false
+                users[k].cashouted = true;
+                users[k].cashAmount = users[k].target * users[k].betAmount;
+                users[k].betted = false;
+
+                cashoutAmount = users[k].target * users[k].betAmount;
             }
             sendInfo()
         }
@@ -227,6 +237,7 @@ function bet(id: string) {
         cashAmount: 0,
         target: target,
     }
+    totalBetAmount += betAmount;
     sendInfo();
 }
 
@@ -275,6 +286,7 @@ export const initSocket = (io: Server) => {
                         let balance = d.balance - data.betAmount;
                         if (data.betAmount >= minBetAmount && data.betAmount <= maxBetAmount) {
                             if (data.betAmount >= 0) {
+                                totalBetAmount += data.betAmount;
                                 await updateUserBalance(u.name, balance)
                                 u.betAmount = data.betAmount;
                                 u.betted = true;
@@ -304,6 +316,7 @@ export const initSocket = (io: Server) => {
                     if (data.at <= currentSecondNum) {
                         let d = await DUsers.findOne({ name: u.name });
                         if (!!d) {
+                            cashoutAmount += data.at * u.betAmount;
                             let balance = d.balance + data.at * u.betAmount;
                             await updateUserBalance(u.name, balance)
                             u.cashouted = true;
