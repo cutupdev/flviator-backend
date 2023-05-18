@@ -53,7 +53,7 @@ let currentNum: number;
 let currentSecondNum: number;
 let info = [];
 let target: number;
-let RTP = 5;
+let RTP = 95;
 let cashoutAmount = 0;
 let totalBetAmount = 0;
 
