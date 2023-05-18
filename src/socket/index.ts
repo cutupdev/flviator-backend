@@ -53,7 +53,7 @@ let currentNum: number;
 let currentSecondNum: number;
 let info = [];
 let target: number;
-let RTP = 5;
+let RTP = 90;
 let cashoutAmount = 0;
 let totalBetAmount = 0;
 
@@ -85,7 +85,6 @@ const initBots = () => {
     }
 }
 const gameRun = () => {
-
     if (interval) {
         clearInterval(interval);
     }
