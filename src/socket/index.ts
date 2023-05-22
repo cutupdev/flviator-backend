@@ -1,8 +1,11 @@
 import { Server, Socket } from 'socket.io'
 import uniqid from 'uniqid'
+import axios from 'axios'
+
 import { getTime } from "../math"
 import { DUsers, addHistory, addUser, getBettingAmounts, updateUserBalance } from '../model'
-import { setlog } from '../helper'
+import { setlog } from '../helper';
+
 
 // const HistoryController = require("../controllers/historyController");
 // const UserController = require("../controllers/userController");
@@ -21,6 +24,7 @@ interface UserType {
     balance: number
     type: string
     img: string
+    userType: boolean
 }
 
 const DEFAULT_USER = {
@@ -40,6 +44,7 @@ const DEFAULT_USER = {
 
 let mysocketIo: Server;
 let sockets = [] as Socket[];
+let socketUsers = {} as { [key: string]: string[] };
 let users = {} as { [key: string]: UserType }
 let previousHand = users;
 let history = [] as number[];
@@ -137,13 +142,7 @@ const gameRun = () => {
                         }
                     }
                     botIds.map((item) => {
-                        users[item] = { ...DEFAULT_USER, bot: true, auto: true }
-
-                        //     betted: false,
-                        //     cashouted: false,
-                        //     betAmount: 0,
-                        //     cashAmount: 0,
-                        // }
+                        users[item] = { ...DEFAULT_USER, bot: true, auto: true, userType: false }
                     })
                     sendInfo();
                 }
@@ -235,6 +234,7 @@ function bet(id: string) {
         betAmount: betAmount,
         cashAmount: 0,
         target: target,
+        userType: false
     }
     totalBetAmount += betAmount;
     sendInfo();
@@ -249,27 +249,71 @@ export const initSocket = (io: Server) => {
         console.log("new User connected:" + socket.id);
         gameRun();
         sockets.push(socket);
+        socketUsers[socket.id] = []
         // try {
         socket.on("disconnect", () => {
-            console.log("socket disconnected " + socket.id);
+            console.log(socketUsers);
+            for (let i = 0; i < socketUsers[socket.id].length; i++) {
+                delete users[socketUsers[socket.id][i]];
+            }
+            delete socketUsers[socket.id];
         })
         socket.on("enterRoom", async (data) => {
             const betting = await getBettingAmounts()
             socket.emit("getBetLimits", { max: betting.maxBetAmount, min: betting.minBetAmount });
-            let userData = await DUsers.findOne({ "name": data.myToken });
-            if (!userData) {
-                await addUser(data.myToken, 5000, "av-5.png")
+            if (data.tokenURL !== null) {
+                const getUserInfo = await axios.post(`http://annie.ihk.vipnps.vip/iGaming/igaming/getUserToken`, { token: data.tokenURL });
+                if (getUserInfo.data.success) {
+                    let user: any = getUserInfo.data.data;
+                    const getBalance = await axios.post(
+                        `http://annie.ihk.vipnps.vip/iGaming/igaming/debit`,
+                        { userId: user.userId, token: user.userToken },
+                        { headers: { 'Content-Type': 'application/json', gamecode: 'crashGame', packageId: '4' } },
+                    )
+                    if (getBalance.data.success) {
+                        let balance = getBalance.data.data.balance;
+                        let userData = await DUsers.findOne({ "userId": user.userId });
+                        if (!userData) {
+                            await addUser(user.userId, balance, user.avatar);
+                        } else {
+                            if (balance > 0) {
+                                await updateUserBalance(user.userId, balance);
+                            }
+                        }
+                        userData = await DUsers.findOne({ "userId": user.userId });
+                        if (userData.balance > 0) {
+                            users[data.token] = {
+                                ...DEFAULT_USER,
+                                name: user.userId,
+                                balance: userData?.balance,
+                                cashAmount: 0,
+                                target: 0,
+                                socketId: socket.id,
+                                type: data.type,
+                                img: userData?.img || "",
+                                userType: true
+                            }
+                        } else {
+                            socket.emit("recharge");
+                        }
+                    } else {
+                        socket.emit("recharge");
+                    }
+                }
+            } else {
+                users[data.token] = {
+                    ...DEFAULT_USER,
+                    name: data.myToken,
+                    balance: 5000,
+                    cashAmount: 0,
+                    target: 0,
+                    socketId: socket.id,
+                    type: data.type,
+                    img: "",
+                    userType: false
+                }
             }
-            users[data.token] = {
-                ...DEFAULT_USER,
-                name: data.myToken,
-                balance: userData?.balance || 5000,
-                cashAmount: 0,
-                target: 0,
-                socketId: socket.id,
-                type: data.type,
-                img: userData?.img || ""
-            }
+            socketUsers[socket.id] = [...socketUsers[socket.id], data.token];
             sendInfo();
             socket.emit("myInfo", users[data.token]);
             mysocketIo.emit("history", history);
@@ -323,8 +367,21 @@ export const initSocket = (io: Server) => {
                             u.betted = false;
                             u.balance = balance;
                             u.target = data.at;
+                            if (u.userType) {
+                                let currentTime = new Date().getTime();
+                                await axios.post(
+                                    'http://annie.ihk.vipnps.vip/iGaming/igaming/orders',
+                                    {
+                                        'packageId': 4,
+                                        'userId': u.name,
+                                        'wonAmount': data.at * u.betAmount,
+                                        'betAmount': u.betAmount,
+                                        'status': 1,
+                                        'timestamp':currentTime
+                                    });
+                            }
                             socket.emit("finishGame", u);
-                            socket.emit("success", `Successfully CashOuted ${Number(u.cashAmount).toFixed(2)}`)
+                            socket.emit("success", `Successfully CashOuted ${Number(u.cashAmount).toFixed(2)}`);
                             sendInfo();
                         } else {
                             setlog("undefined user", u.name)
@@ -341,4 +398,14 @@ export const initSocket = (io: Server) => {
             io.emit("gameState", { currentNum, currentSecondNum, GameState, time });
         }, 50);
     });
+
+    const closeServer = () => {
+        io.close(() => {
+            console.log('Socket server closed');
+            process.exit(0);
+        });
+    }
+
+    process.on('SIGINT', closeServer); // Handle CTRL+C
+    process.on('SIGTERM', closeServer); // Handle termination signals
 };
