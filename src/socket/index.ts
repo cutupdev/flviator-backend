@@ -1,6 +1,7 @@
 import { Server, Socket } from 'socket.io'
 import uniqid from 'uniqid'
 import axios from 'axios'
+import { v4 as uuidv4 } from 'uuid';
 
 import { getTime } from "../math"
 import { DUsers, addHistory, addUser, getBettingAmounts, updateUserBalance } from '../model'
@@ -258,29 +259,28 @@ export const initSocket = (io: Server) => {
             }
             delete socketUsers[socket.id];
         })
-        socket.on("enterRoom", async (data) => {
+        socket.on("enterRoom", async (props) => {
+            const { data, sData, token } = props;
             const betting = await getBettingAmounts()
             socket.emit("getBetLimits", { max: betting.maxBetAmount, min: betting.minBetAmount });
-            if (data.tokenURL !== null) {
-                const getUserInfo = await axios.post(`http://annie.ihk.vipnps.vip/iGaming/igaming/getUserToken`, { token: data.tokenURL });
+            if (token !== null && token !== undefined) {
+                const getUserInfo = await axios.post(`http://annie.ihk.vipnps.vip/iGaming/igaming/getUserToken`, { token: token, ptxid: uuidv4() });
                 if (getUserInfo.data.success) {
                     let user: any = getUserInfo.data.data;
                     const getBalance = await axios.post(
                         `http://annie.ihk.vipnps.vip/iGaming/igaming/debit`,
-                        { userId: user.userId, token: user.userToken },
+                        { userId: user.userId, token: user.userToken, ptxid: uuidv4() },
                         { headers: { 'Content-Type': 'application/json', gamecode: 'crashGame', packageId: '4' } },
                     )
-                    if (getBalance.data.success) {
-                        let balance = getBalance.data.data.balance;
-                        let userData = await DUsers.findOne({ "userId": user.userId });
+                    let balance = getBalance.data.data.balance;
+                    let userData = await DUsers.findOne({ "name": user.userId });
+                    if (balance + userData.balance > 0) {
                         if (!userData) {
                             await addUser(user.userId, balance, user.avatar);
                         } else {
-                            if (balance > 0) {
-                                await updateUserBalance(user.userId, balance);
-                            }
+                            await updateUserBalance(user.userId, balance + Number(userData.balance));
                         }
-                        userData = await DUsers.findOne({ "userId": user.userId });
+                        userData = await DUsers.findOne({ "name": user.userId });
                         if (userData.balance > 0) {
                             users[data.token] = {
                                 ...DEFAULT_USER,
@@ -293,6 +293,19 @@ export const initSocket = (io: Server) => {
                                 img: userData?.img || "",
                                 userType: true
                             }
+
+                            users[sData.token] = {
+                                ...DEFAULT_USER,
+                                name: user.userId,
+                                balance: userData?.balance,
+                                cashAmount: 0,
+                                target: 0,
+                                socketId: socket.id,
+                                type: data.type,
+                                img: userData?.img || "",
+                                userType: true
+                            }
+                            socket.emit("myInfo", users[data.token]);
                         } else {
                             socket.emit("recharge");
                         }
@@ -312,10 +325,21 @@ export const initSocket = (io: Server) => {
                     img: "",
                     userType: false
                 }
+                users[sData.token] = {
+                    ...DEFAULT_USER,
+                    name: data.myToken,
+                    balance: 5000,
+                    cashAmount: 0,
+                    target: 0,
+                    socketId: socket.id,
+                    type: data.type,
+                    img: "",
+                    userType: false
+                }
+                socket.emit("myInfo", users[data.token]);
             }
             socketUsers[socket.id] = [...socketUsers[socket.id], data.token];
             sendInfo();
-            socket.emit("myInfo", users[data.token]);
             mysocketIo.emit("history", history);
         })
         socket.on("playBet", async (data) => {
@@ -369,15 +393,27 @@ export const initSocket = (io: Server) => {
                             u.target = data.at;
                             if (u.userType) {
                                 let currentTime = new Date().getTime();
+                                let odds = '';
+                                let status = 0;
+                                if (data.at * u.betAmount / u.betAmount > 1) {
+                                    status = 1;
+                                    odds = (data.at * u.betAmount / u.betAmount).toFixed(2);
+                                }
                                 await axios.post(
                                     'http://annie.ihk.vipnps.vip/iGaming/igaming/orders',
                                     {
-                                        'packageId': 4,
-                                        'userId': u.name,
-                                        'wonAmount': data.at * u.betAmount,
-                                        'betAmount': u.betAmount,
-                                        'status': 1,
-                                        'timestamp':currentTime
+                                        ptxid: uuidv4(),
+                                        iGamingOrders: [
+                                            {
+                                                'packageId': 4,
+                                                'userId': u.name,
+                                                'odds': odds,
+                                                'wonAmount': data.at * u.betAmount,
+                                                'betAmount': u.betAmount,
+                                                'status': status,
+                                                'timestamp': currentTime
+                                            }
+                                        ]
                                     });
                             }
                             socket.emit("finishGame", u);

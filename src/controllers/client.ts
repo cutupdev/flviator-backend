@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import { v4 as uuidv4 } from 'uuid';
 
 import { DEFAULT_GAMEID, DGame, DHistories, DUsers, getBettingAmounts, updateUserBalance } from "../model";
 import { setlog, getPaginationMeta } from "../helper";
@@ -86,17 +87,17 @@ export const yearHistory = async (req: Request, res: Response) => {
     }
 }
 
-export const refound =async (req:Request,res:Response) => {
+export const refound = async (req: Request, res: Response) => {
     try {
         const { userId } = req.body;
-        let userData = await DUsers.findOne({ "userId": userId });
+        let userData = await DUsers.findOne({ "name": userId });
         if (userData) {
             const refoundAmount = await axios.post(`http://annie.ihk.vipnps.vip/iGaming/igaming/credit`,
-                { userId: userId, balance: userData.balance },
+                { userId: userId, balance: userData.balance, ptxid: uuidv4() },
                 { headers: { 'Content-Type': 'application/json', gamecode: 'crashGame', packageId: '4' } });
             if (refoundAmount.data.success) {
                 await updateUserBalance(userId, 0);
-                res.status(200).json({ status: true,message:"Successfully refunded" });
+                res.status(200).json({ status: true, message: "Successfully refunded" });
             } else {
                 res.json({ status: false, message: "Server is busy now!" });
             }
