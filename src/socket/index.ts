@@ -85,7 +85,7 @@ let gameTime: number;
 let currentNum: number;
 let currentSecondNum: number;
 let target: number;
-let RTP = 90;
+let RTP = 200;
 let cashoutAmount = 0;
 let totalBetAmount = 0;
 
@@ -245,7 +245,6 @@ const getRandom = () => {
     return time;
 }
 
-let num = true;
 const sendInfo = () => {
     if (GameState !== "GAMEEND") {
         const info = [] as Array<{
