@@ -410,8 +410,8 @@ export const initSocket = (io: Server) => {
                 socketId: socket.id
             }
             userIds[socket.id] = id;
-            console.log(users[socket.id]);
-            socket.emit('myInfo', users[socket.id]);
+            console.log(users[userIds[socket.id]]);
+            socket.emit('myInfo', users[id]);
             io.emit('history', history);
         })
         socket.on('playBet', async (data) => {
@@ -451,7 +451,7 @@ export const initSocket = (io: Server) => {
         })
         socket.on('cashOut', async (data) => {
             const { type, endTarget } = data;
-            let u = users[socket.id];
+            let u = users[userIds[socket.id]];
             let player;
             if (type === 'f')
                 player = u.f
