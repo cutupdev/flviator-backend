@@ -529,7 +529,7 @@ export const initSocket = (io: Server) => {
             const time = Date.now() - startTime;
             io.emit('gameState', { currentNum, currentSecondNum, GameState, time });
             sendInfo();
-        }, 200)
+        }, 100)
     });
 
     const closeServer = () => {
