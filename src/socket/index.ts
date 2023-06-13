@@ -7,6 +7,7 @@ import { getTime } from "../math"
 import { DUsers, addHistory, addUser, getBettingAmounts, updateUserBalance } from '../model'
 import { setlog } from '../helper';
 import config from "../config.json";
+import { copyObject } from '../util';
 
 interface UserType {
     balance: number
@@ -367,7 +368,7 @@ export const initSocket = (io: Server) => {
                     }
                 }
 
-                sockets.splice(checkIndex,1);
+                sockets.splice(checkIndex, 1);
                 delete userIds[socket.id];
             }
         })
@@ -417,21 +418,17 @@ export const initSocket = (io: Server) => {
                 socketId: socket.id
             }
             userIds[socket.id] = id;
-            console.log(users[userIds[socket.id]]);
             socket.emit('myInfo', users[id]);
             io.emit('history', history);
         })
         socket.on('playBet', async (data) => {
             const { betAmount, target, type, auto } = data;
             if (GameState === "BET") {
-                let u = users[userIds[socket.id]];
-                let player;
-                if (type === 'f')
-                    player = u.f;
-                else if (type === 's')
-                    player = u.s;
+                let u = copyObject(users[userIds[socket.id]])
+
                 if (!!u) {
                     const { minBetAmount, maxBetAmount } = await getBettingAmounts()
+
                     if (betAmount >= minBetAmount && betAmount <= maxBetAmount) {
                         let balance;
                         if (u.userType) {
@@ -441,24 +438,34 @@ export const initSocket = (io: Server) => {
                         } else {
                             balance = u.balance - betAmount;
                         }
-                        player.betAmount = betAmount;
-                        player.betted = true;
-                        player.auto = auto;
-                        player.target = target;
+
+                        if (type === 'f') {
+                            u.f.betAmount = betAmount;
+                            u.f.betted = true;
+                            u.f.auto = auto;
+                            u.f.target = target;
+                        } else if (type === 's') {
+                            u.s.betAmount = betAmount;
+                            u.s.betted = true;
+                            u.s.auto = auto;
+                            u.s.target = target;
+                        }
                         u.balance = balance;
+                        users[userIds[socket.id]] = u
                         totalBetAmount += betAmount;
-                        console.log("Betted ", betAmount, " for ", u.userName);
+
                         socket.emit("myBetState", u);
                     }
-                } else
+                } else {
                     socket.emit('error', "Undefined User");
+                }
             } else {
                 socket.emit('error', "You can't bet. Try again at next round!");
             }
         })
         socket.on('cashOut', async (data) => {
             const { type, endTarget } = data;
-            let u = users[userIds[socket.id]];
+            let u = copyObject(users[userIds[socket.id]]);
             let player;
             if (type === 'f')
                 player = u.f
@@ -505,6 +512,7 @@ export const initSocket = (io: Server) => {
                             player.target = endTarget;
                             u.balance = balance;
                             cashoutAmount += endTarget * player.betAmount;
+                            users[userIds[socket.id]] = u;
                             console.log("Cash outed ", player.cashAmount, " for ", u.userName);
                             socket.emit("finishGame", u);
                             socket.emit("success", `Successfully CashOuted ${Number(player.cashAmount).toFixed(2)}`);
@@ -522,7 +530,7 @@ export const initSocket = (io: Server) => {
             const time = Date.now() - startTime;
             io.emit('gameState', { currentNum, currentSecondNum, GameState, time });
             sendInfo();
-        }, 100)
+        }, 200)
     });
 
     const closeServer = () => {
