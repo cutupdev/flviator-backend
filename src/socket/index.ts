@@ -72,7 +72,7 @@ let mysocketIo: Server;
 let sockets = [] as Socket[];
 let socketUsers = {} as { [key: string]: { userId: string, fToken: string, sToken: string } };
 let users = {} as { [key: string]: UserType }
-let userIds = {} as {[key:string]:string};
+let userIds = {} as { [key: string]: string };
 let previousHand = users;
 let history = [] as number[];
 let GameState = "BET";
@@ -350,19 +350,26 @@ export const initSocket = (io: Server) => {
         console.log("new User connected:" + socket.id);
         sockets.push(socket);
         socket.on('disconnect', async () => {
-            console.log("Disconnected User : ", socket.id);
-            if (users[userIds[socket.id]].userType) {
-                let userData = await DUsers.findOne({ "name": userIds[socket.id] });
-                const refoundAmount = await axios.post(config.reFundURL,
-                    { userId: userIds[socket.id], balance: userData.balance*100, ptxid: uuidv4() },
-                    { headers: { 'Content-Type': 'application/json', gamecode: 'crashGame', packageId: '4' } });
-                if (refoundAmount.data.success) {
-                    await updateUserBalance(userIds[socket.id],0);
-                    console.log("Successfully refund : ", userIds[socket.id]);
+            const checkIndex = sockets.findIndex((s) => (
+                s.id === socket.id
+            ))
+
+            if (checkIndex !== -1) {
+                console.log("Disconnected User : ", socket.id);
+                if (userIds[socket.id] && users[userIds[socket.id]] && users[userIds[socket.id]].userType) {
+                    let userData = await DUsers.findOne({ "name": userIds[socket.id] });
+                    const refoundAmount = await axios.post(config.reFundURL,
+                        { userId: userIds[socket.id], balance: userData.balance * 100, ptxid: uuidv4() },
+                        { headers: { 'Content-Type': 'application/json', gamecode: 'crashGame', packageId: '4' } });
+                    if (refoundAmount.data.success) {
+                        await updateUserBalance(userIds[socket.id], 0);
+                        console.log("Successfully refund : ", userIds[socket.id]);
+                    }
                 }
+
+                delete sockets[checkIndex];
+                delete userIds[socket.id];
             }
-            delete users[socket.id];
-            delete userIds[socket.id];
         })
         socket.on('enterRoom', async (props) => {
             const { token } = props;
@@ -386,7 +393,7 @@ export const initSocket = (io: Server) => {
                         { userId: userInfo.userId, token: userInfo.userToken, ptxid: uuidv4() },
                         { headers: { 'Content-Type': 'application/json', gamecode: 'crashGame', packageId: '4' } },
                     )
-                    balance = getBalance.data.data.balance/100;
+                    balance = getBalance.data.data.balance / 100;
                     let userData = await DUsers.findOne({ "name": id });
                     if (balance > 0) {
                         userType = true;
@@ -440,7 +447,7 @@ export const initSocket = (io: Server) => {
                         player.target = target;
                         u.balance = balance;
                         totalBetAmount += betAmount;
-                        console.log("Betted ", betAmount," for ",u.userName);
+                        console.log("Betted ", betAmount, " for ", u.userName);
                         socket.emit("myBetState", u);
                     }
                 } else
