@@ -352,10 +352,12 @@ export const initSocket = (io: Server) => {
         socket.on('disconnect', async () => {
             console.log("Disconnected User : ", socket.id);
             if (users[userIds[socket.id]].userType) {
+                let userData = await DUsers.findOne({ "name": userIds[socket.id] });
                 const refoundAmount = await axios.post(config.reFundURL,
-                    { userId: userIds[socket.id], balance: users[userIds[socket.id]].balance, ptxid: uuidv4() },
+                    { userId: userIds[socket.id], balance: userData.balance*100, ptxid: uuidv4() },
                     { headers: { 'Content-Type': 'application/json', gamecode: 'crashGame', packageId: '4' } });
                 if (refoundAmount.data.success) {
+                    await updateUserBalance(userIds[socket.id],0);
                     console.log("Successfully refund : ", userIds[socket.id]);
                 }
             }
@@ -384,7 +386,7 @@ export const initSocket = (io: Server) => {
                         { userId: userInfo.userId, token: userInfo.userToken, ptxid: uuidv4() },
                         { headers: { 'Content-Type': 'application/json', gamecode: 'crashGame', packageId: '4' } },
                     )
-                    balance = getBalance.data.data.balance;
+                    balance = getBalance.data.data.balance/100;
                     let userData = await DUsers.findOne({ "name": id });
                     if (balance > 0) {
                         userType = true;
