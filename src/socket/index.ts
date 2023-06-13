@@ -196,9 +196,13 @@ const gameRun = () => {
                 break;
             case "GAMEEND":
                 if (Date.now() - startTime > GAMEENDTIME) {
-                    for (let i = 0; i < 20; i++) {
+                    let i = 0;
+                    let interval = setInterval(() => {
                         bet(botIds[i]);
-                    }
+                        i++;
+                        if (i > 19)
+                            clearInterval(interval);
+                    },100)
                     startTime = Date.now();
                     GameState = "BET";
                     history.unshift(target);
