@@ -86,25 +86,3 @@ export const yearHistory = async (req: Request, res: Response) => {
         res.json({ status: false });
     }
 }
-
-export const refound = async (req: Request, res: Response) => {
-    try {
-        const { userId } = req.body;
-        let userData = await DUsers.findOne({ "name": userId });
-        if (userData) {
-            const refoundAmount = await axios.post(`http://annie.ihk.vipnps.vip/iGaming/igaming/credit`,
-                { userId: userId, balance: userData.balance, ptxid: uuidv4() },
-                { headers: { 'Content-Type': 'application/json', gamecode: 'crashGame', packageId: '4' } });
-            if (refoundAmount.data.success) {
-                await updateUserBalance(userId, 0);
-                res.status(200).json({ status: true, message: "Successfully refunded" });
-            } else {
-                res.json({ status: false, message: "Server is busy now!" });
-            }
-        } else {
-            res.json({ status: false, message: "Not registered user!" });
-        }
-    } catch (error) {
-        res.json({ status: false, message: "Server is busy now!" });
-    }
-}

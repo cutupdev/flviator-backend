@@ -6,47 +6,73 @@ import { v4 as uuidv4 } from 'uuid';
 import { getTime } from "../math"
 import { DUsers, addHistory, addUser, getBettingAmounts, updateUserBalance } from '../model'
 import { setlog } from '../helper';
-
-
-// const HistoryController = require("../controllers/historyController");
-// const UserController = require("../controllers/userController");
-// const GameController = require("../controllers/gameController");
+import config from "../config.json";
 
 interface UserType {
-    auto: boolean
+    balance: number
+    userType: boolean
+    img: string
+    userName: string
+    bot: boolean
+    socketId: string
+    f: {
+        auto: boolean
+        betted: boolean
+        cashouted: boolean
+        betAmount: number
+        cashAmount: number
+        target: number
+    }
+    s: {
+        auto: boolean
+        betted: boolean
+        cashouted: boolean
+        betAmount: number
+        cashAmount: number
+        target: number
+    }
+}
+
+interface preHandType {
+    img: string
+    userName: string
     betted: boolean
     cashouted: boolean
-    name: string
-    socketId: string
-    bot: boolean
     betAmount: number
     cashAmount: number
     target: number
-    balance: number
-    type: string
-    img: string
-    userType: boolean
 }
 
 const DEFAULT_USER = {
-    betted: false,
-    cashouted: false,
-    auto: false,
-    bot: false,
-    name: '',
-    betAmount: 0,
     balance: 0,
-    cashAmount: 0,
-    target: 0,
+    userType: false,
+    img: '',
+    userName: 'test',
     socketId: '',
-    type: '',
-    img: ''
+    bot: false,
+    f: {
+        auto: false,
+        betted: false,
+        cashouted: false,
+        betAmount: 0,
+        cashAmount: 0,
+        target: 0,
+    },
+    s: {
+        auto: false,
+        betted: false,
+        cashouted: false,
+        betAmount: 0,
+        cashAmount: 0,
+        target: 0,
+    }
 }
 
 let mysocketIo: Server;
 let sockets = [] as Socket[];
-let socketUsers = {} as { [key: string]: string[] };
+let socketUsers = {} as { [key: string]: { userId: string, fToken: string, sToken: string } };
 let users = {} as { [key: string]: UserType }
+let userIds = {} as {[key:string]:string};
 let previousHand = users;
 let history = [] as number[];
 let GameState = "BET";
@@ -57,7 +83,6 @@ let startTime = Date.now();
 let gameTime: number;
 let currentNum: number;
 let currentSecondNum: number;
-let info = [];
 let target: number;
 let RTP = 90;
 let cashoutAmount = 0;
@@ -65,25 +90,6 @@ let totalBetAmount = 0;
 
 let interval: NodeJS.Timer;
 let botIds = [] as string[];
-
-
-
-// const gameInfo = async () => {
-
-//     let gameInfo = await GameController.find();
-
-//     if (gameInfo.length === 0) {
-//         GameController.create({
-//             minBetAmount: 0.1,
-//             maxBetAmount: 1000
-//         })
-//     }
-
-// }
-
-// gameInfo();
-
-
 
 const initBots = () => {
     for (var i = 0; i < 20; i++) {
@@ -126,15 +132,53 @@ const gameRun = () => {
                     cashoutAmount = 0;
                     startTime = Date.now();
                     for (const k in users) {
-                        const i = users[k]
+                        const i = users[k];
                         if (!i.bot) {
-                            if (i.betted || i.cashouted) {
-                                await addHistory(i.name, i.betAmount, i.target, i.cashouted)
+                            let orders = [];
+                            if (i.f.betted || i.f.cashouted) {
+                                await addHistory(i.userName, i.f.betAmount, i.f.target, i.f.cashouted)
                             }
-                            i.betted = false;
-                            i.cashouted = false;
-                            i.betAmount = 0;
-                            i.cashAmount = 0;
+                            if (i.userType && i.f.betted && !i.f.cashouted) {
+                                let time = new Date().getTime();
+                                orders.push({
+                                    'packageId': 4,
+                                    'userId': userIds[i.socketId],
+                                    'odds': '0',
+                                    'wonAmount': '0',
+                                    'betAmount': i.f.betAmount,
+                                    'status': 0,
+                                    'timestamp': time
+                                })
+                            }
+                            i.f.betted = false;
+                            i.f.cashouted = false;
+                            i.f.betAmount = 0;
+                            i.f.cashAmount = 0;
+                            if (i.s.betted || i.s.cashouted) {
+                                await addHistory(i.userName, i.s.betAmount, i.s.target, i.s.cashouted)
+                            }
+                            if (i.userType && i.s.betted && !i.s.cashouted) {
+                                let time = new Date().getTime();
+                                orders.push({
+                                    'packageId': 4,
+                                    'userId': userIds[i.socketId],
+                                    'odds': '0',
+                                    'wonAmount': '0',
+                                    'betAmount': i.s.betAmount,
+                                    'status': 0,
+                                    'timestamp': time
+                                })
+                            }
+                            i.s.betted = false;
+                            i.s.cashouted = false;
+                            i.s.betAmount = 0;
+                            i.s.cashAmount = 0;
+                            await axios.post(
+                                config.orderURL,
+                                {
+                                    ptxid: uuidv4(),
+                                    iGamingOrders: orders
+                                });
                             sockets.map((socket) => {
                                 if (socket.id === i.socketId) {
                                     socket.emit("finishGame", i);
@@ -143,9 +187,8 @@ const gameRun = () => {
                         }
                     }
                     botIds.map((item) => {
-                        users[item] = { ...DEFAULT_USER, bot: true, auto: true, userType: false }
+                        users[item] = { ...DEFAULT_USER, bot: true, userType: false }
                     })
-                    sendInfo();
                 }
                 break;
             case "GAMEEND":
@@ -155,7 +198,6 @@ const gameRun = () => {
                     }
                     startTime = Date.now();
                     GameState = "BET";
-                    info = [];
                     history.unshift(target);
                     mysocketIo.emit("history", history);
                 }
@@ -164,18 +206,30 @@ const gameRun = () => {
     }, 20)
 }
 
+gameRun();
+
 setInterval(() => {
     if (GameState === "PLAYING") {
-        const _bots = botIds.filter(k => users[k] && users[k].target <= currentNum && users[k].betted)
+        let _bots = botIds.filter(k => users[k] && users[k].f.target <= currentNum && users[k].f.betted)
         if (_bots.length) {
             for (let k of _bots) {
-                users[k].cashouted = true;
-                users[k].cashAmount = users[k].target * users[k].betAmount;
-                users[k].betted = false;
+                users[k].f.cashouted = true;
+                users[k].f.cashAmount = users[k].f.target * users[k].f.betAmount;
+                users[k].f.betted = false;
 
-                cashoutAmount = users[k].target * users[k].betAmount;
+                cashoutAmount += users[k].f.target * users[k].f.betAmount;
             }
-            sendInfo()
+        }
+
+        _bots = botIds.filter(k => users[k] && users[k].s.target <= currentNum && users[k].s.betted)
+        if (_bots.length) {
+            for (let k of _bots) {
+                users[k].s.cashouted = true;
+                users[k].s.cashAmount = users[k].s.target * users[k].s.betAmount;
+                users[k].s.betted = false;
+
+                cashoutAmount += users[k].s.target * users[k].s.betAmount;
+            }
         }
     }
 }, 500);
@@ -188,57 +242,101 @@ const getRandom = () => {
     return time;
 }
 
+let num = true;
 const sendInfo = () => {
-    const info = [] as Array<{
-        name: string
-        betAmount: number
-        cashOut: number
-        cashouted: boolean
-        target: number
-        img: string
-    }>
+    if (GameState !== "GAMEEND") {
+        const info = [] as Array<{
+            name: string
+            betAmount: number
+            cashOut: number
+            cashouted: boolean
+            target: number
+            img: string
+        }>
 
-    for (let i in users) {
-        if (users[i] && users[i].betted || users[i].cashouted) {
-            info.push({
-                name: users[i].name,
-                betAmount: users[i].betAmount,
-                cashOut: users[i].cashAmount,
-                cashouted: users[i].cashouted,
-                target: users[i].target,
-                img: users[i].img
-            })
+        for (let i in users) {
+            if (!!users[i]) {
+                let u = users[i];
+                if (u.f.betted || u.f.cashouted) {
+                    info.push({
+                        name: u.userName,
+                        betAmount: u.f.betAmount,
+                        cashOut: u.f.cashAmount,
+                        cashouted: u.f.cashouted,
+                        target: u.f.target,
+                        img: u.img
+                    })
+                }
+
+                if (u.s.betted || u.s.cashouted) {
+                    info.push({
+                        name: u.userName,
+                        betAmount: u.s.betAmount,
+                        cashOut: u.s.cashAmount,
+                        cashouted: u.s.cashouted,
+                        target: u.s.target,
+                        img: u.img
+                    })
+                }
+            }
         }
+        if (info.length) mysocketIo.emit("bettedUserInfo", info);
     }
-    if (info.length) mysocketIo.emit("bettedUserInfo", info);
 }
 
 const sendPreviousHand = () => {
-    let myPreHand = [] as UserType[];
+    let myPreHand = [] as preHandType[];
     for (let i in previousHand) {
-        if (previousHand[i].betted || previousHand[i].cashouted)
-            myPreHand.push(previousHand[i]);
+        let u = previousHand[i];
+        if (u.f.betted || u.f.cashouted) {
+            myPreHand.push({
+                img: u.img,
+                userName: u.userName,
+                betted: u.f.betted,
+                cashouted: u.f.cashouted,
+                betAmount: u.f.betAmount,
+                cashAmount: u.f.cashAmount,
+                target: u.f.target,
+            });
+        }
+        if (u.s.betted || u.s.cashouted) {
+            myPreHand.push({
+                img: u.img,
+                userName: u.userName,
+                betted: u.s.betted,
+                cashouted: u.s.cashouted,
+                betAmount: u.s.betAmount,
+                cashAmount: u.s.cashAmount,
+                target: u.s.target,
+            });
+        }
     }
     mysocketIo.emit("previousHand", myPreHand);
 }
 
 function bet(id: string) {
-    let betAmount = (Math.random() * 1000) + 1
-    let target = (Math.random() * (1 / Math.random() - 0.01)) + 1.01
+    let fbetAmount = (Math.random() * 1000) + 1
+    let sbetAmount = (Math.random() * 1000) + 1
     users[id] = {
         ...DEFAULT_USER,
-        betted: true,
-        cashouted: false,
-        name: id,
-        socketId: id,
-        bot: true,
-        betAmount: betAmount,
-        cashAmount: 0,
-        target: target,
-        userType: false
+        f: {
+            auto: false,
+            betted: true,
+            cashouted: false,
+            betAmount: fbetAmount,
+            cashAmount: 0,
+            target: (Math.random() * (1 / Math.random() - 0.01)) + 1.01,
+        },
+        s: {
+            auto: false,
+            betted: false,
+            cashouted: false,
+            betAmount: sbetAmount,
+            cashAmount: 0,
+            target: (Math.random() * (1 / Math.random() - 0.01)) + 1.01,
+        }
     }
-    totalBetAmount += betAmount;
-    sendInfo();
+    totalBetAmount += fbetAmount;
 }
 
 export const initSocket = (io: Server) => {
@@ -248,191 +346,169 @@ export const initSocket = (io: Server) => {
     mysocketIo = io;
     io.on("connection", async (socket) => {
         console.log("new User connected:" + socket.id);
-        gameRun();
         sockets.push(socket);
-        socketUsers[socket.id] = []
-        // try {
-        socket.on("disconnect", () => {
-            console.log(socketUsers);
-            for (let i = 0; i < socketUsers[socket.id].length; i++) {
-                delete users[socketUsers[socket.id][i]];
+        socket.on('disconnect', async () => {
+            console.log("Disconnected User : ", socket.id);
+            if (users[userIds[socket.id]].userType) {
+                const refoundAmount = await axios.post(config.reFundURL,
+                    { userId: userIds[socket.id], balance: users[userIds[socket.id]].balance, ptxid: uuidv4() },
+                    { headers: { 'Content-Type': 'application/json', gamecode: 'crashGame', packageId: '4' } });
+                if (refoundAmount.data.success) {
+                    console.log("Successfully refund : ", userIds[socket.id]);
+                }
             }
-            delete socketUsers[socket.id];
+            delete users[socket.id];
+            delete userIds[socket.id];
         })
-        socket.on("enterRoom", async (props) => {
-            const { data, sData, token } = props;
-            const betting = await getBettingAmounts()
-            socket.emit("getBetLimits", { max: betting.maxBetAmount, min: betting.minBetAmount });
+        socket.on('enterRoom', async (props) => {
+            const { token } = props;
+            const bettingLimits = await getBettingAmounts();
+            socket.emit('getBetLimits', { max: bettingLimits.maxBetAmount, min: bettingLimits.minBetAmount });
+            let balance = 5000;
+            let id = socket.id;
+            let userName = uuidv4();
+            let userType = false;
+            let img = '';
             if (token !== null && token !== undefined) {
-                const getUserInfo = await axios.post(`http://annie.ihk.vipnps.vip/iGaming/igaming/getUserToken`, { token: token, ptxid: uuidv4() });
+                let tokenSplit = token.split('&');
+                const getUserInfo = await axios.post(config.getUserTokenURL, { token: tokenSplit[0], ptxid: uuidv4() });
                 if (getUserInfo.data.success) {
-                    let user: any = getUserInfo.data.data;
+                    let userInfo: any = getUserInfo.data.data;
+                    id = userInfo.userId;
+                    userName = userInfo.userName;
+                    img = userInfo.avatar;
                     const getBalance = await axios.post(
-                        `http://annie.ihk.vipnps.vip/iGaming/igaming/debit`,
-                        { userId: user.userId, token: user.userToken, ptxid: uuidv4() },
+                        config.getBalanceURL,
+                        { userId: userInfo.userId, token: userInfo.userToken, ptxid: uuidv4() },
                         { headers: { 'Content-Type': 'application/json', gamecode: 'crashGame', packageId: '4' } },
                     )
-                    let balance = getBalance.data.data.balance;
-                    let userData = await DUsers.findOne({ "name": user.userId });
-                    if (balance + userData.balance > 0) {
+                    balance = getBalance.data.data.balance;
+                    let userData = await DUsers.findOne({ "name": id });
+                    if (balance > 0) {
+                        userType = true;
                         if (!userData) {
-                            await addUser(user.userId, balance, user.avatar);
+                            await addUser(userInfo.userId, balance, userInfo.avatar);
                         } else {
-                            await updateUserBalance(user.userId, balance + Number(userData.balance));
-                        }
-                        userData = await DUsers.findOne({ "name": user.userId });
-                        if (userData.balance > 0) {
-                            users[data.token] = {
-                                ...DEFAULT_USER,
-                                name: user.userId,
-                                balance: userData?.balance,
-                                cashAmount: 0,
-                                target: 0,
-                                socketId: socket.id,
-                                type: data.type,
-                                img: userData?.img || "",
-                                userType: true
-                            }
-
-                            users[sData.token] = {
-                                ...DEFAULT_USER,
-                                name: user.userId,
-                                balance: userData?.balance,
-                                cashAmount: 0,
-                                target: 0,
-                                socketId: socket.id,
-                                type: data.type,
-                                img: userData?.img || "",
-                                userType: true
-                            }
-                            socket.emit("myInfo", users[data.token]);
-                        } else {
-                            socket.emit("recharge");
+                            await updateUserBalance(userInfo.userId, balance);
                         }
                     } else {
                         socket.emit("recharge");
+                        return;
                     }
                 }
-            } else {
-                users[data.token] = {
-                    ...DEFAULT_USER,
-                    name: data.myToken,
-                    balance: 5000,
-                    cashAmount: 0,
-                    target: 0,
-                    socketId: socket.id,
-                    type: data.type,
-                    img: "",
-                    userType: false
-                }
-                users[sData.token] = {
-                    ...DEFAULT_USER,
-                    name: data.myToken,
-                    balance: 5000,
-                    cashAmount: 0,
-                    target: 0,
-                    socketId: socket.id,
-                    type: data.type,
-                    img: "",
-                    userType: false
-                }
-                socket.emit("myInfo", users[data.token]);
             }
-            socketUsers[socket.id] = [...socketUsers[socket.id], data.token];
-            sendInfo();
-            mysocketIo.emit("history", history);
+            users[id] = {
+                ...DEFAULT_USER,
+                userType,
+                userName,
+                balance,
+                img,
+                socketId: socket.id
+            }
+            userIds[socket.id] = id;
+            socket.emit('myInfo', users[socket.id]);
+            io.emit('history', history);
         })
-        socket.on("playBet", async (data) => {
+        socket.on('playBet', async (data) => {
+            const { betAmount, target, type, auto } = data;
             if (GameState === "BET") {
-                const u = users[data.token]
-
-                if (u) {
-                    let d = await DUsers.findOne({ name: u.name });
-                    if (!!d) {
-                        const { minBetAmount, maxBetAmount } = await getBettingAmounts()
-                        let balance = d.balance - data.betAmount;
-                        if (data.betAmount >= minBetAmount && data.betAmount <= maxBetAmount) {
-                            if (data.betAmount >= 0) {
-                                totalBetAmount += data.betAmount;
-                                await updateUserBalance(u.name, balance)
-                                u.betAmount = data.betAmount;
-                                u.betted = true;
-                                u.balance = balance;
-                                u.auto = data.auto;
-                                u.target = data.target;
-                                socket.emit("myBetState", u);
-                                sendInfo();
-                            } else {
-                                socket.emit("error", "Your balance is not enough!");
-                            }
+                let u = users[socket.id];
+                let player;
+                if (type === 'f')
+                    player = u.f;
+                else if (type === 's')
+                    player = u.s;
+                if (!!u) {
+                    const { minBetAmount, maxBetAmount } = await getBettingAmounts()
+                    if (betAmount >= minBetAmount && betAmount <= maxBetAmount) {
+                        let balance;
+                        if (u.userType) {
+                            let d = await DUsers.findOne({ name: userIds[socket.id] });
+                            balance = d.balance - betAmount;
+                            await updateUserBalance(userIds[socket.id], balance);
                         } else {
-                            socket.emit("error", "Your bet Amount is not correct");
+                            balance = u.balance - betAmount;
                         }
-                    } else {
-                        setlog("undefined user", u.name)
+                        player.betAmount = betAmount;
+                        player.betted = true;
+                        player.auto = auto;
+                        player.target = target;
+                        u.balance = balance;
+                        totalBetAmount += betAmount;
+                        socket.emit("myBetState", u);
                     }
-                }
+                } else
+                    socket.emit('error', "Undefined User");
             } else {
-                socket.emit("error", "You can't bet. Try again at next round!");
+                socket.emit('error', "You can't bet. Try again at next round!");
             }
         })
-        socket.on("cashOut", async (data) => {
-            const u = users[data.token]
+        socket.on('cashOut', async (data) => {
+            const { type, endTarget } = data;
+            let u = users[socket.id];
+            let player;
+            if (type === 'f')
+                player = u.f
+            else if (type === 's')
+                player = u.s
             if (!!u) {
-                if (!u.cashouted && u.betted) {
-                    if (data.at <= currentSecondNum) {
-                        let d = await DUsers.findOne({ name: u.name });
-                        if (!!d) {
-                            cashoutAmount += data.at * u.betAmount;
-                            let balance = d.balance + data.at * u.betAmount;
-                            await updateUserBalance(u.name, balance)
-                            u.cashouted = true;
-                            u.cashAmount = data.at * u.betAmount;
-                            u.betted = false;
-                            u.balance = balance;
-                            u.target = data.at;
+                if (GameState === "PLAYING") {
+                    if (!player.cashouted && player.betted) {
+                        if (endTarget <= currentSecondNum) {
+                            let balance;
                             if (u.userType) {
+                                let d = await DUsers.findOne({ name: userIds[socket.id] });
+                                balance = d.balance + endTarget * player.betAmount;
+                                await updateUserBalance(userIds[socket.id], balance);
                                 let currentTime = new Date().getTime();
                                 let odds = '';
                                 let status = 0;
-                                if (data.at * u.betAmount / u.betAmount > 1) {
+                                if (data.at * player.betAmount / player.betAmount > 1) {
                                     status = 1;
-                                    odds = (data.at * u.betAmount / u.betAmount).toFixed(2);
+                                    odds = (endTarget * player.betAmount / player.betAmount).toFixed(2);
                                 }
                                 await axios.post(
-                                    'http://annie.ihk.vipnps.vip/iGaming/igaming/orders',
+                                    config.orderURL,
                                     {
                                         ptxid: uuidv4(),
                                         iGamingOrders: [
                                             {
                                                 'packageId': 4,
-                                                'userId': u.name,
+                                                'userId': userIds[socket.id],
                                                 'odds': odds,
-                                                'wonAmount': data.at * u.betAmount,
-                                                'betAmount': u.betAmount,
+                                                'wonAmount': endTarget * player.betAmount,
+                                                'betAmount': player.betAmount,
                                                 'status': status,
                                                 'timestamp': currentTime
                                             }
                                         ]
                                     });
+                            } else {
+                                balance = u.balance + endTarget * player.betAmount;
                             }
+                            player.cashouted = true;
+                            player.cashAmount = endTarget * player.betAmount;
+                            player.betted = false;
+                            player.target = endTarget;
+                            u.balance = balance;
+                            cashoutAmount += endTarget * player.betAmount;
                             socket.emit("finishGame", u);
-                            socket.emit("success", `Successfully CashOuted ${Number(u.cashAmount).toFixed(2)}`);
-                            sendInfo();
+                            socket.emit("success", `Successfully CashOuted ${Number(player.cashAmount).toFixed(2)}`);
                         } else {
-                            setlog("undefined user", u.name)
+                            socket.emit("error", "You can't cash out!");
                         }
                     }
-                }
-            } else {
-                setlog("undefined user", data.token)
-            }
-
+                } else
+                    socket.emit('error', "You can't cash out!");
+            } else
+                socket.emit('error', 'Undefined User');
         })
+
         setInterval(() => {
             const time = Date.now() - startTime;
-            io.emit("gameState", { currentNum, currentSecondNum, GameState, time });
-        }, 50);
+            io.emit('gameState', { currentNum, currentSecondNum, GameState, time });
+            sendInfo();
+        }, 100)
     });
 
     const closeServer = () => {
