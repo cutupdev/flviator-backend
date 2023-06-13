@@ -367,7 +367,7 @@ export const initSocket = (io: Server) => {
                     }
                 }
 
-                delete sockets[checkIndex];
+                sockets.splice(checkIndex,1);
                 delete userIds[socket.id];
             }
         })
