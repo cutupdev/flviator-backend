@@ -436,8 +436,13 @@ export const initSocket = (io: Server) => {
                         let balance;
                         if (u.userType) {
                             let d = await DUsers.findOne({ name: userIds[socket.id] });
-                            balance = d.balance - betAmount;
-                            await updateUserBalance(userIds[socket.id], balance);
+                            if (d.balance - betAmount >= 0) {
+                                balance = d.balance - betAmount;
+                                await updateUserBalance(userIds[socket.id], balance);
+                            } else {
+                                socket.emit('error', "Your balance is not enough");
+                                return;
+                            }
                         } else {
                             balance = u.balance - betAmount;
                         }
