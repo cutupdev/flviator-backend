@@ -175,12 +175,13 @@ const gameRun = () => {
                             i.s.betAmount = 0;
                             i.s.cashAmount = 0;
                             if (orders.length > 0) {
-                                await axios.post(
+                                let sendOrders = await axios.post(
                                     config.orderURL,
                                     {
                                         ptxid: uuidv4(),
                                         iGamingOrders: orders
                                     });
+                                console.log(sendOrders.data);
                             }
                             sockets.map((socket) => {
                                 if (socket.id === i.socketId) {
