@@ -203,7 +203,7 @@ const gameRun = () => {
                         i++;
                         if (i > 19)
                             clearInterval(interval);
-                    },100)
+                    }, 100)
                     startTime = Date.now();
                     GameState = "BET";
                     history.unshift(target);
@@ -511,7 +511,13 @@ export const initSocket = (io: Server) => {
                                                 'timestamp': currentTime
                                             }
                                         ]
-                                    });
+                                    }, {
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'packageId': '4',
+                                        'gamecode': 'crashGame'
+                                    }
+                                });
                             } else {
                                 balance = u.balance + endTarget * player.betAmount;
                             }
