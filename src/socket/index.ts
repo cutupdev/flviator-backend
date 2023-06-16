@@ -180,6 +180,12 @@ const gameRun = () => {
                                     {
                                         ptxid: uuidv4(),
                                         iGamingOrders: orders
+                                    }, {
+                                        headers: {
+                                            'Content-Type': 'application/json',
+                                            'packageId': '4',
+                                            'gamecode': 'crashGame'
+                                        }
                                     });
                                 console.log(sendOrders.data);
                             }
@@ -496,7 +502,7 @@ export const initSocket = (io: Server) => {
                                     status = 1;
                                     odds = (endTarget * player.betAmount / player.betAmount).toFixed(2);
                                 }
-                                await axios.post(
+                                let sendORder =await axios.post(
                                     config.orderURL,
                                     {
                                         ptxid: uuidv4(),
@@ -518,6 +524,7 @@ export const initSocket = (io: Server) => {
                                         'gamecode': 'crashGame'
                                     }
                                 });
+                                console.log(sendORder.data);
                             } else {
                                 balance = u.balance + endTarget * player.betAmount;
                             }
