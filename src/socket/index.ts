@@ -499,7 +499,7 @@ export const initSocket = (io: Server) => {
                                 let odds = '0';
                                 let status = 0;
                                 let wonAmount = 0;
-                                if (data.at * player.betAmount / player.betAmount > 1) {
+                                if (endTarget > 1) {
                                     status = 1;
                                     odds = (endTarget * player.betAmount / player.betAmount).toFixed(2);
                                     wonAmount = endTarget * player.betAmount;
