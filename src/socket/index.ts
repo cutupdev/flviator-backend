@@ -496,11 +496,13 @@ export const initSocket = (io: Server) => {
                                 balance = d.balance + endTarget * player.betAmount;
                                 await updateUserBalance(userIds[socket.id], balance);
                                 let currentTime = new Date().getTime();
-                                let odds = '';
+                                let odds = '0';
                                 let status = 0;
+                                let wonAmount = 0;
                                 if (data.at * player.betAmount / player.betAmount > 1) {
                                     status = 1;
                                     odds = (endTarget * player.betAmount / player.betAmount).toFixed(2);
+                                    wonAmount = endTarget * player.betAmount;
                                 }
                                 let sendORder =await axios.post(
                                     config.orderURL,
@@ -511,7 +513,7 @@ export const initSocket = (io: Server) => {
                                                 'packageId': 4,
                                                 'userId': userIds[socket.id],
                                                 'odds': odds,
-                                                'wonAmount': endTarget * player.betAmount,
+                                                'wonAmount': endTarget,
                                                 'betAmount': player.betAmount,
                                                 'status': status,
                                                 'timestamp': currentTime
