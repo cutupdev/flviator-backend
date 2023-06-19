@@ -494,6 +494,7 @@ export const initSocket = (io: Server) => {
                             if (u.userType) {
                                 let d = await DUsers.findOne({ name: userIds[socket.id] });
                                 balance = d.balance + endTarget * player.betAmount;
+                                player.cashouted = true;
                                 await updateUserBalance(userIds[socket.id], balance);
                                 let currentTime = new Date().getTime();
                                 let odds = '0';
@@ -529,8 +530,8 @@ export const initSocket = (io: Server) => {
                                 console.log(sendORder.data);
                             } else {
                                 balance = u.balance + endTarget * player.betAmount;
+                                player.cashouted = true;
                             }
-                            player.cashouted = true;
                             player.cashAmount = endTarget * player.betAmount;
                             player.betted = false;
                             player.target = endTarget;
