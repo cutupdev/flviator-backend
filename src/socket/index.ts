@@ -146,7 +146,7 @@ const gameRun = () => {
                                     'userId': userIds[i.socketId],
                                     'odds': '0',
                                     'wonAmount': '0',
-                                    'betAmount': i.f.betAmount,
+                                    'betAmount': (i.f.betAmount*100).toString(),
                                     'status': 0,
                                     'timestamp': time
                                 })
@@ -165,7 +165,7 @@ const gameRun = () => {
                                     'userId': userIds[i.socketId],
                                     'odds': '0',
                                     'wonAmount': '0',
-                                    'betAmount': i.s.betAmount,
+                                    'betAmount': (i.s.betAmount*100).toString(),
                                     'status': 0,
                                     'timestamp': time
                                 })
@@ -503,7 +503,7 @@ export const initSocket = (io: Server) => {
                                 if (endTarget > 1) {
                                     status = 1;
                                     odds = (endTarget * player.betAmount / player.betAmount).toFixed(2);
-                                    wonAmount = endTarget * player.betAmount;
+                                    wonAmount = endTarget * player.betAmount*100;
                                 }
                                 let sendORder =await axios.post(
                                     config.orderURL,
@@ -514,8 +514,8 @@ export const initSocket = (io: Server) => {
                                                 'packageId': 4,
                                                 'userId': userIds[socket.id],
                                                 'odds': odds,
-                                                'wonAmount': endTarget,
-                                                'betAmount': player.betAmount,
+                                                'wonAmount': wonAmount.toString(),
+                                                'betAmount': (player.betAmount*100).toString(),
                                                 'status': status,
                                                 'timestamp': currentTime
                                             }
