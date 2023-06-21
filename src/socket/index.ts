@@ -447,7 +447,7 @@ export const initSocket = (io: Server) => {
                                 balance = d.balance - betAmount;
                                 await updateUserBalance(userIds[socket.id], balance);
                             } else {
-                                socket.emit('error', "Your balance is not enough");
+                                socket.emit('error', {message:"Your balance is not enough",index:type});
                                 return;
                             }
                         } else {
@@ -475,10 +475,10 @@ export const initSocket = (io: Server) => {
                         socket.emit("myBetState", u);
                     }
                 } else {
-                    socket.emit('error', "Undefined User");
+                    socket.emit('error', {message:"Undefined User",index:type});
                 }
             } else {
-                socket.emit('error', "You can't bet. Try again at next round!");
+                socket.emit('error', {message:"You can't bet. Try again at next round!",index:type});
             }
         })
         socket.on('cashOut', async (data) => {
@@ -546,13 +546,13 @@ export const initSocket = (io: Server) => {
                             socket.emit("finishGame", u);
                             socket.emit("success", `Successfully CashOuted ${Number(player.cashAmount).toFixed(2)}`);
                         } else {
-                            socket.emit("error", "You can't cash out!");
+                            socket.emit("error", {message:"You can't cash out!",index:type});
                         }
                     }
                 } else
-                    socket.emit('error', "You can't cash out!");
+                    socket.emit('error', {message:"You can't cash out!",index:type});
             } else
-                socket.emit('error', 'Undefined User');
+                socket.emit('error', {message:'Undefined User',index:type});
         })
 
         setInterval(() => {
