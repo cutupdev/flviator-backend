@@ -469,6 +469,9 @@ export const initSocket = (io: Server) => {
                         users[userIds[socket.id]] = u
                         totalBetAmount += betAmount;
 
+                        console.log("UserId >>", userIds[socket.id], "===>", users[userIds[socket.id]]);
+                        console.log(userIds[socket.id], " betted");
+
                         socket.emit("myBetState", u);
                     }
                 } else {
@@ -480,6 +483,7 @@ export const initSocket = (io: Server) => {
         })
         socket.on('cashOut', async (data) => {
             const { type, endTarget } = data;
+            console.log("Cashout>>", userIds[socket.id], users[userIds[socket.id]]);
             let u = copyObject(users[userIds[socket.id]]);
             let player;
             if (type === 'f')
@@ -538,7 +542,7 @@ export const initSocket = (io: Server) => {
                             u.balance = balance;
                             cashoutAmount += endTarget * player.betAmount;
                             users[userIds[socket.id]] = u;
-                            console.log("Cash outed ", player.cashAmount, " for ", u.userName);
+                            console.log("Cash outed ", player.cashAmount, " for ", u.userName, users[userIds[socket.id]]);
                             socket.emit("finishGame", u);
                             socket.emit("success", `Successfully CashOuted ${Number(player.cashAmount).toFixed(2)}`);
                         } else {
