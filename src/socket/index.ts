@@ -496,9 +496,10 @@ export const initSocket = (io: Server) => {
                         if (endTarget <= currentSecondNum) {
                             let balance;
                             if (u.userType) {
+                                player.cashouted = true;
+                                users[userIds[socket.id]] = u;
                                 let d = await DUsers.findOne({ name: userIds[socket.id] });
                                 balance = d.balance + endTarget * player.betAmount;
-                                player.cashouted = true;
                                 await updateUserBalance(userIds[socket.id], balance);
                                 let currentTime = new Date().getTime();
                                 let odds = '0';
@@ -509,7 +510,7 @@ export const initSocket = (io: Server) => {
                                     odds = (endTarget * player.betAmount / player.betAmount).toFixed(2);
                                     wonAmount = endTarget * player.betAmount*100;
                                 }
-                                let sendORder =await axios.post(
+                                await axios.post(
                                     config.orderURL,
                                     {
                                         ptxid: uuidv4(),
@@ -531,7 +532,6 @@ export const initSocket = (io: Server) => {
                                         'gamecode': 'crashGame'
                                     }
                                 });
-                                console.log(sendORder.data);
                             } else {
                                 balance = u.balance + endTarget * player.betAmount;
                                 player.cashouted = true;
