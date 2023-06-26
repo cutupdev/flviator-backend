@@ -77,6 +77,8 @@ let userIds = {} as { [key: string]: string };
 let previousHand = users;
 let history = [] as number[];
 let GameState = "BET";
+let NextGameState = "READY";
+let NextState = "READY";
 const READYTIME = 1000;
 const BETINGTIME = 5000;
 const GAMEENDTIME = 3000;
@@ -92,11 +94,11 @@ let totalBetAmount = 0;
 let interval: NodeJS.Timer;
 let botIds = [] as string[];
 
-const initBots = () => {
-    for (var i = 0; i < 20; i++) {
-        botIds.push(uniqid());
-    }
-}
+// const initBots = () => {
+//     for (var i = 0; i < 20; i++) {
+//         botIds.push(uniqid());
+//     }
+// }
 const gameRun = () => {
     if (interval) {
         clearInterval(interval);
@@ -107,6 +109,7 @@ const gameRun = () => {
                 if (Date.now() - startTime > BETINGTIME) {
                     currentNum = 1;
                     GameState = "READY";
+                    NextState = "PLAYING";
                     startTime = Date.now();
                     gameTime = getRandom();
                 }
@@ -114,6 +117,7 @@ const gameRun = () => {
             case "READY":
                 if (Date.now() - startTime > READYTIME) {
                     GameState = "PLAYING";
+                    NextState = "GAMEEND";
                     startTime = Date.now();
                 }
                 break;
@@ -129,6 +133,7 @@ const gameRun = () => {
                     currentSecondNum = 0;
                     currentNum = target;
                     GameState = "GAMEEND";
+                    NextState = "BET";
                     totalBetAmount = 0;
                     cashoutAmount = 0;
                     startTime = Date.now();
@@ -196,22 +201,23 @@ const gameRun = () => {
                             })
                         }
                     }
-                    botIds.map((item) => {
-                        users[item] = { ...DEFAULT_USER, bot: true, userType: false }
-                    })
+                    // botIds.map((item) => {
+                    //     users[item] = { ...DEFAULT_USER, bot: true, userType: false }
+                    // })
                 }
                 break;
             case "GAMEEND":
                 if (Date.now() - startTime > GAMEENDTIME) {
                     let i = 0;
                     let interval = setInterval(() => {
-                        bet(botIds[i]);
+                        // bet(botIds[i]);
                         i++;
                         if (i > 19)
                             clearInterval(interval);
                     }, 100)
                     startTime = Date.now();
                     GameState = "BET";
+                    NextState = "READY";
                     history.unshift(target);
                     mysocketIo.emit("history", history);
                 }
@@ -256,46 +262,46 @@ const getRandom = () => {
     return time;
 }
 
-const sendInfo = () => {
-    if (GameState !== "GAMEEND") {
-        const info = [] as Array<{
-            name: string
-            betAmount: number
-            cashOut: number
-            cashouted: boolean
-            target: number
-            img: string
-        }>
+// const sendInfo = () => {
+//     if (GameState !== "GAMEEND") {
+//         const info = [] as Array<{
+//             name: string
+//             betAmount: number
+//             cashOut: number
+//             cashouted: boolean
+//             target: number
+//             img: string
+//         }>
 
-        for (let i in users) {
-            if (!!users[i]) {
-                let u = users[i];
-                if (u.f.betted || u.f.cashouted) {
-                    info.push({
-                        name: u.userName,
-                        betAmount: u.f.betAmount,
-                        cashOut: u.f.cashAmount,
-                        cashouted: u.f.cashouted,
-                        target: u.f.target,
-                        img: u.img
-                    })
-                }
+//         for (let i in users) {
+//             if (!!users[i]) {
+//                 let u = users[i];
+//                 if (u.f.betted || u.f.cashouted) {
+//                     info.push({
+//                         name: u.userName,
+//                         betAmount: u.f.betAmount,
+//                         cashOut: u.f.cashAmount,
+//                         cashouted: u.f.cashouted,
+//                         target: u.f.target,
+//                         img: u.img
+//                     })
+//                 }
 
-                if (u.s.betted || u.s.cashouted) {
-                    info.push({
-                        name: u.userName,
-                        betAmount: u.s.betAmount,
-                        cashOut: u.s.cashAmount,
-                        cashouted: u.s.cashouted,
-                        target: u.s.target,
-                        img: u.img
-                    })
-                }
-            }
-        }
-        if (info.length) mysocketIo.emit("bettedUserInfo", info);
-    }
-}
+//                 if (u.s.betted || u.s.cashouted) {
+//                     info.push({
+//                         name: u.userName,
+//                         betAmount: u.s.betAmount,
+//                         cashOut: u.s.cashAmount,
+//                         cashouted: u.s.cashouted,
+//                         target: u.s.target,
+//                         img: u.img
+//                     })
+//                 }
+//             }
+//         }
+//         if (info.length) mysocketIo.emit("bettedUserInfo", info);
+//     }
+// }
 
 const sendPreviousHand = () => {
     let myPreHand = [] as preHandType[];
@@ -327,34 +333,34 @@ const sendPreviousHand = () => {
     mysocketIo.emit("previousHand", myPreHand);
 }
 
-function bet(id: string) {
-    let fbetAmount = (Math.random() * 1000) + 1
-    let sbetAmount = (Math.random() * 1000) + 1
-    users[id] = {
-        ...DEFAULT_USER,
-        f: {
-            auto: false,
-            betted: true,
-            cashouted: false,
-            betAmount: fbetAmount,
-            cashAmount: 0,
-            target: (Math.random() * (1 / Math.random() - 0.01)) + 1.01,
-        },
-        s: {
-            auto: false,
-            betted: false,
-            cashouted: false,
-            betAmount: sbetAmount,
-            cashAmount: 0,
-            target: (Math.random() * (1 / Math.random() - 0.01)) + 1.01,
-        }
-    }
-    totalBetAmount += fbetAmount;
-}
+// function bet(id: string) {
+//     let fbetAmount = (Math.random() * 1000) + 1
+//     let sbetAmount = (Math.random() * 1000) + 1
+//     users[id] = {
+//         ...DEFAULT_USER,
+//         f: {
+//             auto: false,
+//             betted: true,
+//             cashouted: false,
+//             betAmount: fbetAmount,
+//             cashAmount: 0,
+//             target: (Math.random() * (1 / Math.random() - 0.01)) + 1.01,
+//         },
+//         s: {
+//             auto: false,
+//             betted: false,
+//             cashouted: false,
+//             betAmount: sbetAmount,
+//             cashAmount: 0,
+//             target: (Math.random() * (1 / Math.random() - 0.01)) + 1.01,
+//         }
+//     }
+//     totalBetAmount += fbetAmount;
+// }
 
 export const initSocket = (io: Server) => {
     // create bots
-    initBots()
+    // initBots()
 
     mysocketIo = io;
     io.on("connection", async (socket) => {
@@ -556,9 +562,12 @@ export const initSocket = (io: Server) => {
         })
 
         setInterval(() => {
-            const time = Date.now() - startTime;
-            io.emit('gameState', { currentNum, currentSecondNum, GameState, time });
-            sendInfo();
+            if (GameState === NextGameState) {
+                NextGameState = NextState;
+                const time = Date.now() - startTime;
+                io.emit('gameState', { currentNum, currentSecondNum, GameState, time });
+            }
+            // sendInfo();
         }, 100)
     });
 
