@@ -142,6 +142,7 @@ const gameRun = () => {
                         if (!i.bot) {
                             let orders = [];
                             if (i.f.betted || i.f.cashouted) {
+                                console.log(i.f.target);
                                 await addHistory(i.userName, i.f.betAmount, i.f.target, i.f.cashouted)
                             }
                             if (i.userType && i.f.betted && !i.f.cashouted) {
@@ -151,7 +152,7 @@ const gameRun = () => {
                                     'userId': userIds[i.socketId],
                                     'odds': '0',
                                     'wonAmount': '0',
-                                    'betAmount': (i.f.betAmount*100).toString(),
+                                    'betAmount': (i.f.betAmount * 100).toString(),
                                     'status': 0,
                                     'timestamp': time
                                 })
@@ -170,7 +171,7 @@ const gameRun = () => {
                                     'userId': userIds[i.socketId],
                                     'odds': '0',
                                     'wonAmount': '0',
-                                    'betAmount': (i.s.betAmount*100).toString(),
+                                    'betAmount': (i.s.betAmount * 100).toString(),
                                     'status': 0,
                                     'timestamp': time
                                 })
@@ -186,12 +187,12 @@ const gameRun = () => {
                                         ptxid: uuidv4(),
                                         iGamingOrders: orders
                                     }, {
-                                        headers: {
-                                            'Content-Type': 'application/json',
-                                            'packageId': '4',
-                                            'gamecode': 'crashGame'
-                                        }
-                                    });
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'packageId': '4',
+                                        'gamecode': 'crashGame'
+                                    }
+                                });
                                 console.log(sendOrders.data);
                             }
                             sockets.map((socket) => {
@@ -228,31 +229,31 @@ const gameRun = () => {
 
 gameRun();
 
-setInterval(() => {
-    if (GameState === "PLAYING") {
-        let _bots = botIds.filter(k => users[k] && users[k].f.target <= currentNum && users[k].f.betted)
-        if (_bots.length) {
-            for (let k of _bots) {
-                users[k].f.cashouted = true;
-                users[k].f.cashAmount = users[k].f.target * users[k].f.betAmount;
-                users[k].f.betted = false;
+// setInterval(() => {
+//     if (GameState === "PLAYING") {
+//         let _bots = botIds.filter(k => users[k] && users[k].f.target <= currentNum && users[k].f.betted)
+//         if (_bots.length) {
+//             for (let k of _bots) {
+//                 users[k].f.cashouted = true;
+//                 users[k].f.cashAmount = users[k].f.target * users[k].f.betAmount;
+//                 users[k].f.betted = false;
 
-                cashoutAmount += users[k].f.target * users[k].f.betAmount;
-            }
-        }
+//                 cashoutAmount += users[k].f.target * users[k].f.betAmount;
+//             }
+//         }
 
-        _bots = botIds.filter(k => users[k] && users[k].s.target <= currentNum && users[k].s.betted)
-        if (_bots.length) {
-            for (let k of _bots) {
-                users[k].s.cashouted = true;
-                users[k].s.cashAmount = users[k].s.target * users[k].s.betAmount;
-                users[k].s.betted = false;
+//         _bots = botIds.filter(k => users[k] && users[k].s.target <= currentNum && users[k].s.betted)
+//         if (_bots.length) {
+//             for (let k of _bots) {
+//                 users[k].s.cashouted = true;
+//                 users[k].s.cashAmount = users[k].s.target * users[k].s.betAmount;
+//                 users[k].s.betted = false;
 
-                cashoutAmount += users[k].s.target * users[k].s.betAmount;
-            }
-        }
-    }
-}, 500);
+//                 cashoutAmount += users[k].s.target * users[k].s.betAmount;
+//             }
+//         }
+//     }
+// }, 500);
 
 const getRandom = () => {
     var r = Math.random();
@@ -453,7 +454,7 @@ export const initSocket = (io: Server) => {
                                 balance = d.balance - betAmount;
                                 await updateUserBalance(userIds[socket.id], balance);
                             } else {
-                                socket.emit('error', {message:"Your balance is not enough",index:type});
+                                socket.emit('error', { message: "Your balance is not enough", index: type });
                                 return;
                             }
                         } else {
@@ -481,10 +482,10 @@ export const initSocket = (io: Server) => {
                         socket.emit("myBetState", u);
                     }
                 } else {
-                    socket.emit('error', {message:"Undefined User",index:type});
+                    socket.emit('error', { message: "Undefined User", index: type });
                 }
             } else {
-                socket.emit('error', {message:"You can't bet. Try again at next round!",index:type});
+                socket.emit('error', { message: "You can't bet. Try again at next round!", index: type });
             }
         })
         socket.on('cashOut', async (data) => {
@@ -514,7 +515,7 @@ export const initSocket = (io: Server) => {
                                 if (endTarget > 1) {
                                     status = 1;
                                     odds = (endTarget * player.betAmount / player.betAmount).toFixed(2);
-                                    wonAmount = endTarget * player.betAmount*100;
+                                    wonAmount = endTarget * player.betAmount * 100;
                                 }
                                 await axios.post(
                                     config.orderURL,
@@ -526,7 +527,7 @@ export const initSocket = (io: Server) => {
                                                 'userId': userIds[socket.id],
                                                 'odds': odds,
                                                 'wonAmount': wonAmount.toString(),
-                                                'betAmount': (player.betAmount*100).toString(),
+                                                'betAmount': (player.betAmount * 100).toString(),
                                                 'status': status,
                                                 'timestamp': currentTime
                                             }
@@ -552,21 +553,21 @@ export const initSocket = (io: Server) => {
                             socket.emit("finishGame", u);
                             socket.emit("success", `Successfully CashOuted ${Number(player.cashAmount).toFixed(2)}`);
                         } else {
-                            socket.emit("error", {message:"You can't cash out!",index:type});
+                            socket.emit("error", { message: "You can't cash out!", index: type });
                         }
                     }
                 } else
-                    socket.emit('error', {message:"You can't cash out!",index:type});
+                    socket.emit('error', { message: "You can't cash out!", index: type });
             } else
-                socket.emit('error', {message:'Undefined User',index:type});
+                socket.emit('error', { message: 'Undefined User', index: type });
         })
 
         setInterval(() => {
-            if (GameState === NextGameState) {
-                NextGameState = NextState;
-                const time = Date.now() - startTime;
-                io.emit('gameState', { currentNum, currentSecondNum, GameState, time });
-            }
+            // if (GameState === NextGameState) {
+            // NextGameState = NextState;
+            const time = Date.now() - startTime;
+            io.emit('gameState', { currentNum, currentSecondNum, GameState, time });
+            // }
             // sendInfo();
         }, 100)
     });
