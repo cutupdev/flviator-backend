@@ -35,4 +35,4 @@ export const getPaginationMeta = (page: number, count: number, limit: number) =>
 	return {page, start, last, total, limit};
 }
 
-export const currentTime = () => Math.round(new Date().getTime() / 1000)
+export const currentTime = () => Math.round(new Date().getTime())
