@@ -435,6 +435,7 @@ export const initSocket = (io: Server) => {
                 socketId: socket.id
             }
             userIds[socket.id] = id;
+            console.log(userIds[socket.id]);
             socket.emit('myInfo', users[id]);
             io.emit('history', history);
         })
@@ -477,7 +478,7 @@ export const initSocket = (io: Server) => {
                         totalBetAmount += betAmount;
 
                         console.log("UserId >>", userIds[socket.id], "===>", users[userIds[socket.id]]);
-                        console.log(userIds[socket.id], " betted");
+                        // console.log(userIds[socket.id], " betted");
 
                         socket.emit("myBetState", u);
                     }
@@ -549,7 +550,7 @@ export const initSocket = (io: Server) => {
                             u.balance = balance;
                             cashoutAmount += endTarget * player.betAmount;
                             users[userIds[socket.id]] = u;
-                            console.log("Cash outed ", player.cashAmount, " for ", u.userName, users[userIds[socket.id]]);
+                            // console.log("Cash outed ", player.cashAmount, " for ", u.userName, users[userIds[socket.id]]);
                             socket.emit("finishGame", u);
                             socket.emit("success", `Successfully CashOuted ${Number(player.cashAmount).toFixed(2)}`);
                         } else {
