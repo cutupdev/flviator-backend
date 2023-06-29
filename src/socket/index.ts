@@ -112,6 +112,8 @@ const gameRun = () => {
                     NextState = "PLAYING";
                     startTime = Date.now();
                     gameTime = getRandom();
+                    const time = Date.now() - startTime;
+                    mysocketIo.emit('gameState', { currentNum, currentSecondNum, GameState, time });
                 }
                 break;
             case "READY":
@@ -119,6 +121,8 @@ const gameRun = () => {
                     GameState = "PLAYING";
                     NextState = "GAMEEND";
                     startTime = Date.now();
+                    const time = Date.now() - startTime;
+                    mysocketIo.emit('gameState', { currentNum, currentSecondNum, GameState, time });
                 }
                 break;
             case "PLAYING":
@@ -202,6 +206,9 @@ const gameRun = () => {
                             })
                         }
                     }
+
+                    const time = Date.now() - startTime;
+                    mysocketIo.emit('gameState', { currentNum, currentSecondNum, GameState, time });
                     // botIds.map((item) => {
                     //     users[item] = { ...DEFAULT_USER, bot: true, userType: false }
                     // })
@@ -221,6 +228,8 @@ const gameRun = () => {
                     NextState = "READY";
                     history.unshift(target);
                     mysocketIo.emit("history", history);
+                    const time = Date.now() - startTime;
+                    mysocketIo.emit('gameState', { currentNum, currentSecondNum, GameState, time });
                 }
                 break;
         }
@@ -438,6 +447,8 @@ export const initSocket = (io: Server) => {
             console.log(userIds[socket.id]);
             socket.emit('myInfo', users[id]);
             io.emit('history', history);
+            const time = Date.now() - startTime;
+            io.emit('gameState', { currentNum, currentSecondNum, GameState, time });
         })
         socket.on('playBet', async (data) => {
             const { betAmount, target, type, auto } = data;
@@ -478,7 +489,6 @@ export const initSocket = (io: Server) => {
                         totalBetAmount += betAmount;
 
                         console.log("UserId >>", userIds[socket.id]);
-                        // console.log(userIds[socket.id], " betted");
 
                         socket.emit("myBetState", u);
                     }
@@ -550,7 +560,6 @@ export const initSocket = (io: Server) => {
                             u.balance = balance;
                             cashoutAmount += endTarget * player.betAmount;
                             users[userIds[socket.id]] = u;
-                            // console.log("Cash outed ", player.cashAmount, " for ", u.userName, users[userIds[socket.id]]);
                             socket.emit("finishGame", u);
                             socket.emit("success", `Successfully CashOuted ${Number(player.cashAmount).toFixed(2)}`);
                         } else {
@@ -563,14 +572,14 @@ export const initSocket = (io: Server) => {
                 socket.emit('error', { message: 'Undefined User', index: type });
         })
 
-        setInterval(() => {
-            // if (GameState === NextGameState) {
-            // NextGameState = NextState;
-            const time = Date.now() - startTime;
-            io.emit('gameState', { currentNum, currentSecondNum, GameState, time });
-            // }
-            // sendInfo();
-        }, 100)
+        // setInterval(() => {
+        //     // if (GameState === NextGameState) {
+        //     // NextGameState = NextState;
+        //     const time = Date.now() - startTime;
+        //     io.emit('gameState', { currentNum, currentSecondNum, GameState, time });
+        //     // }
+        //     // sendInfo();
+        // }, 100)
     });
 
     const closeServer = () => {
