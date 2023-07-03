@@ -391,6 +391,8 @@ export const initSocket = (io: Server) => {
                     if (refoundAmount.data.success) {
                         await updateUserBalance(userIds[socket.id], 0);
                         console.log("Successfully refund : ", userIds[socket.id]);
+                    } else {
+                        console.log(refoundAmount.data);
                     }
                 }
 
