@@ -54,6 +54,7 @@ connect().then(async loaded => {
         app.set("io", io);
 
         server.listen({ port: config.port, host: '0.0.0.0' }, () => setlog(`Started HTTP service on port ${config.port}`));
+        console.log("server successfully updated");
     } else {
         setlog('Connection to MongoDB failed', loaded);
     }
