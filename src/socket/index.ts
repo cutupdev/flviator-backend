@@ -343,6 +343,7 @@ const sendPreviousHand = () => {
     mysocketIo.emit("previousHand", myPreHand);
 }
 
+// Bots bet in here.
 // function bet(id: string) {
 //     let fbetAmount = (Math.random() * 1000) + 1
 //     let sbetAmount = (Math.random() * 1000) + 1
@@ -487,7 +488,7 @@ export const initSocket = (io: Server) => {
                             u.s.target = target;
                         }
                         u.balance = balance;
-                        users[userIds[socket.id]] = u
+                        users[userIds[socket.id]] = u;
                         totalBetAmount += betAmount;
 
                         console.log("UserId >>", userIds[socket.id]);
