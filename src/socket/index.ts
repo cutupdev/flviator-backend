@@ -93,6 +93,7 @@ let totalBetAmount = 0;
 
 let interval: NodeJS.Timer;
 let botIds = [] as string[];
+let packageId = '';
 
 // const initBots = () => {
 //     for (var i = 0; i < 20; i++) {
@@ -152,7 +153,7 @@ const gameRun = () => {
                             if (i.userType && i.f.betted && !i.f.cashouted) {
                                 let time = new Date().getTime();
                                 orders.push({
-                                    'packageId': 4,
+                                    'packageId': packageId,
                                     'userId': userIds[i.socketId],
                                     'odds': '0',
                                     'wonAmount': '0',
@@ -171,7 +172,7 @@ const gameRun = () => {
                             if (i.userType && i.s.betted && !i.s.cashouted) {
                                 let time = new Date().getTime();
                                 orders.push({
-                                    'packageId': 4,
+                                    'packageId': packageId,
                                     'userId': userIds[i.socketId],
                                     'odds': '0',
                                     'wonAmount': '0',
@@ -193,7 +194,7 @@ const gameRun = () => {
                                     }, {
                                     headers: {
                                         'Content-Type': 'application/json',
-                                        'packageId': '4',
+                                        'packageId': packageId,
                                         'gamecode': 'crashGame'
                                     }
                                 });
@@ -237,32 +238,6 @@ const gameRun = () => {
 }
 
 gameRun();
-
-// setInterval(() => {
-//     if (GameState === "PLAYING") {
-//         let _bots = botIds.filter(k => users[k] && users[k].f.target <= currentNum && users[k].f.betted)
-//         if (_bots.length) {
-//             for (let k of _bots) {
-//                 users[k].f.cashouted = true;
-//                 users[k].f.cashAmount = users[k].f.target * users[k].f.betAmount;
-//                 users[k].f.betted = false;
-
-//                 cashoutAmount += users[k].f.target * users[k].f.betAmount;
-//             }
-//         }
-
-//         _bots = botIds.filter(k => users[k] && users[k].s.target <= currentNum && users[k].s.betted)
-//         if (_bots.length) {
-//             for (let k of _bots) {
-//                 users[k].s.cashouted = true;
-//                 users[k].s.cashAmount = users[k].s.target * users[k].s.betAmount;
-//                 users[k].s.betted = false;
-
-//                 cashoutAmount += users[k].s.target * users[k].s.betAmount;
-//             }
-//         }
-//     }
-// }, 500);
 
 const getRandom = () => {
     var r = Math.random();
@@ -343,6 +318,33 @@ const sendPreviousHand = () => {
     mysocketIo.emit("previousHand", myPreHand);
 }
 
+//bot cash out here.
+// setInterval(() => {
+//     if (GameState === "PLAYING") {
+//         let _bots = botIds.filter(k => users[k] && users[k].f.target <= currentNum && users[k].f.betted)
+//         if (_bots.length) {
+//             for (let k of _bots) {
+//                 users[k].f.cashouted = true;
+//                 users[k].f.cashAmount = users[k].f.target * users[k].f.betAmount;
+//                 users[k].f.betted = false;
+
+//                 cashoutAmount += users[k].f.target * users[k].f.betAmount;
+//             }
+//         }
+
+//         _bots = botIds.filter(k => users[k] && users[k].s.target <= currentNum && users[k].s.betted)
+//         if (_bots.length) {
+//             for (let k of _bots) {
+//                 users[k].s.cashouted = true;
+//                 users[k].s.cashAmount = users[k].s.target * users[k].s.betAmount;
+//                 users[k].s.betted = false;
+
+//                 cashoutAmount += users[k].s.target * users[k].s.betAmount;
+//             }
+//         }
+//     }
+// }, 500);
+
 // Bots bet in here.
 // function bet(id: string) {
 //     let fbetAmount = (Math.random() * 1000) + 1
@@ -388,7 +390,7 @@ export const initSocket = (io: Server) => {
                     let userData = await DUsers.findOne({ "name": userIds[socket.id] });
                     const refoundAmount = await axios.post(config.reFundURL,
                         { userId: userIds[socket.id], balance: userData.balance * 100, ptxid: uuidv4() },
-                        { headers: { 'Content-Type': 'application/json', gamecode: 'crashGame', packageId: '4' } });
+                        { headers: { 'Content-Type': 'application/json', gamecode: 'crashGame', packageId: packageId } });
                     if (refoundAmount.data.success) {
                         await updateUserBalance(userIds[socket.id], 0);
                         console.log("Successfully refund : ", userIds[socket.id]);
@@ -416,12 +418,13 @@ export const initSocket = (io: Server) => {
                 if (getUserInfo.data.success) {
                     let userInfo: any = getUserInfo.data.data;
                     id = userInfo.userId;
+                    packageId = userInfo.packageId;
                     userName = userInfo.userName;
                     img = userInfo.avatar;
                     const getBalance = await axios.post(
                         config.getBalanceURL,
                         { userId: userInfo.userId, token: userInfo.userToken, ptxid: uuidv4() },
-                        { headers: { 'Content-Type': 'application/json', gamecode: 'crashGame', packageId: '4' } },
+                        { headers: { 'Content-Type': 'application/json', gamecode: 'crashGame', packageId: packageId } },
                     )
                     balance = getBalance.data.data.balance / 100;
                     let userData = await DUsers.findOne({ "name": id });
@@ -537,7 +540,7 @@ export const initSocket = (io: Server) => {
                                         ptxid: uuidv4(),
                                         iGamingOrders: [
                                             {
-                                                'packageId': 4,
+                                                'packageId': packageId,
                                                 'userId': userIds[socket.id],
                                                 'odds': odds,
                                                 'wonAmount': wonAmount.toString(),
@@ -549,7 +552,7 @@ export const initSocket = (io: Server) => {
                                     }, {
                                     headers: {
                                         'Content-Type': 'application/json',
-                                        'packageId': '4',
+                                        'packageId': packageId,
                                         'gamecode': 'crashGame'
                                     }
                                 });
