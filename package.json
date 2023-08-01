@@ -6,7 +6,7 @@
   "main": "server.js",
   "scripts": {
     "start": "nodemon ./src/app.ts",
-    "build": "esbuild src/app.ts --platform=node --bundle --minify --outfile=./dist/app.js ",
+    "build": "esbuild src/app.ts --platform=node --bundle --minify --outfile=./dist/app.js",
     "dev": "ts-node -r tsconfig-paths/register ./src/app.ts"
   },
   "license": "MIT",
