@@ -91,15 +91,16 @@ let RTP = 200;
 let cashoutAmount = 0;
 let totalBetAmount = 0;
 
-let interval: NodeJS.Timer;
+// let interval: NodeJS.Timer;
+let interval: any;
 let botIds = [] as string[];
 let packageId = '';
 
-// const initBots = () => {
-//     for (var i = 0; i < 20; i++) {
-//         botIds.push(uniqid());
-//     }
-// }
+const initBots = () => {
+    for (var i = 0; i < 20; i++) {
+        botIds.push(uniqid());
+    }
+}
 const gameRun = () => {
     if (interval) {
         clearInterval(interval);
@@ -147,7 +148,7 @@ const gameRun = () => {
                         if (!i.bot) {
                             let orders = [];
                             if (i.f.betted || i.f.cashouted) {
-                                console.log(i.f.target);
+                                // console.log(i.f.target);
                                 await addHistory(i.userName, i.f.betAmount, i.f.target, i.f.cashouted)
                             }
                             if (i.userType && i.f.betted && !i.f.cashouted) {
@@ -210,16 +211,16 @@ const gameRun = () => {
 
                     const time = Date.now() - startTime;
                     mysocketIo.emit('gameState', { currentNum, currentSecondNum, GameState, time });
-                    // botIds.map((item) => {
-                    //     users[item] = { ...DEFAULT_USER, bot: true, userType: false }
-                    // })
+                    botIds.map((item) => {
+                        users[item] = { ...DEFAULT_USER, bot: true, userType: false }
+                    })
                 }
                 break;
             case "GAMEEND":
                 if (Date.now() - startTime > GAMEENDTIME) {
                     let i = 0;
                     let interval = setInterval(() => {
-                        // bet(botIds[i]);
+                        bet(botIds[i]);
                         i++;
                         if (i > 19)
                             clearInterval(interval);
@@ -242,51 +243,51 @@ gameRun();
 const getRandom = () => {
     var r = Math.random();
     target = 1 / r;
-    console.log(target);
+    // console.log(target);
     var time = getTime(target);
     return time;
 }
 
-// const sendInfo = () => {
-//     if (GameState !== "GAMEEND") {
-//         const info = [] as Array<{
-//             name: string
-//             betAmount: number
-//             cashOut: number
-//             cashouted: boolean
-//             target: number
-//             img: string
-//         }>
+const sendInfo = () => {
+    if (GameState !== "GAMEEND") {
+        const info = [] as Array<{
+            name: string
+            betAmount: number
+            cashOut: number
+            cashouted: boolean
+            target: number
+            img: string
+        }>
 
-//         for (let i in users) {
-//             if (!!users[i]) {
-//                 let u = users[i];
-//                 if (u.f.betted || u.f.cashouted) {
-//                     info.push({
-//                         name: u.userName,
-//                         betAmount: u.f.betAmount,
-//                         cashOut: u.f.cashAmount,
-//                         cashouted: u.f.cashouted,
-//                         target: u.f.target,
-//                         img: u.img
-//                     })
-//                 }
+        for (let i in users) {
+            if (!!users[i]) {
+                let u = users[i];
+                if (u.f.betted || u.f.cashouted) {
+                    info.push({
+                        name: u.userName,
+                        betAmount: u.f.betAmount,
+                        cashOut: u.f.cashAmount,
+                        cashouted: u.f.cashouted,
+                        target: u.f.target,
+                        img: u.img
+                    })
+                }
 
-//                 if (u.s.betted || u.s.cashouted) {
-//                     info.push({
-//                         name: u.userName,
-//                         betAmount: u.s.betAmount,
-//                         cashOut: u.s.cashAmount,
-//                         cashouted: u.s.cashouted,
-//                         target: u.s.target,
-//                         img: u.img
-//                     })
-//                 }
-//             }
-//         }
-//         if (info.length) mysocketIo.emit("bettedUserInfo", info);
-//     }
-// }
+                if (u.s.betted || u.s.cashouted) {
+                    info.push({
+                        name: u.userName,
+                        betAmount: u.s.betAmount,
+                        cashOut: u.s.cashAmount,
+                        cashouted: u.s.cashouted,
+                        target: u.s.target,
+                        img: u.img
+                    })
+                }
+            }
+        }
+        if (info.length) mysocketIo.emit("bettedUserInfo", info);
+    }
+}
 
 const sendPreviousHand = () => {
     let myPreHand = [] as preHandType[];
@@ -319,61 +320,61 @@ const sendPreviousHand = () => {
 }
 
 //bot cash out here.
-// setInterval(() => {
-//     if (GameState === "PLAYING") {
-//         let _bots = botIds.filter(k => users[k] && users[k].f.target <= currentNum && users[k].f.betted)
-//         if (_bots.length) {
-//             for (let k of _bots) {
-//                 users[k].f.cashouted = true;
-//                 users[k].f.cashAmount = users[k].f.target * users[k].f.betAmount;
-//                 users[k].f.betted = false;
+setInterval(() => {
+    if (GameState === "PLAYING") {
+        let _bots = botIds.filter(k => users[k] && users[k].f.target <= currentNum && users[k].f.betted)
+        if (_bots.length) {
+            for (let k of _bots) {
+                users[k].f.cashouted = true;
+                users[k].f.cashAmount = users[k].f.target * users[k].f.betAmount;
+                users[k].f.betted = false;
 
-//                 cashoutAmount += users[k].f.target * users[k].f.betAmount;
-//             }
-//         }
+                cashoutAmount += users[k].f.target * users[k].f.betAmount;
+            }
+        }
 
-//         _bots = botIds.filter(k => users[k] && users[k].s.target <= currentNum && users[k].s.betted)
-//         if (_bots.length) {
-//             for (let k of _bots) {
-//                 users[k].s.cashouted = true;
-//                 users[k].s.cashAmount = users[k].s.target * users[k].s.betAmount;
-//                 users[k].s.betted = false;
+        _bots = botIds.filter(k => users[k] && users[k].s.target <= currentNum && users[k].s.betted)
+        if (_bots.length) {
+            for (let k of _bots) {
+                users[k].s.cashouted = true;
+                users[k].s.cashAmount = users[k].s.target * users[k].s.betAmount;
+                users[k].s.betted = false;
 
-//                 cashoutAmount += users[k].s.target * users[k].s.betAmount;
-//             }
-//         }
-//     }
-// }, 500);
+                cashoutAmount += users[k].s.target * users[k].s.betAmount;
+            }
+        }
+    }
+}, 500);
 
 // Bots bet in here.
-// function bet(id: string) {
-//     let fbetAmount = (Math.random() * 1000) + 1
-//     let sbetAmount = (Math.random() * 1000) + 1
-//     users[id] = {
-//         ...DEFAULT_USER,
-//         f: {
-//             auto: false,
-//             betted: true,
-//             cashouted: false,
-//             betAmount: fbetAmount,
-//             cashAmount: 0,
-//             target: (Math.random() * (1 / Math.random() - 0.01)) + 1.01,
-//         },
-//         s: {
-//             auto: false,
-//             betted: false,
-//             cashouted: false,
-//             betAmount: sbetAmount,
-//             cashAmount: 0,
-//             target: (Math.random() * (1 / Math.random() - 0.01)) + 1.01,
-//         }
-//     }
-//     totalBetAmount += fbetAmount;
-// }
+function bet(id: string) {
+    let fbetAmount = (Math.random() * 1000) + 1
+    let sbetAmount = (Math.random() * 1000) + 1
+    users[id] = {
+        ...DEFAULT_USER,
+        f: {
+            auto: false,
+            betted: true,
+            cashouted: false,
+            betAmount: fbetAmount,
+            cashAmount: 0,
+            target: (Math.random() * (1 / Math.random() - 0.01)) + 1.01,
+        },
+        s: {
+            auto: false,
+            betted: false,
+            cashouted: false,
+            betAmount: sbetAmount,
+            cashAmount: 0,
+            target: (Math.random() * (1 / Math.random() - 0.01)) + 1.01,
+        }
+    }
+    totalBetAmount += fbetAmount;
+}
 
 export const initSocket = (io: Server) => {
     // create bots
-    // initBots()
+    initBots()
 
     mysocketIo = io;
     io.on("connection", async (socket) => {
@@ -578,14 +579,14 @@ export const initSocket = (io: Server) => {
                 socket.emit('error', { message: 'Undefined User', index: type });
         })
 
-        // setInterval(() => {
-        //     // if (GameState === NextGameState) {
-        //     // NextGameState = NextState;
-        //     const time = Date.now() - startTime;
-        //     io.emit('gameState', { currentNum, currentSecondNum, GameState, time });
-        //     // }
-        //     // sendInfo();
-        // }, 100)
+        setInterval(() => {
+            // if (GameState === NextGameState) {
+            // NextGameState = NextState;
+            const time = Date.now() - startTime;
+            io.emit('gameState', { currentNum, currentSecondNum, GameState, time });
+            // }
+            sendInfo();
+        }, 100)
     });
 
     const closeServer = () => {

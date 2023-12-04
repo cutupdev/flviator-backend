@@ -40,7 +40,7 @@ connect().then(async loaded => {
         setlog('connected to MongoDB')
 
         app.use(cors({ origin: "*" }));
-        app.use(express.urlencoded());
+        app.use(express.urlencoded({ extended: true }));
         // app.use("/api", routers);
         app.use(bodyParser.json({ type: "application/json" }));
         app.use(bodyParser.raw({ type: "application/vnd.custom-type" }));
