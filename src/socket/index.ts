@@ -97,7 +97,7 @@ let botIds = [] as string[];
 let packageId = '';
 
 const initBots = () => {
-    for (var i = 0; i < 20; i++) {
+    for (var i = 0; i < 15; i++) {
         botIds.push(uniqid());
     }
 }
