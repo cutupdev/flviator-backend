@@ -3,16 +3,16 @@ import express from 'express'
 import cors from 'cors'
 import bodyParser from "body-parser";
 import { Server } from 'socket.io'
+import path from 'path';
 
-import config from './config.json'
 import { setlog } from './helper'
 import { connect } from './model'
 import routers from './routers'
 import { initSocket } from './socket'
+import { config } from "dotenv";
 
-// require("socket.io")
-// import { ConnectDatabase } from './config/mongoose'
-// import API = require('./controllers');
+const envUrl = process.env.NODE_ENV ? (process.env.NODE_ENV === 'development' ? '../.env.development' : '.env.' + process.env.NODE_ENV) : '.env.test';
+config({ path: path.join(__dirname, envUrl) });
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 process.on("uncaughtException", (error) => setlog('exception', error));
@@ -29,7 +29,7 @@ process.on("unhandledRejection", (error) => setlog('rejection', error));
 //     botIds.push(id);
 // }
 
-// const port = 5000;
+const port = process.env.PORT || 5001;
 const app = express();
 const server = http.createServer(app);
 // const socket = require("./socket/index.js");
@@ -53,7 +53,7 @@ connect().then(async loaded => {
 
         app.set("io", io);
 
-        server.listen({ port: config.port, host: '0.0.0.0' }, () => setlog(`Started HTTP service on port ${config.port}`));
+        server.listen({ port: port, host: '0.0.0.0' }, () => setlog(`Started HTTP service on port ${port}`));
         console.log("server successfully updated");
     } else {
         setlog('Connection to MongoDB failed', loaded);

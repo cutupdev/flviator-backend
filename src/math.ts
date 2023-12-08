@@ -4,7 +4,7 @@ const multipleFunction = (x: number) => {
 export const getTime = (x: number) => {
     let t = 0
     for (t = 0; t <= 100; t += 0.01) {
-        if (x - multipleFunction(t) < 0.01) break;
+        if (x - multipleFunction(t) < 0) break;
     }
     return t;
 }

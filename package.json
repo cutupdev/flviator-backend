@@ -5,8 +5,9 @@
   "description": "The SocketIO testserver for the unity3d socketio package",
   "main": "server.js",
   "scripts": {
-    "start": "nodemon ./src/app.ts",
-    "build": "esbuild src/app.ts --platform=node --bundle --minify --outfile=./dist/app.js",
+    "start": "set NODE_ENV=development&&nodemon ./src/app.ts",
+    "build": "NODE_ENV=test esbuild src/app.ts --platform=node --bundle --minify --outfile=./dist/app.js ",
+    "build:prod": "NODE_ENV=production esbuild src/app.ts --platform=node --bundle --minify --outfile=./dist/app.js ",
     "dev": "ts-node -r tsconfig-paths/register ./src/app.ts"
   },
   "license": "MIT",
@@ -25,6 +26,7 @@
     "express-myconnection": "^1.0.4",
     "express-useragent": "^1.0.15",
     "fs": "0.0.1-security",
+    "jsonwebtoken": "^9.0.2",
     "mongodb": "^5.2.0",
     "mongoose": "^7.0.3",
     "morgan": "^1.10.0",
@@ -39,6 +41,7 @@
     "@types/axios": "^0.14.0",
     "@types/cors": "^2.8.13",
     "@types/express": "^4.17.17",
+    "@types/jsonwebtoken": "^9.0.5",
     "@types/node": "^18.15.11",
     "@types/uniqid": "^5.3.2",
     "esbuild": "^0.17.16",

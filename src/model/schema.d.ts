@@ -1,8 +1,10 @@
 declare interface SchemaUser {
     _id:          number
     name: string
-    balance: number
     img: string
+    userId: string
+    currency: string
+    userBalance: string
     updated: number
     created: number
 }
@@ -15,7 +17,7 @@ declare interface SchemaGame {
 
 declare interface SchemaHistory {
     _id: number
-    name: string
+    userId: number
     betAmount: number
     cashoutAt: number
     cashouted: boolean

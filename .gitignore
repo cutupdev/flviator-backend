@@ -3,4 +3,5 @@ logs/*.log
 dist
 
 .env
+.env.production
 yarn.lock

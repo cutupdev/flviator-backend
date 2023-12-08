@@ -1,10 +1,22 @@
 import { MongoClient } from 'mongodb';
+import path from 'path';
 
 import config from '../config.json'
 import { currentTime, setlog } from '../helper';
 
-const client = new MongoClient('mongodb://127.0.0.1:27017');
-const db = client.db(config.database);
+const envUrl = process.env.NODE_ENV?(process.env.NODE_ENV==='development'?'../../.env.development':'.env.'+process.env.NODE_ENV):'.env.test';
+require('dotenv').config({ path: path.join(__dirname, envUrl) });
+
+const dbUser = process.env.DB_USER || 'app';
+const dbPwd = process.env.DB_PWD || '5uikrEmaEblyTmfa';
+const dbHost = process.env.DB_HOST || '192.168.0.19';
+const dbPort = process.env.DB_PORT || 27017;
+const dbName = process.env.DB_NAME || 'crash';
+
+const mongoURL = process.env.NODE_ENV === 'development'?'mongodb://127.0.0.1:27017':`mongodb://${dbUser}:${dbPwd}@${dbHost}:${dbPort}`;
+
+const client = new MongoClient(mongoURL);
+const db = client.db(dbName);
 export const DEFAULT_GAMEID = 1
 
 export const DUsers = db.collection<SchemaUser>('users');
@@ -45,12 +57,13 @@ export const getBettingAmounts = async () => {
         return { minBetAmount: config.betting.min, maxBetAmount: config.betting.max }
     }
 
+    
 }
-export const addHistory = async (name: string, betAmount: number, cashoutAt: number, cashouted: boolean) => {
+export const addHistory = async (userId: number, betAmount: number, cashoutAt: number, cashouted: boolean) => {
     try {
         await DHistories.insertOne({
             _id: ++lastIds.lastHistoryId,
-            name,
+            userId,
             betAmount,
             cashoutAt,
             cashouted,
@@ -63,14 +76,16 @@ export const addHistory = async (name: string, betAmount: number, cashoutAt: num
     }
 }
 
-export const addUser = async (name: string, balance: number, img: string) => {
+export const addUser = async (name: string, userId: string, img: string, currency: string, userBalance: string) => {
     try {
         const now = currentTime()
         await DUsers.insertOne({
             _id: ++lastIds.lastUserId,
             name,
-            balance,
             img,
+            userId,
+            currency,
+            userBalance,
             updated: now,
             created: now
         })
