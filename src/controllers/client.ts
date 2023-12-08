@@ -10,10 +10,11 @@ import jwt from 'jsonwebtoken';
 const envUrl = process.env.NODE_ENV ? (process.env.NODE_ENV === 'development' ? '../../.env.development' : '.env.' + process.env.NODE_ENV) : '.env.test';
 require('dotenv').config({ path: path.join(__dirname, envUrl) });
 
-const getBalanceUrl = process.env.GET_BALANCE_URL || 'https://api.domain.com/api/balance';
-const betUrl = process.env.BET_URL || 'https://api.domain.com/api/bet';
-const cancelUrl = process.env.ORDER_URL || 'https://api.domain.com/api/cancel';
-const settleUrl = process.env.REFUND_URL || 'https://api.domain.com/api/settle';
+const serverURL = process.env.SERVER_URL || 'http://45.8.22.45';
+const getBalanceUrl = process.env.GET_BALANCE_URL || 'https://crashgame.vkingplays.com/api/getUserInfo';
+const betUrl = process.env.BET_URL || 'https://crashgame.vkingplays.com/api/placeBet';
+const cancelUrl = process.env.ORDER_URL || 'https://crashgame.vkingplays.com/api/cancel';
+const cashoutUrl = process.env.CASHOUT_URL || 'https://crashgame.vkingplays.com/api/cashout';
 const secret = process.env.JWT_SECRET || `R2'3.D<%J"xfW]Cyd7XqS9`;
 
 
@@ -22,6 +23,8 @@ const secret = process.env.JWT_SECRET || `R2'3.D<%J"xfW]Cyd7XqS9`;
 // var decoded = jwt.verify(jwtToken, 'isthissecret123?');
 
 // console.log('decoded', decoded)
+
+// eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxMjMiLCJpYXQiOjE3MDIwNDAxMzIsImV4cCI6MTcwMjA0MzczMn0.7OX2ddbOlmuU0LWHAqEnJX9y8gAYeTezhCg8iWdfgeM
 
 export const getUserSession = async (req: Request, res: Response) => {
     try {
@@ -33,13 +36,13 @@ export const getUserSession = async (req: Request, res: Response) => {
             console.log('add-user', userId, userBalance)
         }
 
-
         var token = jwt.sign({ userId }, secret, { expiresIn: '1h' });
-        console.log(token);
 
         return {
             status: true,
-            data: { token }
+            data: {
+                gameURL: `${serverURL}:3006/?cert=${token}`
+            }
         };
 
     } catch (err) {
@@ -48,12 +51,11 @@ export const getUserSession = async (req: Request, res: Response) => {
     }
 }
 
-export const getUserInfo = async (token: string) => {
+export const getUserInfo = async (userId: string) => {
     try {
         const resData = await axios.post(getBalanceUrl, {
             gameCode: 'Crash',
-            // token: testToken
-            token
+            userId
         })
         console.log(resData)
         const _data = resData.data.data;
@@ -100,15 +102,14 @@ const makeTestUser = async () => {
     };
 }
 
-export const bet = async (betAmount: number, token: string) => {
+export const bet = async (userId: number, betAmount: number) => {
     try {
         const orderNo = Date.now() + Math.floor(Math.random() * 1000);
         const resData = await axios.post(betUrl, {
             gameCode: 'Crash',
             orderNo,
-            amount: betAmount,
-            // token: testToken
-            token
+            betAmount,
+            userId
         })
         const _data = resData.data.data;
         if (!resData.data.success) {
@@ -132,14 +133,15 @@ export const bet = async (betAmount: number, token: string) => {
     }
 }
 
-export const settle = async (orderNo: number, balance: number, token: string) => {
+export const cashout = async (userId: string, orderNo: number, cashoutPoint: string, amount: number) => {
     try {
-        const resData = await axios.post(settleUrl, {
+        const resData = await axios.post(cashoutUrl, {
             gameCode: 'Crash',
-            orderNo,
-            amount: balance,
-            // token: testToken
-            token
+            betId: orderNo,
+            currency: "INR",
+            userId,
+            cashoutPoint,
+            amount,
         })
         const _data = resData.data.data;
         if (!resData.data.success) {

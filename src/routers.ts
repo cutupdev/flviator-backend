@@ -1,9 +1,10 @@
 import express from 'express'
-import { getGameInfo, myInfo, updateGameInfo, dayHistory, monthHistory, yearHistory} from './controllers/client';
+import { getGameInfo, myInfo, updateGameInfo, dayHistory, monthHistory, yearHistory, getUserSession} from './controllers/client';
 import { totalHistory, totalUsers } from './controllers/admin';
 
 const router = express.Router();
 
+router.get('/get-user-session', getUserSession);
 
 router.get('/get-total-history', totalHistory);
 router.get('/get-day-history', dayHistory);

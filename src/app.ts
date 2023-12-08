@@ -46,6 +46,18 @@ connect().then(async loaded => {
         app.use(bodyParser.raw({ type: "application/vnd.custom-type" }));
         app.use(bodyParser.text({ type: "text/html" }));
         app.use("/api", routers);
+        // app.get("/", (req, res) => {
+        //     try {
+        //         var jwtToken = req.query.cert;
+
+        //         var decoded = jwt.verify(`${jwtToken}`, secret);
+
+        //         console.log('decoded', decoded)
+        //         res.sendFile(__dirname + "/build/index.html");
+        //     } catch (error) {
+        //         return res.status(301).send("User token is invalid");
+        //     }
+        // });
         app.get("*", (req, res) => res.sendFile(__dirname + "/build/index.html"));
 
         const io = new Server(server, { cors: { origin: "*", methods: ["GET", "POST"] } });
