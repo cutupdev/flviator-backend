@@ -70,12 +70,17 @@ export const getUserInfo = async (userId: string) => {
             }
             // return await makeTestUser();
         }
-        
-        const userData = await DUsers.findOne({ "userId": userId });
 
         console.log("_data", _data)
+
+        const userData = await DUsers.findOneAndUpdate({ "userId": userId }, {
+            name: _data.username,
+            img: _data.avatar,
+            currency: _data.currency,
+            balance: _data.balance,
+        });
         console.log("userData1", userData)
-        
+
         if (!userData) {
             await addUser(_data.userName, userId, _data.avatar, _data.currency, _data.balance)
             console.log('add-user', userId, _data.userBalance)
@@ -103,7 +108,7 @@ export const getUserInfo = async (userId: string) => {
 const makeTestUser = async () => {
     const user = await DUsers.findOne({ "userId": "1" });
     if (!user) {
-        await addUser("test-user", "1", "", "INR", "5000")
+        await addUser("test-user", "1", "", "INR", 5000)
     }
     const user1 = await DUsers.findOne({ "userId": "1" });
     return {

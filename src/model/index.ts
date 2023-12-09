@@ -77,7 +77,7 @@ export const addHistory = async (userId: number, betAmount: number, cashoutAt: n
     }
 }
 
-export const addUser = async (name: string, userId: string, img: string, currency: string, userBalance: string) => {
+export const addUser = async (name: string, userId: string, img: string, currency: string, balance: number) => {
     try {
         const now = currentTime()
         await DUsers.insertOne({
@@ -86,7 +86,7 @@ export const addUser = async (name: string, userId: string, img: string, currenc
             img,
             userId,
             currency,
-            userBalance,
+            balance,
             updated: now,
             created: now
         })
