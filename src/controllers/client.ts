@@ -30,7 +30,7 @@ const secret = process.env.JWT_SECRET || `R2'3.D<%J"xfW]Cyd7XqS9`;
 export const getUserSession = async (req: Request, res: Response) => {
     try {
         const { userName, userId, avatar = "", userBalance, currency } = req.body;
-        if (!userId || !userName || !avatar || !userBalance || !currency) return res.status(404).send("invalid paramters");
+        if (!userId || !userName || !userBalance || !currency) return res.status(404).send("invalid paramters");
         const userData = await DUsers.findOne({ "userId": userId });
         if (!userData) {
             await addUser(userName, userId, avatar, currency, userBalance)
