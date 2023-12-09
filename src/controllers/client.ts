@@ -65,6 +65,7 @@ export const getUserInfo = async (userId: string) => {
         })
         const _data = resData.data.data;
         console.log("_data", _data)
+        console.log("resData.resData", resData.data)
         if (!resData.data.success) {
             return {
                 status: false
