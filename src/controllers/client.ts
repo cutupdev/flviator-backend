@@ -29,12 +29,12 @@ const secret = process.env.JWT_SECRET || `R2'3.D<%J"xfW]Cyd7XqS9`;
 
 export const getUserSession = async (req: Request, res: Response) => {
     try {
-        const { userName, userId, avatar = "", userBalance, currency } = req.body;
-        if (!userId || !userName || !userBalance || !currency) return res.status(404).send("invalid paramters");
+        const { userName, userId, avatar = "", balance, currency } = req.body;
+        if (!userId || !userName || !balance || !currency) return res.status(404).send("invalid paramters");
         const userData = await DUsers.findOne({ "userId": userId });
         if (!userData) {
-            await addUser(userName, userId, avatar, currency, userBalance)
-            console.log('add-user', userId, userBalance)
+            await addUser(userName, userId, avatar, currency, balance)
+            console.log('add-user', userId, balance)
         }
 
         var token = jwt.sign({ userId }, secret, { expiresIn: '1h' });
