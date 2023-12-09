@@ -61,7 +61,7 @@ export const getUserInfo = async (userId: string) => {
             },
             data: {
                 gameCode: 'Crash',
-                userId
+                UserID:userId
             }
         })
         console.log("resData", resData)
