@@ -16,7 +16,7 @@ const getBalanceUrl = `${API_URL}${process.env.GET_BALANCE_URL || '/getUserInfo'
 const betUrl = `${API_URL}${process.env.BET_URL || '/placeBet'}`;
 const cancelUrl = `${API_URL}${process.env.ORDER_URL || '/cancel'}`;
 const cashoutUrl = `${API_URL}${process.env.CASHOUT_URL || '/cashout'}`;
-const secret = process.env.JWT_SECRET || `R2'3.D<%J"xfW]Cyd7XqS9`;
+const secret = process.env.JWT_SECRET || `brxJydVrU4agdgSSbnMNMQy01bNE8T5G`;
 
 
 // console.log('jwtToken', jwtToken)
@@ -57,7 +57,6 @@ export const getUserInfo = async (userId: string) => {
     try {
         console.log("get user info called")
         const resData = await axios.post(getBalanceUrl, {
-            gameCode: 'Crash',
             UserID: userId
         }, {
             headers: {

@@ -12,7 +12,7 @@ import config from "../config.json";
 import { copyObject } from '../util';
 
 
-const secret = process.env.JWT_SECRET || `ESd?{Q2M,Z#9f5DH%4VTty`;
+const secret = process.env.JWT_SECRET || `brxJydVrU4agdgSSbnMNMQy01bNE8T5G`;
 
 // const envUrl = process.env.NODE_ENV === 'development' ? '../../.env.development' : '../../.env.production';
 // require('dotenv').config({ path: path.join(__dirname, envUrl) });
