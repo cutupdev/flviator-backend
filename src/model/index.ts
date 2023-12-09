@@ -54,7 +54,7 @@ export const getBettingAmounts = async () => {
         const maxBetAmount = d?.maxBetAmount || config.betting.max;
         return { minBetAmount, maxBetAmount }
     } catch (error) {
-        setlog('addHistory', error)
+        setlog('get betting amounts', error)
         return { minBetAmount: config.betting.min, maxBetAmount: config.betting.max }
     }
 
