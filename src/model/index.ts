@@ -4,7 +4,7 @@ import path from 'path';
 import config from '../config.json'
 import { currentTime, setlog } from '../helper';
 
-const envUrl = process.env.NODE_ENV?(process.env.NODE_ENV==='development'?'../../.env.development':'.env.'+process.env.NODE_ENV):'.env.test';
+const envUrl = process.env.NODE_ENV === 'development' ? '../../.env.development' : '../../.env.production';
 require('dotenv').config({ path: path.join(__dirname, envUrl) });
 
 const dbUser = process.env.DB_USER || 'app';
@@ -13,7 +13,8 @@ const dbHost = process.env.DB_HOST || '192.168.0.19';
 const dbPort = process.env.DB_PORT || 27017;
 const dbName = process.env.DB_NAME || 'crash';
 
-const mongoURL = process.env.NODE_ENV === 'development'?'mongodb://127.0.0.1:27017':`mongodb://${dbUser}:${dbPwd}@${dbHost}:${dbPort}`;
+// const mongoURL = process.env.NODE_ENV === 'development'?'mongodb://127.0.0.1:27017' : `mongodb://${dbUser}:${dbPwd}@${dbHost}:${dbPort}`;
+const mongoURL = 'mongodb://127.0.0.1:27017';
 
 const client = new MongoClient(mongoURL);
 const db = client.db(dbName);
@@ -57,7 +58,7 @@ export const getBettingAmounts = async () => {
         return { minBetAmount: config.betting.min, maxBetAmount: config.betting.max }
     }
 
-    
+
 }
 export const addHistory = async (userId: number, betAmount: number, cashoutAt: number, cashouted: boolean) => {
     try {

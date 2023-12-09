@@ -7,7 +7,7 @@ import path from 'path';
 import jwt from 'jsonwebtoken';
 
 
-const envUrl = process.env.NODE_ENV ? (process.env.NODE_ENV === 'development' ? '../../.env.development' : '.env.' + process.env.NODE_ENV) : '.env.test';
+const envUrl = process.env.NODE_ENV === 'development' ? '../../.env.development' : '../../.env.production';
 require('dotenv').config({ path: path.join(__dirname, envUrl) });
 
 const serverURL = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : process.env.SERVER_URL || 'http://45.8.22.45:3000';

@@ -5,10 +5,11 @@
   "description": "The SocketIO testserver for the unity3d socketio package",
   "main": "server.js",
   "scripts": {
-    "start": "set NODE_ENV=development&&nodemon ./src/app.ts",
+    "dev": "set NODE_ENV=development&&nodemon ./src/app.ts",
+    "start": "set NODE_ENV=production&&nodemon ./src/app.ts",
     "build": "NODE_ENV=test esbuild src/app.ts --platform=node --bundle --minify --outfile=./dist/app.js ",
     "build:prod": "NODE_ENV=production esbuild src/app.ts --platform=node --bundle --minify --outfile=./dist/app.js ",
-    "dev": "ts-node -r tsconfig-paths/register ./src/app.ts"
+    "dev_test": "ts-node -r tsconfig-paths/register ./src/app.ts"
   },
   "license": "MIT",
   "dependencies": {
