@@ -4,8 +4,8 @@ import path from 'path';
 import config from '../config.json'
 import { currentTime, setlog } from '../helper';
 
-const envUrl = process.env.NODE_ENV === 'development' ? '../../.env.development' : '../../.env.production';
-require('dotenv').config({ path: path.join(__dirname, envUrl) });
+// const envUrl = process.env.NODE_ENV === 'development' ? '../../.env.development' : '../../.env.production';
+// require('dotenv').config({ path: path.join(__dirname, envUrl) });
 
 const dbUser = process.env.DB_USER || 'app';
 const dbPwd = process.env.DB_PWD || '5uikrEmaEblyTmfa';
