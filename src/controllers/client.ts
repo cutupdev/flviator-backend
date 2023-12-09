@@ -63,7 +63,6 @@ export const getUserInfo = async (userId: string) => {
                 'Content-Type': 'application/json'
             }
         })
-        console.log("resData", resData)
         const _data = resData.data.data;
         if (!resData.data.success) {
             return {
@@ -77,6 +76,8 @@ export const getUserInfo = async (userId: string) => {
             await addUser(_data.userName, _data.userId, _data.avatar, _data.currency, _data.balance)
             console.log('add-user', _data.userId, _data.userBalance)
         }
+
+        console.log("userData", userData)
 
         return {
             status: true,
