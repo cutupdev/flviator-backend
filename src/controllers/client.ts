@@ -11,10 +11,11 @@ const envUrl = process.env.NODE_ENV ? (process.env.NODE_ENV === 'development' ? 
 require('dotenv').config({ path: path.join(__dirname, envUrl) });
 
 const serverURL = process.env.SERVER_URL || 'http://45.8.22.45';
-const getBalanceUrl = process.env.GET_BALANCE_URL || 'https://crashgame.vkingplays.com/api/getUserInfo';
-const betUrl = process.env.BET_URL || 'https://crashgame.vkingplays.com/api/placeBet';
-const cancelUrl = process.env.ORDER_URL || 'https://crashgame.vkingplays.com/api/cancel';
-const cashoutUrl = process.env.CASHOUT_URL || 'https://crashgame.vkingplays.com/api/cashout';
+const API_URL = process.env.API_URL || 'https://crashgame.vkingplays.com';
+const getBalanceUrl = `${API_URL}${process.env.GET_BALANCE_URL || '/getUserInfo'}`;
+const betUrl = `${API_URL}${process.env.BET_URL || '/placeBet'}`;
+const cancelUrl = `${API_URL}${process.env.ORDER_URL || '/cancel'}`;
+const cashoutUrl = `${API_URL}${process.env.CASHOUT_URL || '/cashout'}`;
 const secret = process.env.JWT_SECRET || `R2'3.D<%J"xfW]Cyd7XqS9`;
 
 
