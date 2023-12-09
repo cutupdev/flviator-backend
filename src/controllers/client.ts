@@ -129,8 +129,8 @@ export const bet = async (userId: string, betAmount: number) => {
             userId,
             betAmount,
         })
+        console.log("resData", resData);
         const _data = resData.data.data;
-        console.log(_data);
         if (!resData.data.status) {
             return {
                 status: false,

@@ -455,7 +455,6 @@ export const initSocket = (io: Server) => {
                 if (token !== null && token !== undefined) {
                     const userInfo = await getUserInfo(userId);
                     if (userInfo.status) {
-                        console.log("userInfo", userInfo);
                         users[socket.id] = {
                             ...DEFAULT_USER,
                             userId: userInfo.data.userId,
@@ -465,7 +464,6 @@ export const initSocket = (io: Server) => {
                             token,
                             socketId: socket.id
                         }
-                        console.log(users[socket.id]);
                         socket.emit('myInfo', users[socket.id]);
                         io.emit('history', history);
                         const time = Date.now() - startTime;
