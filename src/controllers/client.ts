@@ -64,23 +64,22 @@ export const getUserInfo = async (userId: string) => {
             }
         })
         const _data = resData.data.data;
-        console.log("_data", _data)
-        console.log("resData.resData", resData.data)
         if (!resData.data.status) {
             return {
                 status: false
             }
             // return await makeTestUser();
         }
+        
+        const userData = await DUsers.findOne({ "userId": userId });
 
-        const userData = await DUsers.findOne({ "userId": _data.userId });
+        console.log("_data", _data)
         console.log("userData1", userData)
+        
         if (!userData) {
-            await addUser(_data.userName, _data.userId, _data.avatar, _data.currency, _data.balance)
-            console.log('add-user', _data.userId, _data.userBalance)
+            await addUser(_data.userName, userId, _data.avatar, _data.currency, _data.balance)
+            console.log('add-user', userId, _data.userBalance)
         }
-
-        console.log("userData2", userData)
 
         return {
             status: true,
