@@ -74,10 +74,12 @@ export const getUserInfo = async (userId: string) => {
         console.log("_data", _data)
 
         const userData = await DUsers.findOneAndUpdate({ "userId": userId }, {
-            name: _data.username,
-            img: _data.avatar,
-            currency: _data.currency,
-            balance: _data.balance,
+            $set: {
+                name: _data.username,
+                img: _data.avatar,
+                currency: _data.currency,
+                balance: _data.balance,
+            }
         });
         console.log("userData1", userData)
 
