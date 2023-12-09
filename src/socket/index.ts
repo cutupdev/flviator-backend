@@ -465,6 +465,7 @@ export const initSocket = (io: Server) => {
                             token,
                             socketId: socket.id
                         }
+                        console.log(users[socket.id]);
                         socket.emit('myInfo', users[socket.id]);
                         io.emit('history', history);
                         const time = Date.now() - startTime;
