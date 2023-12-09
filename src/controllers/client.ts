@@ -56,10 +56,15 @@ export const getUserSession = async (req: Request, res: Response) => {
 export const getUserInfo = async (userId: string) => {
     try {
         const resData = await axios.post(getBalanceUrl, {
-            gameCode: 'Crash',
-            userId
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            data: {
+                gameCode: 'Crash',
+                userId
+            }
         })
-        console.log(resData)
+        console.log("resData", resData)
         const _data = resData.data.data;
         if (!resData.data.success) {
             return {
