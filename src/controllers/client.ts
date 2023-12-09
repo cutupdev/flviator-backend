@@ -55,7 +55,6 @@ export const getUserSession = async (req: Request, res: Response) => {
 
 export const getUserInfo = async (userId: string) => {
     try {
-        console.log("get user info called")
         const resData = await axios.post(getBalanceUrl, {
             UserID: userId
         }, {
@@ -126,8 +125,12 @@ export const bet = async (userId: string, betAmount: number) => {
     try {
         // const orderNo = Date.now() + Math.floor(Math.random() * 1000);
         const resData = await axios.post(betUrl, {
-            userId,
+            UserID: userId,
             betAmount,
+        }, {
+            headers: {
+                'Content-Type': 'application/json'
+            }
         })
         console.log("resData", resData);
         const _data = resData.data.data;
@@ -161,6 +164,10 @@ export const cashout = async (userId: string, orderNo: number, cashoutPoint: str
             userId,
             cashoutPoint,
             amount,
+        }, {
+            headers: {
+                'Content-Type': 'application/json'
+            }
         })
         const _data = resData.data.data;
         if (!resData.data.success) {
@@ -192,6 +199,10 @@ export const cancelBet = async (orderNo: number, balance: number, token: string)
             amount: balance,
             // token: testToken
             token
+        }, {
+            headers: {
+                'Content-Type': 'application/json'
+            }
         })
         const _data = resData.data.data;
         if (!resData.data.success) {
