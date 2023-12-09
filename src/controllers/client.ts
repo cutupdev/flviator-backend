@@ -124,15 +124,14 @@ const makeTestUser = async () => {
 
 export const bet = async (userId: string, betAmount: number) => {
     try {
-        const orderNo = Date.now() + Math.floor(Math.random() * 1000);
+        // const orderNo = Date.now() + Math.floor(Math.random() * 1000);
         const resData = await axios.post(betUrl, {
-            gameCode: 'Crash',
-            orderNo,
+            userId,
             betAmount,
-            userId
         })
         const _data = resData.data.data;
-        if (!resData.data.success) {
+        console.log(_data);
+        if (!resData.data.status) {
             return {
                 status: false,
                 message: "Service Exception"
