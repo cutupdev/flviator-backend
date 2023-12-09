@@ -42,7 +42,7 @@ export const getUserSession = async (req: Request, res: Response) => {
         res.send({
             status: true,
             data: {
-                gameURL: `${serverURL}:3006/?cert=${token}`
+                gameURL: `${serverURL}:3000/?cert=${token}`
             }
         });
 
