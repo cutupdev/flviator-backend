@@ -18,7 +18,7 @@ const secret = process.env.JWT_SECRET || `brxJydVrU4agdgSSbnMNMQy01bNE8T5G`;
 // require('dotenv').config({ path: path.join(__dirname, envUrl) });
 
 interface UserType {
-    userId: number
+    userId: string
     userName: string
     balance: number
     avatar: string
@@ -57,7 +57,7 @@ interface preHandType {
 }
 
 const DEFAULT_USER = {
-    userId: 0,
+    userId: '0',
     userName: 'test',
     balance: 0,
     avatar: '',

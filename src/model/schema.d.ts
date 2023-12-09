@@ -17,7 +17,7 @@ declare interface SchemaGame {
 
 declare interface SchemaHistory {
     _id: number
-    userId: number
+    userId: string
     betAmount: number
     cashoutAt: number
     cashouted: boolean

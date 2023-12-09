@@ -60,7 +60,7 @@ export const getBettingAmounts = async () => {
 
 
 }
-export const addHistory = async (userId: number, betAmount: number, cashoutAt: number, cashouted: boolean) => {
+export const addHistory = async (userId: string, betAmount: number, cashoutAt: number, cashouted: boolean) => {
     try {
         await DHistories.insertOne({
             _id: ++lastIds.lastHistoryId,

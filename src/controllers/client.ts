@@ -71,8 +71,6 @@ export const getUserInfo = async (userId: string) => {
             // return await makeTestUser();
         }
 
-        console.log("_data", _data)
-
         const userData = await DUsers.findOneAndUpdate({ "userId": userId }, {
             $set: {
                 name: _data.username,
@@ -81,20 +79,20 @@ export const getUserInfo = async (userId: string) => {
                 balance: _data.balance,
             }
         });
-        console.log("userData1", userData)
 
         if (!userData) {
             await addUser(_data.userName, userId, _data.avatar, _data.currency, _data.balance)
-            console.log('add-user', userId, _data.userBalance)
+            console.log('add-user', userId, _data.balance)
         }
 
         return {
             status: true,
             data: {
-                userId: _data.userId,
+                userId: `${userId}`,
                 userName: _data.userName,
+                currency: _data.currency,
                 avatar: _data.avatar,
-                balance: _data.userBalance,
+                balance: _data.balance,
             }
         };
 
@@ -124,7 +122,7 @@ const makeTestUser = async () => {
     };
 }
 
-export const bet = async (userId: number, betAmount: number) => {
+export const bet = async (userId: string, betAmount: number) => {
     try {
         const orderNo = Date.now() + Math.floor(Math.random() * 1000);
         const resData = await axios.post(betUrl, {
@@ -244,7 +242,7 @@ export const updateGameInfo = async (req: Request, res: Response) => {
 
 export const myInfo = async (req: Request, res: Response) => {
     try {
-        let { id } = req.body as { id: number };
+        let { id } = req.body as { id: string };
         if (!id) return res.status(404).send("invalid paramters")
         const data = await DHistories.find({ userId: id }).sort({ date: -1 }).limit(20).toArray();
         res.json({ status: true, data });
