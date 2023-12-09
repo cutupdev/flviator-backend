@@ -39,12 +39,12 @@ export const getUserSession = async (req: Request, res: Response) => {
 
         var token = jwt.sign({ userId }, secret, { expiresIn: '1h' });
 
-        return {
+        res.send({
             status: true,
             data: {
                 gameURL: `${serverURL}:3006/?cert=${token}`
             }
-        };
+        });
 
     } catch (err) {
         console.log(err);
