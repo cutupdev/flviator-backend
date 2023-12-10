@@ -171,9 +171,7 @@ export const cashout = async (userId: string, orderNo: number, cashoutPoint: str
                 'Content-Type': 'application/json'
             }
         })
-        console.log("resData", resData);
-        const _data = resData.data.data;
-        console.log("_data", _data);
+        const _data = resData.data;
         if (!resData.data.success) {
             return {
                 status: false,
@@ -183,8 +181,8 @@ export const cashout = async (userId: string, orderNo: number, cashoutPoint: str
 
         return {
             status: true,
-            balance: _data.amount,
-            orderNo: _data.orderNo
+            balance: _data.updatedBalance,
+            orderNo: orderNo
         };
 
     } catch (err) {
@@ -207,10 +205,8 @@ export const cancelBet = async (orderNo: number, balance: number, token: string)
                 'Content-Type': 'application/json'
             }
         })
-        console.log("resData", resData);
-        const _data = resData.data.data;
-        console.log("_data", _data);
-        if (!resData.data.success) {
+        const _data = resData.data;
+        if (!_data.success) {
             return {
                 status: false,
                 message: "Service Exception"
@@ -219,8 +215,8 @@ export const cancelBet = async (orderNo: number, balance: number, token: string)
 
         return {
             status: true,
-            balance: _data.amount,
-            orderNo: _data.orderNo
+            balance: _data.updatedBalance,
+            orderNo: orderNo
         };
 
     } catch (err) {
