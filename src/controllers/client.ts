@@ -69,7 +69,7 @@ export const getUserInfo = async (userId: string) => {
         return {
             status: true,
             data: {
-                userId: _data.userId,
+                userId: userId,
                 userName: _data.userName,
                 currency: _data.currency,
                 avatar: _data.avatar,
@@ -85,22 +85,22 @@ export const getUserInfo = async (userId: string) => {
     }
 }
 
-const makeTestUser = async () => {
-    const user = await DUsers.findOne({ "userId": "1" });
-    if (!user) {
-        await addUser("test-user", "1", "", "INR", 5000)
-    }
-    const user1 = await DUsers.findOne({ "userId": "1" });
-    return {
-        status: true,
-        data: {
-            userId: user1.userId,
-            userName: "test-user",
-            avatar: "",
-            balance: 500000,
-        }
-    };
-}
+// const makeTestUser = async () => {
+//     const user = await DUsers.findOne({ "userId": "1" });
+//     if (!user) {
+//         await addUser("test-user", "1", "", "INR", 5000)
+//     }
+//     const user1 = await DUsers.findOne({ "userId": "1" });
+//     return {
+//         status: true,
+//         data: {
+//             userId: user1.userId,
+//             userName: "test-user",
+//             avatar: "",
+//             balance: 500000,
+//         }
+//     };
+// }
 
 
 export const bet = async (userId: string, betAmount: number, currency: string) => {
