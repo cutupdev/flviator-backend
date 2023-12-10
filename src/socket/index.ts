@@ -2,14 +2,19 @@ import { Server, Socket } from 'socket.io'
 import crypto from 'crypto';
 import path from 'path';
 import jwt from 'jsonwebtoken';
+import { config } from "dotenv";
 import { getTime } from "../math"
 import { addHistory } from '../model'
 import { getUserInfo, bet, settle, cancelBet } from '../controllers/client';
 
-import config from "../config.json";
+import localconfig from "../config.json";
 import { copyObject } from '../util';
 
 const secret = process.env.JWT_SECRET || `brxJydVrU4agdgSSbnMNMQy01bNE8T5G`;
+
+const envUrl = process.env.NODE_ENV === 'development' ? '../../.env.development' : '../../.env.production';
+config({ path: path.join(__dirname, envUrl) });
+require('dotenv').config({ path: path.join(__dirname, envUrl) });
 
 interface UserType {
     userId: string
@@ -91,7 +96,7 @@ let gameTime: number;
 let currentNum: number;
 let currentSecondNum: number;
 let target: number = -1;
-const RTP = config.RTP;
+const RTP = localconfig.RTP;
 let cashoutAmount = 0;
 let totalBetAmount = 0;
 
@@ -407,7 +412,7 @@ export const initSocket = (io: Server) => {
                 token = jwt.verify(`${token}`, secret);
                 var userId = token.userId;
                 console.log("entered")
-                socket.emit('getBetLimits', { max: config.betting.max, min: config.betting.min });
+                socket.emit('getBetLimits', { max: localconfig.betting.max, min: localconfig.betting.min });
                 if (token !== null && token !== undefined) {
                     const userInfo = await getUserInfo(userId);
                     if (userInfo.status) {
@@ -446,7 +451,7 @@ export const initSocket = (io: Server) => {
                 let u = users[socket.id];
 
                 if (!!u) {
-                    if (betAmount >= config.betting.min && betAmount <= config.betting.max) {
+                    if (betAmount >= localconfig.betting.min && betAmount <= localconfig.betting.max) {
                         if (u.balance - betAmount >= 0) {
                             const betRes = await bet(users[socket.id].userId, betAmount, u.currency);
                             if (betRes.status) {

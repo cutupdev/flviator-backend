@@ -11,7 +11,8 @@ import routers from './routers'
 import { initSocket } from './socket'
 import { config } from "dotenv";
 
-const envUrl = process.env.NODE_ENV === 'development' ? '../../.env.development' : '../../.env.production'; config({ path: path.join(__dirname, envUrl) });
+const envUrl = process.env.NODE_ENV === 'development' ? '../../.env.development' : '../../.env.production'; 
+config({ path: path.join(__dirname, envUrl) });
 require('dotenv').config({ path: path.join(__dirname, envUrl) });
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
