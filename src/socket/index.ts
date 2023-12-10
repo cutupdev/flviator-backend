@@ -21,6 +21,7 @@ interface UserType {
     userId: string
     userName: string
     balance: number
+    currency: string
     avatar: string
     token: string
     bot: boolean
@@ -63,6 +64,7 @@ const DEFAULT_USER = {
     avatar: '',
     token: '',
     img: '',
+    currency: 'INR',
     orderNo: 0,
     socketId: '',
     f: {
@@ -461,6 +463,7 @@ export const initSocket = (io: Server) => {
                             userName: userInfo.data.userName,
                             balance: userInfo.data.balance,
                             avatar: userInfo.data.avatar,
+                            currency: userInfo.data.currency,
                             token,
                             socketId: socket.id
                         }
@@ -494,9 +497,8 @@ export const initSocket = (io: Server) => {
                 if (!!u) {
                     if (betAmount >= config.betting.min && betAmount <= config.betting.max) {
                         if (u.balance - betAmount >= 0) {
-                            const betRes = await bet(users[socket.id].userId, betAmount);
+                            const betRes = await bet(users[socket.id].userId, betAmount, u.currency);
                             if (betRes.status) {
-                                const orderNo = Date.now() + Math.floor(Math.random() * 1000);
                                 if (type === 'f') {
                                     u.f.betAmount = betAmount;
                                     u.f.betted = true;
@@ -509,7 +511,7 @@ export const initSocket = (io: Server) => {
                                     u.s.target = target;
                                 }
                                 u.balance = u.balance - betAmount;
-                                u.orderNo = orderNo;
+                                u.orderNo = betRes.orderNo;
                                 // users[socket.id] = u;
                                 totalBetAmount += betAmount;
                                 if (totalBetAmount > Number.MAX_SAFE_INTEGER) {
@@ -547,7 +549,7 @@ export const initSocket = (io: Server) => {
                 if (GameState === "PLAYING") {
                     if (!player.cashouted && player.betted) {
                         if (endTarget <= currentSecondNum) {
-                            cashout(`${users[socket.id].userId}`, u.orderNo, endTarget, endTarget * player.betAmount);
+                            cashout(`${users[socket.id].userId}`, u.orderNo, endTarget, endTarget * player.betAmount, u.currency);
                             player.cashouted = true;
                             player.cashAmount = endTarget * player.betAmount;
                             player.betted = false;

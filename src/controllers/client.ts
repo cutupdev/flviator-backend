@@ -121,18 +121,19 @@ const makeTestUser = async () => {
     };
 }
 
-export const bet = async (userId: string, betAmount: number) => {
+export const bet = async (userId: string, betAmount: number, currency: string) => {
     try {
-        // const orderNo = Date.now() + Math.floor(Math.random() * 1000);
+        const orderNo = Date.now() + Math.floor(Math.random() * 1000);
         const resData = await axios.post(betUrl, {
             UserID: userId,
             betAmount,
+            betid: orderNo,
+            currency,
         }, {
             headers: {
                 'Content-Type': 'application/json'
             }
         })
-        console.log("resData", resData);
         const _data = resData.data.data;
         if (!resData.data.status) {
             return {
@@ -143,7 +144,7 @@ export const bet = async (userId: string, betAmount: number) => {
 
         return {
             status: true,
-            orderNo: _data.orderNo,
+            orderNo: orderNo,
             balance: _data.amount
         };
 
@@ -155,13 +156,12 @@ export const bet = async (userId: string, betAmount: number) => {
     }
 }
 
-export const cashout = async (userId: string, orderNo: number, cashoutPoint: string, amount: number) => {
+export const cashout = async (userId: string, orderNo: number, cashoutPoint: string, amount: number, currency: string) => {
     try {
         const resData = await axios.post(cashoutUrl, {
-            gameCode: 'Crash',
-            betId: orderNo,
-            currency: "INR",
-            userId,
+            UserID: userId,
+            betid: orderNo,
+            currency,
             cashoutPoint,
             amount,
         }, {
