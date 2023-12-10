@@ -135,10 +135,8 @@ export const bet = async (userId: string, betAmount: number, currency: string) =
             }
         })
 
-        console.log("resData", resData);
-        const _data = resData.data.data;
-        console.log("_data", _data);
-        if (!resData.data.status) {
+        const _data = resData.data;
+        if (!_data.status) {
             return {
                 status: false,
                 message: "Service Exception"
@@ -148,7 +146,7 @@ export const bet = async (userId: string, betAmount: number, currency: string) =
         return {
             status: true,
             orderNo: orderNo,
-            balance: _data.amount
+            balance: _data.updatedBalance
         };
 
     } catch (err) {
