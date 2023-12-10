@@ -546,9 +546,8 @@ export const initSocket = (io: Server) => {
             else if (type === 's')
                 player = u.s
 
-            console.log('u', u)
+            console.log('type', type)
             console.log('player', player)
-            console.log('GameState', GameState)
             if (!!u) {
                 if (GameState === "PLAYING") {
                     if (!player.cashouted && player.betted) {
