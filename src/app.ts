@@ -11,8 +11,8 @@ import routers from './routers'
 import { initSocket } from './socket'
 import { config } from "dotenv";
 
-const envUrl = process.env.NODE_ENV ? (process.env.NODE_ENV === 'development' ? '../.env.development' : '.env.' + process.env.NODE_ENV) : '.env.test';
-config({ path: path.join(__dirname, envUrl) });
+const envUrl = process.env.NODE_ENV === 'development' ? '../../.env.development' : '../../.env.production'; config({ path: path.join(__dirname, envUrl) });
+require('dotenv').config({ path: path.join(__dirname, envUrl) });
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 process.on("uncaughtException", (error) => setlog('exception', error));
@@ -46,18 +46,6 @@ connect().then(async loaded => {
         app.use(bodyParser.raw({ type: "application/vnd.custom-type" }));
         app.use(bodyParser.text({ type: "text/html" }));
         app.use("/api", routers);
-        // app.get("/", (req, res) => {
-        //     try {
-        //         var jwtToken = req.query.cert;
-
-        //         var decoded = jwt.verify(`${jwtToken}`, secret);
-
-        //         console.log('decoded', decoded)
-        //         res.sendFile(__dirname + "/build/index.html");
-        //     } catch (error) {
-        //         return res.status(301).send("User token is invalid");
-        //     }
-        // });
         app.get("*", (req, res) => res.sendFile(__dirname + "/build/index.html"));
 
         const io = new Server(server, { cors: { origin: "*", methods: ["GET", "POST"] } });

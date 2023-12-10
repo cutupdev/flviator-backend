@@ -6,9 +6,8 @@ import axios from "axios";
 import path from 'path';
 import jwt from 'jsonwebtoken';
 
-
-// const envUrl = process.env.NODE_ENV === 'development' ? '../../.env.development' : '../../.env.production';
-// require('dotenv').config({ path: path.join(__dirname, envUrl) });
+const envUrl = process.env.NODE_ENV ? (process.env.NODE_ENV === 'development' ? '../../.env.development' : '.env.' + process.env.NODE_ENV) : '.env.test';
+require('dotenv').config({ path: path.join(__dirname, envUrl) });
 
 const serverURL = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : process.env.SERVER_URL || 'http://45.8.22.45:3000';
 const API_URL = process.env.API_URL || 'https://crashgame.vkingplays.com';
@@ -17,15 +16,6 @@ const betUrl = `${API_URL}${process.env.BET_URL || '/placeBet'}`;
 const cancelUrl = `${API_URL}${process.env.ORDER_URL || '/cancel'}`;
 const cashoutUrl = `${API_URL}${process.env.CASHOUT_URL || '/cashout'}`;
 const secret = process.env.JWT_SECRET || `brxJydVrU4agdgSSbnMNMQy01bNE8T5G`;
-
-
-// console.log('jwtToken', jwtToken)
-
-// var decoded = jwt.verify(jwtToken, 'isthissecret123?');
-
-// console.log('decoded', decoded)
-
-// eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxMjMiLCJpYXQiOjE3MDIwNDAxMzIsImV4cCI6MTcwMjA0MzczMn0.7OX2ddbOlmuU0LWHAqEnJX9y8gAYeTezhCg8iWdfgeM
 
 export const getUserSession = async (req: Request, res: Response) => {
     try {
@@ -70,28 +60,20 @@ export const getUserInfo = async (userId: string) => {
             // return await makeTestUser();
         }
 
-        const userData = await DUsers.findOneAndUpdate({ "userId": userId }, {
-            $set: {
-                name: _data.username,
-                img: _data.avatar,
-                currency: _data.currency,
-                balance: _data.balance,
-            }
-        });
-
+        const userData = await DUsers.findOne({ "userId": _data.userId });
         if (!userData) {
-            await addUser(_data.userName, userId, _data.avatar, _data.currency, _data.balance)
-            console.log('add-user', userId, _data.balance)
+            await addUser(_data.userName, _data.userId, _data.avatar, _data.currency, _data.balance)
+            console.log('add-user', _data.userId, _data.userBalance)
         }
 
         return {
             status: true,
             data: {
-                userId: `${userId}`,
+                userId: _data.userId,
                 userName: _data.userName,
                 currency: _data.currency,
                 avatar: _data.avatar,
-                balance: _data.balance,
+                balance: _data.userBalance,
             }
         };
 
@@ -100,7 +82,6 @@ export const getUserInfo = async (userId: string) => {
         return {
             status: false
         }
-        // return await makeTestUser();
     }
 }
 
@@ -120,6 +101,7 @@ const makeTestUser = async () => {
         }
     };
 }
+
 
 export const bet = async (userId: string, betAmount: number, currency: string) => {
     try {
@@ -150,7 +132,6 @@ export const bet = async (userId: string, betAmount: number, currency: string) =
         };
 
     } catch (err) {
-        console.log("betting error", err)
         return {
             status: false,
             message: "Exception"
@@ -158,7 +139,7 @@ export const bet = async (userId: string, betAmount: number, currency: string) =
     }
 }
 
-export const cashout = async (userId: string, orderNo: number, cashoutPoint: string, amount: number, currency: string) => {
+export const settle = async (userId: string, orderNo: number, cashoutPoint: number, amount: number, currency: string) => {
     try {
         const resData = await axios.post(cashoutUrl, {
             UserID: userId,
@@ -196,17 +177,14 @@ export const cashout = async (userId: string, orderNo: number, cashoutPoint: str
 export const cancelBet = async (orderNo: number, balance: number, token: string) => {
     try {
         const resData = await axios.post(cancelUrl, {
+            gameCode: 'Crash',
             orderNo,
             amount: balance,
             // token: testToken
             token
-        }, {
-            headers: {
-                'Content-Type': 'application/json'
-            }
         })
-        const _data = resData.data;
-        if (!_data.success) {
+        const _data = resData.data.data;
+        if (!resData.data.success) {
             return {
                 status: false,
                 message: "Service Exception"
@@ -215,8 +193,8 @@ export const cancelBet = async (orderNo: number, balance: number, token: string)
 
         return {
             status: true,
-            balance: _data.updatedBalance,
-            orderNo: orderNo
+            balance: _data.amount,
+            orderNo: _data.orderNo
         };
 
     } catch (err) {
@@ -281,7 +259,6 @@ export const dayHistory = async (req: Request, res: Response) => {
         res.json({ status: false });
     }
 }
-
 export const monthHistory = async (req: Request, res: Response) => {
     try {
         let nowDate_ = Date.now();
@@ -294,7 +271,6 @@ export const monthHistory = async (req: Request, res: Response) => {
         res.json({ status: false });
     }
 }
-
 export const yearHistory = async (req: Request, res: Response) => {
     try {
         let nowDate_ = Date.now();
