@@ -58,13 +58,13 @@ export const getUserInfo = async (userId: string) => {
             return {
                 status: false
             }
-            // return await makeTestUser();
         }
+        console.log("_data", _data)
 
         const userData = await DUsers.findOne({ "userId": _data.userId });
         if (!userData) {
             await addUser(_data.userName, _data.userId, _data.avatar, _data.currency, _data.balance)
-            console.log('add-user', _data.userId, _data.userBalance)
+            console.log('add-user', _data.userId, _data.balance)
         }
 
         return {
@@ -74,7 +74,7 @@ export const getUserInfo = async (userId: string) => {
                 userName: _data.userName,
                 currency: _data.currency,
                 avatar: _data.avatar,
-                balance: _data.userBalance,
+                balance: _data.balance,
             }
         };
 
