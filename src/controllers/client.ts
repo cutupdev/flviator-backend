@@ -134,6 +134,7 @@ export const bet = async (userId: string, betAmount: number, currency: string) =
                 'Content-Type': 'application/json'
             }
         })
+
         const _data = resData.data.data;
         if (!resData.data.status) {
             return {
@@ -149,6 +150,7 @@ export const bet = async (userId: string, betAmount: number, currency: string) =
         };
 
     } catch (err) {
+        console.log("betting error", err)
         return {
             status: false,
             message: "Exception"
