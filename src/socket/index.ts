@@ -512,7 +512,7 @@ export const initSocket = (io: Server) => {
                                 }
                                 u.balance = u.balance - betAmount;
                                 u.orderNo = betRes.orderNo;
-                                // users[socket.id] = u;
+                                users[socket.id] = u;
                                 totalBetAmount += betAmount;
                                 if (totalBetAmount > Number.MAX_SAFE_INTEGER) {
                                     totalBetAmount = betAmount;
