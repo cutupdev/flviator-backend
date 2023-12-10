@@ -491,6 +491,7 @@ export const initSocket = (io: Server) => {
         })
         socket.on('playBet', async (data) => {
             const { betAmount, target, type, auto } = data;
+            console.log("betAmount, target, type, auto", betAmount, target, type, auto)
             if (GameState === "BET") {
                 let u = users[socket.id];
 
