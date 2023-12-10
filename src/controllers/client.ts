@@ -136,6 +136,7 @@ export const bet = async (userId: string, betAmount: number, currency: string) =
         })
 
         const _data = resData.data.data;
+        console.log("_data", _data);
         if (!resData.data.status) {
             return {
                 status: false,
@@ -172,6 +173,7 @@ export const cashout = async (userId: string, orderNo: number, cashoutPoint: str
             }
         })
         const _data = resData.data.data;
+        console.log("_data", _data);
         if (!resData.data.success) {
             return {
                 status: false,
@@ -207,6 +209,7 @@ export const cancelBet = async (orderNo: number, balance: number, token: string)
             }
         })
         const _data = resData.data.data;
+        console.log("_data", _data);
         if (!resData.data.success) {
             return {
                 status: false,
