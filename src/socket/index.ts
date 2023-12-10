@@ -540,6 +540,7 @@ export const initSocket = (io: Server) => {
             const { type, endTarget } = data;
             console.log("Cashout>>", users[socket.id].userId);
             let u = users[socket.id];
+            console.log('u', u)
             let player;
             if (type === 'f')
                 player = u.f
