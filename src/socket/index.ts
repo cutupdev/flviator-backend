@@ -540,12 +540,15 @@ export const initSocket = (io: Server) => {
             const { type, endTarget } = data;
             console.log("Cashout>>", users[socket.id].userId);
             let u = users[socket.id];
-            console.log('u', u)
             let player;
             if (type === 'f')
                 player = u.f
             else if (type === 's')
                 player = u.s
+
+            console.log('u', u)
+            console.log('player', player)
+            console.log('GameState', GameState)
             if (!!u) {
                 if (GameState === "PLAYING") {
                     if (!player.cashouted && player.betted) {
