@@ -135,6 +135,7 @@ export const bet = async (userId: string, betAmount: number, currency: string) =
             }
         })
 
+        console.log("resData", resData);
         const _data = resData.data.data;
         console.log("_data", _data);
         if (!resData.data.status) {
@@ -172,6 +173,7 @@ export const cashout = async (userId: string, orderNo: number, cashoutPoint: str
                 'Content-Type': 'application/json'
             }
         })
+        console.log("resData", resData);
         const _data = resData.data.data;
         console.log("_data", _data);
         if (!resData.data.success) {
@@ -198,7 +200,6 @@ export const cashout = async (userId: string, orderNo: number, cashoutPoint: str
 export const cancelBet = async (orderNo: number, balance: number, token: string) => {
     try {
         const resData = await axios.post(cancelUrl, {
-            gameCode: 'Crash',
             orderNo,
             amount: balance,
             // token: testToken
@@ -208,6 +209,7 @@ export const cancelBet = async (orderNo: number, balance: number, token: string)
                 'Content-Type': 'application/json'
             }
         })
+        console.log("resData", resData);
         const _data = resData.data.data;
         console.log("_data", _data);
         if (!resData.data.success) {
