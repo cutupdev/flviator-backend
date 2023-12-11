@@ -57,14 +57,16 @@ export const getUserSession = async (req: Request, res: Response) => {
     }
 }
 
-export const getUserInfo = async (userId: string, token: string) => {
+export const getUserInfo = async (userId: string) => {
     try {
-        const resData = await axios.post(getBalanceUrl, {
+        const sendData = {
             UserID: userId
-        }, {
+        }
+        var hashed = await hashFunc(sendData);
+        const resData = await axios.post(getBalanceUrl, sendData, {
             headers: {
                 'Content-Type': 'application/json',
-                'authentication': `${token}`
+                'authentication': hashed
             }
         })
         const _data = resData.data.data;
@@ -121,14 +123,17 @@ export const getUserInfo = async (userId: string, token: string) => {
 export const bet = async (userId: string, betAmount: number, currency: string) => {
     try {
         const orderNo = Date.now() + Math.floor(Math.random() * 1000);
-        const resData = await axios.post(betUrl, {
+        const sendData = {
             UserID: userId,
             betAmount,
             betid: orderNo,
             currency,
-        }, {
+        }
+        var hashed = await hashFunc(sendData);
+        const resData = await axios.post(betUrl, sendData, {
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'authentication': hashed
             }
         })
 
@@ -156,13 +161,15 @@ export const bet = async (userId: string, betAmount: number, currency: string) =
 
 export const settle = async (userId: string, orderNo: number, cashoutPoint: number, amount: number, currency: string) => {
     try {
-        const resData = await axios.post(cashoutUrl, {
+        const sendData = {
             UserID: userId,
             betid: orderNo,
             currency,
             cashoutPoint,
             amount,
-        }, {
+        }
+        var hashed = await hashFunc(sendData);
+        const resData = await axios.post(cashoutUrl, sendData, {
             headers: {
                 'Content-Type': 'application/json'
             }
@@ -226,7 +233,7 @@ export const getGameInfo = async (req: Request, res: Response) => {
         res.json({ status: true, data });
     } catch (error) {
         setlog("getGameInfo", error)
-        res.send({ status: false });
+        return res.status(500).send("Internal error");
     }
 }
 
@@ -246,10 +253,16 @@ export const updateGameInfo = async (req: Request, res: Response) => {
 
 export const myInfo = async (req: Request, res: Response) => {
     try {
-        let { id } = req.body as { id: string };
-        if (!id) return res.status(404).send("invalid paramters")
-        const data = await DHistories.find({ userId: id }).sort({ date: -1 }).limit(20).toArray();
-        res.json({ status: true, data });
+        const sendData = req.body
+        var hashed = await hashFunc(sendData);
+        if (hashed === req.get('authentication')) {
+            let { id } = req.body as { id: string };
+            if (!id) return res.status(404).send("invalid paramters")
+            const data = await DHistories.find({ userId: id }).sort({ date: -1 }).limit(20).toArray();
+            res.json({ status: true, data });
+        } else {
+            return res.status(401).send("User token is invalid");
+        }
     } catch (error) {
         setlog('myInfo', error)
         res.json({ status: false });
@@ -274,6 +287,7 @@ export const dayHistory = async (req: Request, res: Response) => {
         res.json({ status: false });
     }
 }
+
 export const monthHistory = async (req: Request, res: Response) => {
     try {
         let nowDate_ = Date.now();
@@ -286,6 +300,7 @@ export const monthHistory = async (req: Request, res: Response) => {
         res.json({ status: false });
     }
 }
+
 export const yearHistory = async (req: Request, res: Response) => {
     try {
         let nowDate_ = Date.now();

@@ -420,7 +420,7 @@ export const initSocket = (io: Server) => {
                 console.log("entered")
                 socket.emit('getBetLimits', { max: localconfig.betting.max, min: localconfig.betting.min });
                 if (token !== null && token !== undefined) {
-                    const userInfo = await getUserInfo(userId, token);
+                    const userInfo = await getUserInfo(userId);
                     if (userInfo.status) {
                         users[socket.id] = {
                             ...DEFAULT_USER,
