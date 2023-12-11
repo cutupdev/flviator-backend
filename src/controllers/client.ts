@@ -119,7 +119,6 @@ export const getUserInfo = async (userId: string) => {
 //     };
 // }
 
-
 export const bet = async (userId: string, betAmount: number, currency: string) => {
     try {
         const orderNo = Date.now() + Math.floor(Math.random() * 1000);
@@ -138,7 +137,7 @@ export const bet = async (userId: string, betAmount: number, currency: string) =
             }
         })
 
-        
+
         const _data = resData.data;
         console.log('_data', _data)
         if (!_data.status) {
