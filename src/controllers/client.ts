@@ -137,7 +137,9 @@ export const bet = async (userId: string, betAmount: number, currency: string) =
             }
         })
 
+        
         const _data = resData.data;
+        console.log('_data', _data)
         if (!_data.status) {
             return {
                 status: false,
@@ -154,7 +156,7 @@ export const bet = async (userId: string, betAmount: number, currency: string) =
     } catch (err) {
         return {
             status: false,
-            message: "Exception"
+            message: "Internal Exception"
         };
     }
 }
@@ -191,7 +193,7 @@ export const settle = async (userId: string, orderNo: number, cashoutPoint: numb
     } catch (err) {
         return {
             status: false,
-            message: "Exception"
+            message: "Internal Exception"
         };
     }
 }
@@ -222,7 +224,7 @@ export const cancelBet = async (orderNo: number, balance: number, token: string)
     } catch (err) {
         return {
             status: false,
-            message: "Exception"
+            message: "Internal Exception"
         };
     }
 }
