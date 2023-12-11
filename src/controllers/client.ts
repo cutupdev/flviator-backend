@@ -20,12 +20,19 @@ const cashoutUrl = `${API_URL}${process.env.CASHOUT_URL || '/cashout'}`;
 const secret = process.env.JWT_SECRET || `brxJydVrU4agdgSSbnMNMQy01bNE8T5G`;
 
 export const hashFunc = async (obj: any) => {
+    console.log(obj, secret)
     var hmac = await crypto.createHmac('SHA256', secret)
         .update(JSON.stringify(obj).trim())
         .digest('base64');
 
     return hmac;
 }
+
+const test = async () => {
+    console.log(await hashFunc({"UserID":"Smith1#1678","betAmount":"50","betid":"17022968766566","currency":"INR"}))
+}
+
+test()
 
 export const getUserSession = async (req: Request, res: Response) => {
     try {
@@ -119,7 +126,8 @@ export const getUserInfo = async (userId: string) => {
 //     };
 // }
 
-export const bet = async (userId: string, betAmount: number, currency: string) => {
+
+export const bet = async (userId: string, betAmount: string, currency: string) => {
     try {
         const orderNo = Date.now() + Math.floor(Math.random() * 1000);
         const sendData = {
@@ -128,6 +136,7 @@ export const bet = async (userId: string, betAmount: number, currency: string) =
             betid: orderNo,
             currency,
         }
+        console.log(sendData);
         var hashed = await hashFunc(sendData);
         const resData = await axios.post(betUrl, sendData, {
             headers: {
@@ -160,7 +169,7 @@ export const bet = async (userId: string, betAmount: number, currency: string) =
     }
 }
 
-export const settle = async (userId: string, orderNo: number, cashoutPoint: number, amount: number, currency: string) => {
+export const settle = async (userId: string, orderNo: string, cashoutPoint: string, amount: string, currency: string) => {
     try {
         const sendData = {
             UserID: userId,
@@ -172,7 +181,8 @@ export const settle = async (userId: string, orderNo: number, cashoutPoint: numb
         var hashed = await hashFunc(sendData);
         const resData = await axios.post(cashoutUrl, sendData, {
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'authentication': hashed
             }
         })
         const _data = resData.data;

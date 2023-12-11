@@ -459,7 +459,7 @@ export const initSocket = (io: Server) => {
                 if (!!u) {
                     if (betAmount >= localconfig.betting.min && betAmount <= localconfig.betting.max) {
                         if (u.balance - betAmount >= 0) {
-                            const betRes = await bet(users[socket.id].userId, betAmount, u.currency);
+                            const betRes = await bet(users[socket.id].userId, `${betAmount}`, u.currency);
                             if (betRes.status) {
                                 if (type === 'f') {
                                     u.f.betAmount = betAmount;
@@ -510,7 +510,7 @@ export const initSocket = (io: Server) => {
                 if (GameState === "PLAYING") {
                     if (!player.cashouted && player.betted) {
                         if (endTarget <= currentSecondNum) {
-                            settle(users[socket.id].userId, u.orderNo, endTarget, endTarget * player.betAmount, u.token);
+                            settle(users[socket.id].userId, `${u.orderNo}`, `${endTarget}`, `${endTarget * player.betAmount}`, u.token);
                             player.cashouted = true;
                             player.cashAmount = endTarget * player.betAmount;
                             player.betted = false;
