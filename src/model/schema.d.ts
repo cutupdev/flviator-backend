@@ -5,6 +5,7 @@ declare interface SchemaUser {
     userId: string
     currency: string
     balance: number
+    session_created: number
     updated: number
     created: number
 }

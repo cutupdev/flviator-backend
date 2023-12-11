@@ -5,6 +5,7 @@ import { setlog, getPaginationMeta } from "../helper";
 import axios from "axios";
 import path from 'path';
 import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
 
 const envUrl = process.env.NODE_ENV ? (process.env.NODE_ENV === 'development' ? '../../.env.development' : '.env.' + process.env.NODE_ENV) : '.env.test';
 require('dotenv').config({ path: path.join(__dirname, envUrl) });
@@ -18,39 +19,52 @@ const cancelUrl = `${API_URL}${process.env.ORDER_URL || '/cancel'}`;
 const cashoutUrl = `${API_URL}${process.env.CASHOUT_URL || '/cashout'}`;
 const secret = process.env.JWT_SECRET || `brxJydVrU4agdgSSbnMNMQy01bNE8T5G`;
 
+export const hashFunc = async (obj: any) => {
+    var hmac = await crypto.createHmac('SHA256', secret)
+        .update(JSON.stringify(obj).trim())
+        .digest('base64');
+
+    return hmac;
+}
+
 export const getUserSession = async (req: Request, res: Response) => {
     try {
-        const { userName, userId, avatar = "", balance, currency } = req.body;
-        if (!userId || !userName || !balance || !currency) return res.status(404).send("Invalid paramters");
-        const userData = await DUsers.findOne({ "userId": userId });
-        if (!userData) {
-            await addUser(userName, userId, avatar, currency, balance)
-            console.log('add-user', userId, balance)
-        }
-
-        var token = jwt.sign({ userId }, secret, { expiresIn: '1h' });
-
-        res.send({
-            status: true,
-            data: {
-                gameURL: `${serverURL}/?cert=${token}`
+        var hashed = await hashFunc(req.body);
+        if (hashed === req.get('authentication')) {
+            const { userName, userId, avatar = "", balance, currency } = req.body;
+            if (!userId || !userName || !balance || !currency) return res.status(404).send("Invalid paramters");
+            const userData = await DUsers.findOne({ "userId": userId });
+            if (!userData) {
+                await addUser(userName, userId, avatar, currency, balance)
+                console.log('Added new user', userId, balance)
             }
-        });
+
+            var token = jwt.sign({ userId }, secret, { expiresIn: '1h' });
+
+            res.send({
+                status: true,
+                data: {
+                    gameURL: `${serverURL}/?cert=${token}`
+                }
+            });
+        } else {
+            return res.status(401).send("User token is invalid");
+        }
 
     } catch (err) {
         console.log(err);
-        return res.status(500).send("Something went wrong");
-        // return await makeTestUser();
+        return res.status(500).send("Internal error");
     }
 }
 
-export const getUserInfo = async (userId: string) => {
+export const getUserInfo = async (userId: string, token: string) => {
     try {
         const resData = await axios.post(getBalanceUrl, {
             UserID: userId
         }, {
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'authentication': `${token}`
             }
         })
         const _data = resData.data.data;

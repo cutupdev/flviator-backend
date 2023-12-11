@@ -12,7 +12,7 @@ import { copyObject } from '../util';
 
 const secret = process.env.JWT_SECRET || `brxJydVrU4agdgSSbnMNMQy01bNE8T5G`;
 
-const envUrl = process.env.NODE_ENV === 'development' ? '../../.env.development' : '../../.env.production';
+const envUrl = process.env.NODE_ENV === 'development' ? '../../.env.development' : '../../.env.prod';
 config({ path: path.join(__dirname, envUrl) });
 require('dotenv').config({ path: path.join(__dirname, envUrl) });
 
@@ -384,6 +384,12 @@ export const initSocket = (io: Server) => {
 
     mysocketIo = io;
     io.on("connection", async (socket) => {
+
+        socket.on('sessionCheck', async ({ token, userID, currency, return_url }) => {
+            console.log("1");
+            socket.emit('sessionSecure', { sessionStatus: true })
+        })
+
         console.log("new User connected:" + socket.id);
         sockets.push(socket);
         socket.on('disconnect', async () => {
@@ -414,7 +420,7 @@ export const initSocket = (io: Server) => {
                 console.log("entered")
                 socket.emit('getBetLimits', { max: localconfig.betting.max, min: localconfig.betting.min });
                 if (token !== null && token !== undefined) {
-                    const userInfo = await getUserInfo(userId);
+                    const userInfo = await getUserInfo(userId, token);
                     if (userInfo.status) {
                         users[socket.id] = {
                             ...DEFAULT_USER,

@@ -11,7 +11,7 @@ import routers from './routers'
 import { initSocket } from './socket'
 import { config } from "dotenv";
 
-const envUrl = process.env.NODE_ENV === 'development' ? '../../.env.development' : '../../.env.production'; 
+const envUrl = process.env.NODE_ENV === 'development' ? '../../.env.development' : '../../.env.prod'; 
 config({ path: path.join(__dirname, envUrl) });
 require('dotenv').config({ path: path.join(__dirname, envUrl) });
 
