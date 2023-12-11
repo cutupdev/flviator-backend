@@ -74,7 +74,10 @@ export const GameLaunch = async (req: Request, res: Response) => {
 export const Authentication = async (userId: string) => {
     try {
         const sendData = {
-            UserID: userId
+            UserID: userId,
+            User_Token: "user_token",
+            Session_Token: "session_token",
+            currency: ""
         }
         var hashed = await hashFunc(sendData);
         const resData = await axios.post(getBalanceUrl, sendData, {

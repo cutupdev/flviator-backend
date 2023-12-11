@@ -400,7 +400,7 @@ export const initSocket = (io: Server) => {
 
             if (checkIndex > -1) {
                 console.log("Disconnected User : ", socket.id);
-                if (users[socket.id].orderNo > 0) {
+                if (users[socket.id]?.orderNo > 0) {
                     let betAmount = 0;
                     if (users[socket.id].f.betted && !users[socket.id].f.cashouted) betAmount += users[socket.id].f.betAmount;
                     if (users[socket.id].s.betted && !users[socket.id].s.cashouted) betAmount += users[socket.id].s.betAmount;
