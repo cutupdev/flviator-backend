@@ -129,6 +129,7 @@ export const bet = async (userId: string, betAmount: number, currency: string) =
             betid: orderNo,
             currency,
         }
+        console.log(sendData);
         var hashed = await hashFunc(sendData);
         const resData = await axios.post(betUrl, sendData, {
             headers: {
