@@ -5,7 +5,7 @@ import jwt from 'jsonwebtoken';
 import { config } from "dotenv";
 import { getTime } from "../math"
 import { addHistory } from '../model'
-import { getUserInfo, bet, settle, cancelBet } from '../controllers/client';
+import { Authentication, bet, settle, cancelBet } from '../controllers/client';
 
 import localconfig from "../config.json";
 import { copyObject } from '../util';
@@ -420,7 +420,7 @@ export const initSocket = (io: Server) => {
                 console.log("entered")
                 socket.emit('getBetLimits', { max: localconfig.betting.max, min: localconfig.betting.min });
                 if (token !== null && token !== undefined) {
-                    const userInfo = await getUserInfo(userId);
+                    const userInfo = await Authentication(userId);
                     if (userInfo.status) {
                         users[socket.id] = {
                             ...DEFAULT_USER,

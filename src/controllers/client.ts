@@ -13,14 +13,13 @@ require('dotenv').config({ path: path.join(__dirname, envUrl) });
 // const serverURL = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : process.env.SERVER_URL || 'http://45.8.22.45:3000';
 const serverURL = process.env.SERVER_URL || 'http://45.8.22.45:3000';
 const API_URL = process.env.API_URL || 'https://crashgame.vkingplays.com';
-const getBalanceUrl = `${API_URL}${process.env.GET_BALANCE_URL || '/getUserInfo'}`;
+const getBalanceUrl = `${API_URL}${process.env.GET_BALANCE_URL || '/Authentication'}`;
 const betUrl = `${API_URL}${process.env.BET_URL || '/placeBet'}`;
 const cancelUrl = `${API_URL}${process.env.ORDER_URL || '/cancel'}`;
 const cashoutUrl = `${API_URL}${process.env.CASHOUT_URL || '/cashout'}`;
 const secret = process.env.JWT_SECRET || `brxJydVrU4agdgSSbnMNMQy01bNE8T5G`;
 
 export const hashFunc = async (obj: any) => {
-    console.log(obj, secret)
     var hmac = await crypto.createHmac('SHA256', secret)
         .update(JSON.stringify(obj).trim())
         .digest('base64');
@@ -28,30 +27,29 @@ export const hashFunc = async (obj: any) => {
     return hmac;
 }
 
-const test = async () => {
-    console.log(await hashFunc({"UserID":"Smith1#1678","betAmount":"50","betid":"17022968766566","currency":"INR"}))
-}
-
-test()
-
-export const getUserSession = async (req: Request, res: Response) => {
+export const GameLaunch = async (req: Request, res: Response) => {
     try {
         var hashed = await hashFunc(req.body);
         if (hashed === req.get('authentication')) {
-            const { userName, userId, avatar = "", balance, currency } = req.body;
-            if (!userId || !userName || !balance || !currency) return res.status(404).send("Invalid paramters");
-            const userData = await DUsers.findOne({ "userId": userId });
+            // UserID,token,currency,returnurl
+
+            const { UserID, token, currency, returnurl = "" } = req.body;
+
+            if (!UserID || !token || !currency) return res.status(404).send("Invalid paramters");
+
+            const userData = await DUsers.findOne({ "userId": UserID });
+
             if (!userData) {
-                await addUser(userName, userId, avatar, currency, balance)
-                console.log('Added new user', userId, balance)
+                await addUser("", UserID, '', currency, 0)
+                console.log('Added new user', UserID)
             }
 
-            var token = jwt.sign({ userId }, secret, { expiresIn: '1h' });
+            var session_token = jwt.sign({ userId: UserID }, secret, { expiresIn: '1h' });
 
             res.send({
                 status: true,
                 data: {
-                    gameURL: `${serverURL}/?cert=${token}`
+                    gameURL: `${serverURL}/?cert=${session_token}`
                 }
             });
         } else {
@@ -64,7 +62,7 @@ export const getUserSession = async (req: Request, res: Response) => {
     }
 }
 
-export const getUserInfo = async (userId: string) => {
+export const Authentication = async (userId: string) => {
     try {
         const sendData = {
             UserID: userId
@@ -86,7 +84,7 @@ export const getUserInfo = async (userId: string) => {
 
         const userData = await DUsers.findOne({ "userId": _data.userId });
         if (!userData) {
-            await addUser(_data.userName, _data.userId, _data.avatar, _data.currency, _data.balance)
+            await addUser(_data.userName, userId, _data.avatar, _data.currency, _data.balance)
             console.log('add-user', _data.userId, _data.balance)
         }
 
@@ -133,7 +131,7 @@ export const bet = async (userId: string, betAmount: string, currency: string) =
         const sendData = {
             UserID: userId,
             betAmount,
-            betid: orderNo,
+            betid: `${orderNo}`,
             currency,
         }
         console.log(sendData);
