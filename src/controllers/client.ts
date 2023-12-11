@@ -27,15 +27,24 @@ export const hashFunc = async (obj: any) => {
     return hmac;
 }
 
+const test = async () => {
+    console.log(await hashFunc({
+        UserID: "Smith1#167",
+        currency: "INR"
+    }))
+}
+
+test()
+
 export const GameLaunch = async (req: Request, res: Response) => {
     try {
         var hashed = await hashFunc(req.body);
-        if (hashed === req.get('authentication')) {
-            // UserID,token,currency,returnurl
+        if (hashed === req.get('hashkey')) {
+            // UserID,currency,returnurl
 
-            const { UserID, token, currency, returnurl = "" } = req.body;
+            const { UserID, currency, returnurl = "" } = req.body;
 
-            if (!UserID || !token || !currency) return res.status(404).send("Invalid paramters");
+            if (!UserID || !currency) return res.status(404).send("Invalid paramters");
 
             const userData = await DUsers.findOne({ "userId": UserID });
 
@@ -49,7 +58,7 @@ export const GameLaunch = async (req: Request, res: Response) => {
             res.send({
                 status: true,
                 data: {
-                    gameURL: `${serverURL}/?cert=${session_token}`
+                    gameURL: `${serverURL}/?token=${session_token}&userID=${UserID}&currency=${currency}&return_url=${returnurl ? returnurl : serverURL}`
                 }
             });
         } else {
@@ -71,7 +80,7 @@ export const Authentication = async (userId: string) => {
         const resData = await axios.post(getBalanceUrl, sendData, {
             headers: {
                 'Content-Type': 'application/json',
-                'authentication': hashed
+                'hashkey': hashed
             }
         })
         const _data = resData.data.data;
@@ -139,7 +148,7 @@ export const bet = async (userId: string, betAmount: string, currency: string) =
         const resData = await axios.post(betUrl, sendData, {
             headers: {
                 'Content-Type': 'application/json',
-                'authentication': hashed
+                'hashkey': hashed
             }
         })
 
@@ -180,7 +189,7 @@ export const settle = async (userId: string, orderNo: string, cashoutPoint: stri
         const resData = await axios.post(cashoutUrl, sendData, {
             headers: {
                 'Content-Type': 'application/json',
-                'authentication': hashed
+                'hashkey': hashed
             }
         })
         const _data = resData.data;
@@ -264,7 +273,7 @@ export const myInfo = async (req: Request, res: Response) => {
     try {
         const sendData = req.body
         var hashed = await hashFunc(sendData);
-        if (hashed === req.get('authentication')) {
+        if (hashed === req.get('hashkey')) {
             let { id } = req.body as { id: string };
             if (!id) return res.status(404).send("invalid paramters")
             const data = await DHistories.find({ userId: id }).sort({ date: -1 }).limit(20).toArray();
