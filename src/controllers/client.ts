@@ -138,13 +138,12 @@ export const Authentication = async (token: string, UserID: string, currency: st
 // }
 
 
-export const bet = async (UserID: string, betAmount: string, currency: string, Session_Token: string) => {
+export const bet = async (betid: string, UserID: string, betAmount: string, currency: string, Session_Token: string) => {
     try {
-        const orderNo = Date.now() + Math.floor(Math.random() * 1000);
         const sendData = {
             UserID,
             betAmount,
-            betid: `${orderNo}`,
+            betid,
             currency,
             Session_Token
         }
@@ -159,6 +158,7 @@ export const bet = async (UserID: string, betAmount: string, currency: string, S
         console.log(hashed);
 
         const _data = resData.data;
+        console.log('bet response', resData)
         console.log('bet response', _data)
         if (_data.code === 200) {
             return {
