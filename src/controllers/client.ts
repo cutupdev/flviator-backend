@@ -4,7 +4,6 @@ import { DEFAULT_GAMEID, DGame, DHistories, DUsers, getBettingAmounts, addUser }
 import { setlog, getPaginationMeta } from "../helper";
 import axios from "axios";
 import path from 'path';
-import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 
 const envUrl = process.env.NODE_ENV ? (process.env.NODE_ENV === 'development' ? '../../.env.development' : '.env.' + process.env.NODE_ENV) : '.env.test';
@@ -71,7 +70,7 @@ export const GameLaunch = async (req: Request, res: Response) => {
 
 export const Authentication = async (token: string, UserID: string, currency: string) => {
     try {
-        var Session_Token = jwt.sign({ UserID }, secret, { expiresIn: '1h' });
+        var Session_Token = crypto.randomUUID();
         const sendData = {
             UserID,
             User_Token: token,
@@ -143,7 +142,7 @@ export const Authentication = async (token: string, UserID: string, currency: st
 export const bet = async (UserID: string, betAmount: string, currency: string) => {
     try {
         const orderNo = Date.now() + Math.floor(Math.random() * 1000);
-        var Session_Token = jwt.sign({ userId: UserID }, secret, { expiresIn: '1h' });
+        var Session_Token = crypto.randomUUID();
         const sendData = {
             UserID,
             betAmount,
@@ -185,7 +184,7 @@ export const bet = async (UserID: string, betAmount: string, currency: string) =
 
 export const settle = async (UserID: string, orderNo: string, cashoutPoint: string, amount: string, currency: string) => {
     try {
-        var Session_Token = jwt.sign({ userId: UserID }, secret, { expiresIn: '1h' });
+        var Session_Token = crypto.randomUUID();
         const cashoutid = Date.now() + Math.floor(Math.random() * 1000);
         const sendData = {
             cashoutid,
@@ -227,7 +226,7 @@ export const settle = async (UserID: string, orderNo: string, cashoutPoint: stri
 
 export const cancelBet = async (UserID: string, orderNo: string, amount: string, currency: string) => {
     try {
-        var Session_Token = jwt.sign({ userId: UserID }, secret, { expiresIn: '1h' });
+        var Session_Token = crypto.randomUUID();
         const cancelbetid = Date.now() + Math.floor(Math.random() * 1000);
         const sendData = {
             UserID,

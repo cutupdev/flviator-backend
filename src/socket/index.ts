@@ -1,7 +1,6 @@
 import { Server, Socket } from 'socket.io'
 import crypto from 'crypto';
 import path from 'path';
-import jwt from 'jsonwebtoken';
 import { config } from "dotenv";
 import { getTime } from "../math"
 import { addHistory } from '../model'
