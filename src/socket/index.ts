@@ -385,8 +385,7 @@ export const initSocket = (io: Server) => {
     mysocketIo = io;
     io.on("connection", async (socket) => {
 
-        socket.on('sessionCheck', async ({ token, userID, currency, return_url }) => {
-            console.log("1");
+        socket.on('sessionCheck', async ({ token, UserID, currency, returnurl }) => {
             socket.emit('sessionSecure', { sessionStatus: true })
         })
 
@@ -413,41 +412,37 @@ export const initSocket = (io: Server) => {
             }
         })
         socket.on('enterRoom', async (props) => {
-            var { token } = props;
-            try {
-                token = jwt.verify(`${token}`, secret);
-                var userId = token.userId;
-                console.log("entered")
-                socket.emit('getBetLimits', { max: localconfig.betting.max, min: localconfig.betting.min });
-                if (token !== null && token !== undefined) {
-                    const userInfo = await Authentication(userId);
-                    if (userInfo.status) {
-                        users[socket.id] = {
-                            ...DEFAULT_USER,
-                            userId: userInfo.data.userId,
-                            userName: userInfo.data.userName,
-                            balance: userInfo.data.balance,
-                            avatar: userInfo.data.avatar,
-                            currency: userInfo.data.currency,
-                            token,
-                            socketId: socket.id
-                        }
-                        socket.emit('myInfo', users[socket.id]);
-                        io.emit('history', history);
-                        const time = Date.now() - startTime;
-                        io.emit('gameState', { currentNum, currentSecondNum, GameState, time });
-                    } else {
-                        socket.emit("deny", { message: "Unregistered User" });
+            var { token, UserID, currency } = props;
+
+            console.log(`${UserID} entered the crash with ${token} token and currency is ${currency}`);
+
+            socket.emit('getBetLimits', { max: localconfig.betting.max, min: localconfig.betting.min });
+            if (token !== null && token !== undefined) {
+                const userInfo = await Authentication(token, UserID, currency);
+                if (userInfo.status) {
+                    users[socket.id] = {
+                        ...DEFAULT_USER,
+                        userId: userInfo.data.userId,
+                        userName: userInfo.data.userName,
+                        balance: userInfo.data.balance,
+                        avatar: userInfo.data.avatar,
+                        currency: userInfo.data.currency,
+                        token,
+                        socketId: socket.id
                     }
+                    socket.emit('myInfo', users[socket.id]);
+                    io.emit('history', history);
+                    const time = Date.now() - startTime;
+                    io.emit('gameState', { currentNum, currentSecondNum, GameState, time });
                 } else {
-                    // users[socket.id] = {
-                    //     ...DEFAULT_USER,
-                    //     balance: 50000,
-                    //     socketId: socket.id
-                    // }
-                    socket.emit("deny", { message: "User token is invalid" });
+                    socket.emit("deny", { message: "Unregistered User" });
                 }
-            } catch (err) {
+            } else {
+                // users[socket.id] = {
+                //     ...DEFAULT_USER,
+                //     balance: 50000,
+                //     socketId: socket.id
+                // }
                 socket.emit("deny", { message: "User token is invalid" });
             }
         })

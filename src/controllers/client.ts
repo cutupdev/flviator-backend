@@ -40,11 +40,11 @@ export const GameLaunch = async (req: Request, res: Response) => {
     try {
         var hashed = await hashFunc(req.body);
         if (hashed === req.get('hashkey')) {
-            // UserID,currency,returnurl
+            // UserID, token, currency,returnurl
 
-            const { UserID, currency, returnurl = "" } = req.body;
+            const { UserID, token, currency, returnurl = "" } = req.body;
 
-            if (!UserID || !currency) return res.status(404).send("Invalid paramters");
+            if (!UserID || !token || !currency) return res.status(404).send("Invalid paramters");
 
             const userData = await DUsers.findOne({ "userId": UserID });
 
@@ -53,13 +53,11 @@ export const GameLaunch = async (req: Request, res: Response) => {
                 console.log('Added new user', UserID)
             }
 
-            var session_token = jwt.sign({ userId: UserID }, secret, { expiresIn: '1h' });
+            // var session_token = jwt.sign({ userId: UserID }, secret, { expiresIn: '1h' });
 
             res.send({
                 status: true,
-                data: {
-                    gameURL: `${serverURL}/?token=${session_token}&userID=${UserID}&currency=${currency}&return_url=${returnurl ? returnurl : serverURL}`
-                }
+                gameURL: `${serverURL}/?token=${token}&UserID=${UserID}&currency=${currency}&returnurl=${returnurl ? returnurl : serverURL}`
             });
         } else {
             return res.status(401).send("User token is invalid");
@@ -71,13 +69,14 @@ export const GameLaunch = async (req: Request, res: Response) => {
     }
 }
 
-export const Authentication = async (userId: string) => {
+export const Authentication = async (token: string, UserID: string, currency: string) => {
     try {
+        var session_token = jwt.sign({ UserID }, secret, { expiresIn: '1h' });
         const sendData = {
-            UserID: userId,
-            User_Token: "user_token",
-            Session_Token: "session_token",
-            currency: ""
+            UserID,
+            User_Token: token,
+            Session_Token: session_token,
+            currency
         }
         var hashed = await hashFunc(sendData);
         const resData = await axios.post(getBalanceUrl, sendData, {
@@ -87,23 +86,23 @@ export const Authentication = async (userId: string) => {
             }
         })
         const _data = resData.data.data;
+        console.log('_data', _data);
         if (!resData.data.status) {
             return {
                 status: false
             }
         }
-        console.log("_data", _data)
 
-        const userData = await DUsers.findOne({ "userId": _data.userId });
+        const userData = await DUsers.findOne({ "userId": UserID });
         if (!userData) {
-            await addUser(_data.userName, userId, _data.avatar, _data.currency, _data.balance)
-            console.log('add-user', _data.userId, _data.balance)
+            await addUser(_data.userName, UserID, _data.avatar, _data.currency, _data.balance)
+            console.log('Added new user', UserID, _data.balance)
         }
-
+        // Code,Message,data:[userid,username,balance,currency,avatar]
         return {
             status: true,
             data: {
-                userId: userId,
+                userId: UserID,
                 userName: _data.userName,
                 currency: _data.currency,
                 avatar: _data.avatar,
