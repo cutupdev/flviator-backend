@@ -45,7 +45,7 @@ export const GameLaunch = async (req: Request, res: Response) => {
                 code: 200,
                 message: "success",
                 data: {
-                    gameURL: `${serverURL}/?token=${token}&UserID=${UserID}&currency=${currency}&returnurl=${returnurl ? returnurl : serverURL}`
+                    gameURL: `${serverURL}/?token=${encodeURI(token)}&UserID=${encodeURI(UserID)}&currency=${encodeURI(currency)}&returnurl=${returnurl ? encodeURI(returnurl) : encodeURI(serverURL)}`
                 }
             });
         } else {
