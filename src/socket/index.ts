@@ -413,9 +413,9 @@ export const initSocket = (io: Server) => {
         })
         socket.on('enterRoom', async (props) => {
             var { token, UserID, currency } = props;
-            token = decodeURI(token);
-            UserID = decodeURI(UserID);
-            currency = decodeURI(currency);
+            token = decodeURIComponent(token);
+            UserID = decodeURIComponent(UserID);
+            currency = decodeURIComponent(currency);
 
             console.log(`${UserID} entered the crash with ${token} token and currency is ${currency}`);
 

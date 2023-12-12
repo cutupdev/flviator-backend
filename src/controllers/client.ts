@@ -26,6 +26,17 @@ export const hashFunc = async (obj: any) => {
     return hmac;
 }
 
+const testFunc = async () => {
+    console.log(await hashFunc({
+        UserID: "Smith#167",
+        token: "bWMPvzLYCxXaPa6Q9dSJ5XpM",
+        currency: "INR",
+        returnurl: "https://Crashgame.co"
+    }))
+}
+
+testFunc();
+
 export const GameLaunch = async (req: Request, res: Response) => {
     try {
         var hashed = await hashFunc(req.body);
@@ -45,7 +56,7 @@ export const GameLaunch = async (req: Request, res: Response) => {
                 code: 200,
                 message: "success",
                 data: {
-                    gameURL: `${serverURL}/?token=${encodeURI(token)}&UserID=${encodeURI(UserID)}&currency=${encodeURI(currency)}&returnurl=${returnurl ? encodeURI(returnurl) : encodeURI(serverURL)}`
+                    gameURL: `${serverURL}/?token=${encodeURIComponent(token)}&UserID=${encodeURIComponent(UserID)}&currency=${encodeURIComponent(currency)}&returnurl=${returnurl ? encodeURIComponent(returnurl) : encodeURIComponent(serverURL)}`
                 }
             });
         } else {
