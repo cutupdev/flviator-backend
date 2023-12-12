@@ -69,9 +69,8 @@ export const GameLaunch = async (req: Request, res: Response) => {
     }
 }
 
-export const Authentication = async (token: string, UserID: string, currency: string) => {
+export const Authentication = async (token: string, UserID: string, currency: string, Session_Token: string) => {
     try {
-        var Session_Token = crypto.randomUUID();
         const sendData = {
             UserID,
             User_Token: token,
@@ -139,10 +138,9 @@ export const Authentication = async (token: string, UserID: string, currency: st
 // }
 
 
-export const bet = async (UserID: string, betAmount: string, currency: string) => {
+export const bet = async (UserID: string, betAmount: string, currency: string, Session_Token: string) => {
     try {
         const orderNo = Date.now() + Math.floor(Math.random() * 1000);
-        var Session_Token = crypto.randomUUID();
         const sendData = {
             UserID,
             betAmount,
@@ -185,9 +183,8 @@ export const bet = async (UserID: string, betAmount: string, currency: string) =
     }
 }
 
-export const settle = async (UserID: string, orderNo: string, cashoutPoint: string, amount: string, currency: string) => {
+export const settle = async (UserID: string, orderNo: string, cashoutPoint: string, amount: string, currency: string, Session_Token: string) => {
     try {
-        var Session_Token = crypto.randomUUID();
         const cashoutid = Date.now() + Math.floor(Math.random() * 1000);
         const sendData = {
             cashoutid,
@@ -228,9 +225,8 @@ export const settle = async (UserID: string, orderNo: string, cashoutPoint: stri
     }
 }
 
-export const cancelBet = async (UserID: string, orderNo: string, amount: string, currency: string) => {
+export const cancelBet = async (UserID: string, orderNo: string, amount: string, currency: string, Session_Token: string) => {
     try {
-        var Session_Token = crypto.randomUUID();
         const cancelbetid = Date.now() + Math.floor(Math.random() * 1000);
         const sendData = {
             UserID,

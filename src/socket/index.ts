@@ -7,9 +7,6 @@ import { addHistory } from '../model'
 import { Authentication, bet, settle, cancelBet } from '../controllers/client';
 
 import localconfig from "../config.json";
-import { copyObject } from '../util';
-
-const secret = process.env.JWT_SECRET || `brxJydVrU4agdgSSbnMNMQy01bNE8T5G`;
 
 const envUrl = process.env.NODE_ENV === 'development' ? '../../.env.development' : '../../.env.prod';
 config({ path: path.join(__dirname, envUrl) });
@@ -24,6 +21,7 @@ interface UserType {
     token: string
     orderNo: number
     socketId: string
+    Session_Token: string
     f: {
         auto: boolean
         betted: boolean
@@ -61,6 +59,7 @@ const DEFAULT_USER = {
     token: '',
     orderNo: 0,
     socketId: '',
+    Session_Token: '',
     f: {
         auto: false,
         betted: false,
@@ -403,7 +402,7 @@ export const initSocket = (io: Server) => {
                     if (users[socket.id].f.betted && !users[socket.id].f.cashouted) betAmount += users[socket.id].f.betAmount;
                     if (users[socket.id].s.betted && !users[socket.id].s.cashouted) betAmount += users[socket.id].s.betAmount;
                     if (betAmount > 0) {
-                        cancelBet(users[socket.id].userId, `${users[socket.id].orderNo}`, `${betAmount}`, users[socket.id].token);
+                        cancelBet(users[socket.id].userId, `${users[socket.id].orderNo}`, `${betAmount}`, users[socket.id].token, users[socket.id].Session_Token);
                     }
                 }
                 sockets.splice(checkIndex, 1);
@@ -420,7 +419,8 @@ export const initSocket = (io: Server) => {
 
             socket.emit('getBetLimits', { max: localconfig.betting.max, min: localconfig.betting.min });
             if (token !== null && token !== undefined) {
-                const userInfo = await Authentication(token, UserID, currency);
+                var Session_Token = crypto.randomUUID();
+                const userInfo = await Authentication(token, UserID, currency, Session_Token);
                 if (userInfo.status) {
                     users[socket.id] = {
                         ...DEFAULT_USER,
@@ -429,6 +429,7 @@ export const initSocket = (io: Server) => {
                         balance: userInfo.data.balance,
                         avatar: userInfo.data.avatar,
                         currency: userInfo.data.currency,
+                        Session_Token,
                         token,
                         socketId: socket.id
                     }
@@ -456,7 +457,7 @@ export const initSocket = (io: Server) => {
                 if (!!u) {
                     if (betAmount >= localconfig.betting.min && betAmount <= localconfig.betting.max) {
                         if (u.balance - betAmount >= 0) {
-                            const betRes = await bet(users[socket.id].userId, `${betAmount}`, u.currency);
+                            const betRes = await bet(users[socket.id].userId, `${betAmount}`, u.currency, u.Session_Token);
                             if (betRes.status) {
                                 if (type === 'f') {
                                     u.f.betAmount = betAmount;
@@ -507,7 +508,7 @@ export const initSocket = (io: Server) => {
                 if (GameState === "PLAYING") {
                     if (!player.cashouted && player.betted) {
                         if (endTarget <= currentSecondNum) {
-                            settle(users[socket.id].userId, `${u.orderNo}`, `${endTarget}`, `${endTarget * player.betAmount}`, u.token);
+                            settle(users[socket.id].userId, `${u.orderNo}`, `${endTarget}`, `${endTarget * player.betAmount}`, u.token, u.Session_Token);
                             player.cashouted = true;
                             player.cashAmount = endTarget * player.betAmount;
                             player.betted = false;
