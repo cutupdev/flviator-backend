@@ -404,7 +404,7 @@ export const initSocket = (io: Server) => {
                     if (users[socket.id].f.betted && !users[socket.id].f.cashouted) betAmount += users[socket.id].f.betAmount;
                     if (users[socket.id].s.betted && !users[socket.id].s.cashouted) betAmount += users[socket.id].s.betAmount;
                     if (betAmount > 0) {
-                        cancelBet(users[socket.id].orderNo, betAmount, users[socket.id].token);
+                        cancelBet(users[socket.id].userId, `${users[socket.id].orderNo}`, `${betAmount}`, users[socket.id].token);
                     }
                 }
                 sockets.splice(checkIndex, 1);

@@ -40,7 +40,7 @@ export const GameLaunch = async (req: Request, res: Response) => {
             const userData = await DUsers.findOne({ "userId": UserID });
 
             if (!userData) {
-                await addUser("", UserID, '', currency, 0)
+                await addUser(UserID, "", 0, currency, '')
                 console.log('Added new user', UserID)
             }
 
@@ -65,11 +65,11 @@ export const GameLaunch = async (req: Request, res: Response) => {
 
 export const Authentication = async (token: string, UserID: string, currency: string) => {
     try {
-        var session_token = jwt.sign({ UserID }, secret, { expiresIn: '1h' });
+        var Session_Token = jwt.sign({ UserID }, secret, { expiresIn: '1h' });
         const sendData = {
             UserID,
             User_Token: token,
-            Session_Token: session_token,
+            Session_Token,
             currency
         }
         var hashed = await hashFunc(sendData);
@@ -79,30 +79,32 @@ export const Authentication = async (token: string, UserID: string, currency: st
                 'hashkey': hashed
             }
         })
-        const _data = resData.data.data;
+        var _data = resData.data;
         console.log('_data', _data);
-        if (!resData.data.status) {
+        if (_data.code === 200) {
+            _data = _data.data;
+            const userData = await DUsers.findOne({ "userId": UserID });
+            if (!userData) {
+                await addUser(UserID, _data.username, _data.balance, _data.currency, _data.avatar)
+                console.log('Added new user', UserID, _data.balance)
+            }
+            // Code,Message,data:[userid,username,balance,currency,avatar]
+            return {
+                status: true,
+                data: {
+                    userId: UserID,
+                    userName: _data.username,
+                    balance: _data.balance,
+                    currency: _data.currency,
+                    avatar: _data.avatar,
+                }
+            };
+        } else {
+            console.log(_data.message)
             return {
                 status: false
             }
         }
-
-        const userData = await DUsers.findOne({ "userId": UserID });
-        if (!userData) {
-            await addUser(_data.username, UserID, _data.avatar, _data.currency, _data.balance)
-            console.log('Added new user', UserID, _data.balance)
-        }
-        // Code,Message,data:[userid,username,balance,currency,avatar]
-        return {
-            status: true,
-            data: {
-                userId: UserID,
-                userName: _data.username,
-                balance: _data.balance,
-                currency: _data.currency,
-                avatar: _data.avatar,
-            }
-        };
 
     } catch (err) {
         console.log(err);
@@ -130,16 +132,17 @@ export const Authentication = async (token: string, UserID: string, currency: st
 // }
 
 
-export const bet = async (userId: string, betAmount: string, currency: string) => {
+export const bet = async (UserID: string, betAmount: string, currency: string) => {
     try {
         const orderNo = Date.now() + Math.floor(Math.random() * 1000);
+        var Session_Token = jwt.sign({ userId: UserID }, secret, { expiresIn: '1h' });
         const sendData = {
-            UserID: userId,
+            UserID,
             betAmount,
             betid: `${orderNo}`,
             currency,
+            Session_Token
         }
-        console.log(sendData);
         var hashed = await hashFunc(sendData);
         const resData = await axios.post(betUrl, sendData, {
             headers: {
@@ -148,21 +151,26 @@ export const bet = async (userId: string, betAmount: string, currency: string) =
             }
         })
 
-
         const _data = resData.data;
-        console.log('_data', _data)
-        if (!_data.status) {
+        console.log('bet response', _data)
+        if (_data.code === 200) {
+            return {
+                status: true,
+                orderNo: _data.betid,
+                currency: _data.currency,
+                balance: _data.updatedBalance
+            };
+        } else if (_data.code === 409) {
+            return {
+                status: false,
+                message: "Duplicate Request"
+            };
+        } else {
             return {
                 status: false,
                 message: "Service Exception"
             };
         }
-
-        return {
-            status: true,
-            orderNo: orderNo,
-            balance: _data.updatedBalance
-        };
 
     } catch (err) {
         return {
@@ -172,14 +180,18 @@ export const bet = async (userId: string, betAmount: string, currency: string) =
     }
 }
 
-export const settle = async (userId: string, orderNo: string, cashoutPoint: string, amount: string, currency: string) => {
+export const settle = async (UserID: string, orderNo: string, cashoutPoint: string, amount: string, currency: string) => {
     try {
+        var Session_Token = jwt.sign({ userId: UserID }, secret, { expiresIn: '1h' });
+        const cashoutid = Date.now() + Math.floor(Math.random() * 1000);
         const sendData = {
-            UserID: userId,
+            cashoutid,
+            UserID,
             betid: orderNo,
-            currency,
             cashoutPoint,
             amount,
+            currency,
+            Session_Token
         }
         var hashed = await hashFunc(sendData);
         const resData = await axios.post(cashoutUrl, sendData, {
@@ -189,18 +201,23 @@ export const settle = async (userId: string, orderNo: string, cashoutPoint: stri
             }
         })
         const _data = resData.data;
-        if (!resData.data.success) {
+        if (_data.code === 200) {
+            return {
+                status: true,
+                balance: _data.updatedBalance,
+                orderNo: orderNo
+            };
+        } else if (_data.code === 409) {
+            return {
+                status: false,
+                message: "Duplicate Request"
+            };
+        } else {
             return {
                 status: false,
                 message: "Service Exception"
             };
         }
-
-        return {
-            status: true,
-            balance: _data.updatedBalance,
-            orderNo: orderNo
-        };
 
     } catch (err) {
         return {
@@ -210,28 +227,43 @@ export const settle = async (userId: string, orderNo: string, cashoutPoint: stri
     }
 }
 
-export const cancelBet = async (orderNo: number, balance: number, token: string) => {
+export const cancelBet = async (UserID: string, orderNo: string, amount: string, currency: string) => {
     try {
-        const resData = await axios.post(cancelUrl, {
-            gameCode: 'Crash',
-            orderNo,
-            amount: balance,
-            // token: testToken
-            token
+        var Session_Token = jwt.sign({ userId: UserID }, secret, { expiresIn: '1h' });
+        const cancelbetid = Date.now() + Math.floor(Math.random() * 1000);
+        const sendData = {
+            UserID,
+            betid: orderNo,
+            amount,
+            currency,
+            Session_Token,
+            cancelbetid,
+        }
+        var hashed = await hashFunc(sendData);
+        const resData = await axios.post(cancelUrl, sendData, {
+            headers: {
+                'Content-Type': 'application/json',
+                'hashkey': hashed
+            }
         })
-        const _data = resData.data.data;
-        if (!resData.data.success) {
+        const _data = resData.data;
+        if (_data.code === 200) {
+            return {
+                status: true,
+                balance: _data.updatedBalance,
+                orderNo: orderNo
+            };
+        } else if (_data.code === 409) {
+            return {
+                status: false,
+                message: "Duplicate Request"
+            };
+        } else {
             return {
                 status: false,
                 message: "Service Exception"
             };
         }
-
-        return {
-            status: true,
-            balance: _data.amount,
-            orderNo: _data.orderNo
-        };
 
     } catch (err) {
         return {
@@ -240,6 +272,37 @@ export const cancelBet = async (orderNo: number, balance: number, token: string)
         };
     }
 }
+
+// export const cancelBet = async (orderNo: number, balance: number, token: string) => {
+//     try {
+//         const resData = await axios.post(cancelUrl, {
+//             gameCode: 'Crash',
+//             orderNo,
+//             amount: balance,
+//             // token: testToken
+//             token
+//         })
+//         const _data = resData.data.data;
+//         if (!resData.data.success) {
+//             return {
+//                 status: false,
+//                 message: "Service Exception"
+//             };
+//         }
+
+//         return {
+//             status: true,
+//             balance: _data.amount,
+//             orderNo: _data.orderNo
+//         };
+
+//     } catch (err) {
+//         return {
+//             status: false,
+//             message: "Internal Exception"
+//         };
+//     }
+// }
 
 export const getGameInfo = async (req: Request, res: Response) => {
     try {

@@ -75,7 +75,7 @@ export const addHistory = async (userId: string, betAmount: number, cashoutAt: n
     }
 }
 
-export const addUser = async (name: string, userId: string, img: string, currency: string, balance: number) => {
+export const addUser = async (userId: string, name: string, balance: number, currency: string, img: string) => {
     try {
         const findUser = await DUsers.findOne({ userId });
         if (!findUser) {
