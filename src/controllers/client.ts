@@ -89,7 +89,7 @@ export const Authentication = async (token: string, UserID: string, currency: st
 
         const userData = await DUsers.findOne({ "userId": UserID });
         if (!userData) {
-            await addUser(_data.userName, UserID, _data.avatar, _data.currency, _data.balance)
+            await addUser(_data.username, UserID, _data.avatar, _data.currency, _data.balance)
             console.log('Added new user', UserID, _data.balance)
         }
         // Code,Message,data:[userid,username,balance,currency,avatar]
@@ -97,10 +97,10 @@ export const Authentication = async (token: string, UserID: string, currency: st
             status: true,
             data: {
                 userId: UserID,
-                userName: _data.userName,
+                userName: _data.username,
+                balance: _data.balance,
                 currency: _data.currency,
                 avatar: _data.avatar,
-                balance: _data.balance,
             }
         };
 
