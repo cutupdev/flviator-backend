@@ -10,7 +10,6 @@ import crypto from 'crypto';
 const envUrl = process.env.NODE_ENV ? (process.env.NODE_ENV === 'development' ? '../../.env.development' : '.env.' + process.env.NODE_ENV) : '.env.test';
 require('dotenv').config({ path: path.join(__dirname, envUrl) });
 
-// const serverURL = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : process.env.SERVER_URL || 'http://45.8.22.45:3000';
 const serverURL = process.env.SERVER_URL || 'http://45.8.22.45:3000';
 const API_URL = process.env.API_URL || 'https://crashgame.vkingplays.com';
 const getBalanceUrl = `${API_URL}${process.env.GET_BALANCE_URL || '/Authentication'}`;
@@ -31,8 +30,6 @@ export const GameLaunch = async (req: Request, res: Response) => {
     try {
         var hashed = await hashFunc(req.body);
         if (hashed === req.get('hashkey')) {
-            // UserID, token, currency,returnurl
-
             const { UserID, token, currency, returnurl = "" } = req.body;
 
             if (!UserID || !token || !currency) return res.status(404).send("Invalid paramters");
@@ -44,10 +41,8 @@ export const GameLaunch = async (req: Request, res: Response) => {
                 console.log('Added new user', UserID)
             }
 
-            // var session_token = jwt.sign({ userId: UserID }, secret, { expiresIn: '1h' });
-
             res.status(200).send({
-                code: "200",
+                code: 200,
                 message: "success",
                 data: {
                     gameURL: `${serverURL}/?token=${token}&UserID=${UserID}&currency=${currency}&returnurl=${returnurl ? returnurl : serverURL}`
@@ -100,10 +95,10 @@ export const Authentication = async (token: string, UserID: string, currency: st
                 }
             };
         } else {
-            console.log(_data.message)
             return {
-                status: false
-            }
+                status: false,
+                message: _data.message
+            };
         }
 
     } catch (err) {
@@ -160,15 +155,10 @@ export const bet = async (UserID: string, betAmount: string, currency: string) =
                 currency: _data.currency,
                 balance: _data.updatedBalance
             };
-        } else if (_data.code === 409) {
-            return {
-                status: false,
-                message: "Duplicate Request"
-            };
         } else {
             return {
                 status: false,
-                message: "Service Exception"
+                message: _data.message
             };
         }
 
@@ -207,15 +197,10 @@ export const settle = async (UserID: string, orderNo: string, cashoutPoint: stri
                 balance: _data.updatedBalance,
                 orderNo: orderNo
             };
-        } else if (_data.code === 409) {
-            return {
-                status: false,
-                message: "Duplicate Request"
-            };
         } else {
             return {
                 status: false,
-                message: "Service Exception"
+                message: _data.message
             };
         }
 
@@ -253,15 +238,10 @@ export const cancelBet = async (UserID: string, orderNo: string, amount: string,
                 balance: _data.updatedBalance,
                 orderNo: orderNo
             };
-        } else if (_data.code === 409) {
-            return {
-                status: false,
-                message: "Duplicate Request"
-            };
         } else {
             return {
                 status: false,
-                message: "Service Exception"
+                message: _data.message
             };
         }
 
