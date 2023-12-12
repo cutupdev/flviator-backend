@@ -156,6 +156,8 @@ export const bet = async (UserID: string, betAmount: string, currency: string) =
             }
         })
 
+        console.log(resData);
+
         const _data = resData.data;
         console.log('bet response', _data)
         if (_data.code === 200) {
