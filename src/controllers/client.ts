@@ -155,8 +155,8 @@ export const bet = async (UserID: string, betAmount: string, currency: string) =
                 'hashkey': hashed
             }
         })
-
-        console.log(resData);
+        console.log(sendData);
+        console.log(hashed);
 
         const _data = resData.data;
         console.log('bet response', _data)
