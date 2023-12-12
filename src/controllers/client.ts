@@ -26,16 +26,16 @@ export const hashFunc = async (obj: any) => {
     return hmac;
 }
 
-const testFunc = async () => {
-    console.log(await hashFunc({
-        UserID: "Smith#167",
-        token: "bWMPvzLYCxXaPa6Q9dSJ5XpM",
-        currency: "INR",
-        returnurl: "https://Crashgame.co"
-    }))
-}
+// const testFunc = async () => {
+//     console.log(await hashFunc({
+//         UserID: "Smith#167",
+//         token: "bWMPvzLYCxXaPa6Q9dSJ5XpM",
+//         currency: "INR",
+//         returnurl: "https://Crashgame.co"
+//     }))
+// }
 
-testFunc();
+// testFunc();
 
 export const GameLaunch = async (req: Request, res: Response) => {
     try {
