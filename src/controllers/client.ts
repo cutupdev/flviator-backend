@@ -27,15 +27,6 @@ export const hashFunc = async (obj: any) => {
     return hmac;
 }
 
-const test = async () => {
-    console.log(await hashFunc({
-        UserID: "Smith1#167",
-        currency: "INR"
-    }))
-}
-
-test()
-
 export const GameLaunch = async (req: Request, res: Response) => {
     try {
         var hashed = await hashFunc(req.body);
@@ -56,8 +47,11 @@ export const GameLaunch = async (req: Request, res: Response) => {
             // var session_token = jwt.sign({ userId: UserID }, secret, { expiresIn: '1h' });
 
             res.status(200).send({
-                status: true,
-                gameURL: `${serverURL}/?token=${token}&UserID=${UserID}&currency=${currency}&returnurl=${returnurl ? returnurl : serverURL}`
+                code: "200",
+                message: "success",
+                data: {
+                    gameURL: `${serverURL}/?token=${token}&UserID=${UserID}&currency=${currency}&returnurl=${returnurl ? returnurl : serverURL}`
+                }
             });
         } else {
             return res.status(401).send("User token is invalid");
