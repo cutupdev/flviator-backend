@@ -55,7 +55,7 @@ export const GameLaunch = async (req: Request, res: Response) => {
 
             // var session_token = jwt.sign({ userId: UserID }, secret, { expiresIn: '1h' });
 
-            res.send({
+            res.status(200).send({
                 status: true,
                 gameURL: `${serverURL}/?token=${token}&UserID=${UserID}&currency=${currency}&returnurl=${returnurl ? returnurl : serverURL}`
             });
