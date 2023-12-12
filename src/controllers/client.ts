@@ -85,6 +85,7 @@ export const Authentication = async (token: string, UserID: string, currency: st
                 'hashkey': hashed
             }
         })
+        console.log('resData', resData);
         var _data = resData.data;
         console.log('_data', _data);
         if (_data.code === 200) {
