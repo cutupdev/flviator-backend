@@ -28,9 +28,10 @@ export const hashFunc = async (obj: any) => {
 // const testFunc = async () => {
 //     console.log(await hashFunc({
 //         UserID: "Smith#167",
-//         token: "bWMPvzLYCxXaPa6Q9dSJ5XpM",
+//         betAmount: "20",
+//         betid: "1702412024640",
 //         currency: "INR",
-//         returnurl: "https://Crashgame.co"
+//         Session_Token: "d3e8f9da-b341-4a3d-bff6-d92b820dba5e"
 //     }))
 // }
 
@@ -105,6 +106,7 @@ export const Authentication = async (token: string, UserID: string, currency: st
                 }
             };
         } else {
+            console.log('_data.message', _data.message)
             return {
                 status: false,
                 message: _data.message
@@ -168,6 +170,7 @@ export const bet = async (UserID: string, betAmount: string, currency: string) =
                 balance: _data.updatedBalance
             };
         } else {
+            console.log('_data.message', _data.message)
             return {
                 status: false,
                 message: _data.message
@@ -210,6 +213,7 @@ export const settle = async (UserID: string, orderNo: string, cashoutPoint: stri
                 orderNo: orderNo
             };
         } else {
+            console.log('_data.message', _data.message)
             return {
                 status: false,
                 message: _data.message
@@ -251,6 +255,7 @@ export const cancelBet = async (UserID: string, orderNo: string, amount: string,
                 orderNo: orderNo
             };
         } else {
+            console.log('_data.message', _data.message)
             return {
                 status: false,
                 message: _data.message
