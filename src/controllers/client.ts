@@ -71,7 +71,6 @@ export const Authentication = async (token: string, UserID: string, currency: st
             }
         })
         var _data = resData.data;
-        console.log('_data', _data)
         if (_data.code === 200) {
             _data = _data.data;
             const userData = await DUsers.findOne({ "userId": UserID });
@@ -139,6 +138,8 @@ export const bet = async (UserID: string, betid: string, betAmount: string, curr
         })
 
         const _data = resData.data;
+        console.log('_data', _data)
+        console.log('Number(_data.updatedBalance)', Number(_data.updatedBalance))
         if (_data.code === 200) {
             return {
                 status: true,
