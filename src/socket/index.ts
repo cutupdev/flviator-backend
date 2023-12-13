@@ -477,6 +477,7 @@ export const initSocket = (io: Server) => {
                                     u.s.auto = auto;
                                     u.s.target = target;
                                 }
+                                console.log('betRes.balance', betRes.balance)
                                 u.balance = betRes.balance;
                                 // users[socket.id] = u;
                                 totalBetAmount += betAmount;
@@ -521,6 +522,7 @@ export const initSocket = (io: Server) => {
                             player.orderNo = 0;
                             player.target = endTarget;
                             // u.balance += endTarget * player.betAmount;
+                            console.log('returnData.balance', returnData.balance)
                             u.balance = returnData.balance;
                             cashoutAmount += endTarget * player.betAmount;
                             // users[socket.id] = u;
