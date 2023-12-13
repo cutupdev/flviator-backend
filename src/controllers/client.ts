@@ -138,14 +138,12 @@ export const bet = async (UserID: string, betid: string, betAmount: string, curr
         })
 
         const _data = resData.data;
-        console.log('_data', _data)
-        console.log('Number(_data.updatedBalance)', Number(_data.updatedBalance))
         if (_data.code === 200) {
             return {
                 status: true,
                 orderNo: _data.betid,
                 currency: _data.currency,
-                balance: Number(_data.updatedBalance) || 0
+                balance: Number(_data.data.updatedBalance) || 0
             };
         } else {
             return {
