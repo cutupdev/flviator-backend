@@ -138,6 +138,7 @@ export const bet = async (UserID: string, betid: string, betAmount: string, curr
         })
 
         const _data = resData.data;
+        console.log('_data', _data)
         if (_data.code === 200) {
             return {
                 status: true,
