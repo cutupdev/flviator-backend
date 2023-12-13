@@ -58,7 +58,7 @@ interface preHandType {
 
 const DEFAULT_USER = {
     userId: '0',
-    userName: 'Hidden',
+    userName: 'test',
     currency: 'INR',
     balance: 0,
     avatar: '',
