@@ -461,6 +461,8 @@ export const initSocket = (io: Server) => {
 
                 if (!!u) {
                     if (betAmount >= localconfig.betting.min && betAmount <= localconfig.betting.max) {
+                        console.log('u.balance', u.balance)
+                        console.log('betAmount', betAmount)
                         if (u.balance - betAmount >= 0) {
                             const betid = Date.now() + Math.floor(Math.random() * 1000);
                             console.log(`the user is playing bet bet type is ${type} bet id is ${betid}`)
@@ -525,7 +527,7 @@ export const initSocket = (io: Server) => {
                             if (u.f.betted === false && u.s.betted === false) {
                                 player.betted = false;
                             }
-                            
+
                             if (u.f.betted === false) {
                                 u.f.orderNo = 0;
                             }
