@@ -417,6 +417,7 @@ export const initSocket = (io: Server) => {
                     const time = Date.now() - startTime;
                     io.emit('gameState', { currentNum, currentSecondNum, GameState, time });
                 } else {
+                    console.log("Unregistered User")
                     socket.emit("deny", { message: "Unregistered User" });
                 }
             } else {
@@ -425,6 +426,7 @@ export const initSocket = (io: Server) => {
                 //     balance: 50000,
                 //     socketId: socket.id
                 // }
+                console.log("User token is invalid")
                 socket.emit("deny", { message: "User token is invalid" });
             }
         })
