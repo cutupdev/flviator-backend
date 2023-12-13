@@ -13,6 +13,8 @@ const envUrl = process.env.NODE_ENV === 'development' ? '../../.env.development'
 config({ path: path.join(__dirname, envUrl) });
 require('dotenv').config({ path: path.join(__dirname, envUrl) });
 
+var botNum = Math.floor(Math.random() * 15);
+
 interface UserType {
     userId: string
     userName: string
@@ -111,8 +113,8 @@ const diffLimit = 9; // When we lost money, decrease RTP by this value, but be c
 const salt = process.env.SALT || '8783642fc5b7f51c08918793964ca303edca39823325a3729ad62f0a2';
 
 const initBots = () => {
-    for (var i = 0; i < 20; i++) {
-        botIds.push(uniqid());
+    for (var i = 0; i < botNum; i++) {
+        botIds.push(`${uniqid()}`);
     }
 }
 
@@ -205,12 +207,14 @@ const gameRun = async () => {
             }
             break;
         case "GAMEEND":
+            botNum = Math.floor(Math.random() * 15);
+            initBots()
             if (Date.now() - startTime > GAMEENDTIME) {
                 let i = 0;
                 let interval = setInterval(() => {
-                    bot_bet(botIds[i]);
+                    betBot(botIds[i]);
                     i++;
-                    if (i > 19)
+                    if (i > botNum)
                         clearInterval(interval);
                 }, 100)
                 startTime = Date.now();
@@ -306,6 +310,7 @@ const sendPreviousHand = () => {
     mysocketIo.emit("previousHand", myPreHand);
 }
 
+
 // bot cash out here.
 setInterval(() => {
     if (GameState === "PLAYING") {
@@ -316,7 +321,7 @@ setInterval(() => {
                 users[k].f.cashAmount = users[k].f.target * users[k].f.betAmount;
                 users[k].f.betted = false;
 
-                cashoutAmount += users[k].f.target * users[k].f.betAmount;
+                // cashoutAmount += users[k].f.target * users[k].f.betAmount;
             }
         }
 
@@ -327,18 +332,46 @@ setInterval(() => {
                 users[k].s.cashAmount = users[k].s.target * users[k].s.betAmount;
                 users[k].s.betted = false;
 
-                cashoutAmount += users[k].s.target * users[k].s.betAmount;
+                // cashoutAmount += users[k].s.target * users[k].s.betAmount;
             }
         }
     }
 }, 500);
 
+function getMultiValue(num: number) {
+    return (Math.floor(Math.random() * 10) + 1) * num;
+}
+
+function getBotRandomBetAmount() {
+    let a = 20, b = 50, c = 100;
+
+    var rd = Math.floor(Math.random() * 6) + 1;
+
+    if (rd === 1) {
+        return getMultiValue(a);
+    } else if (rd === 2) {
+        return getMultiValue(b);
+    } else if (rd === 3) {
+        return getMultiValue(c);
+    } else if (rd === 4) {
+        return getMultiValue(a) + getMultiValue(b);
+    } else if (rd === 5) {
+        return getMultiValue(a) + getMultiValue(b) + getMultiValue(c);
+    } else {
+        return (Math.random() * 1000) + 1;
+    }
+
+}
+
 // Bots bet in here.
-function bot_bet(id: string) {
-    let fbetAmount = (Math.random() * 1000) + 1
-    let sbetAmount = (Math.random() * 1000) + 1
+function betBot(id: string) {
+    // let fbetAmount = (Math.random() * 1000) + 1
+    // let sbetAmount = (Math.random() * 1000) + 1
+    let fbetAmount = getBotRandomBetAmount();
+    let sbetAmount = getBotRandomBetAmount();
     users[id] = {
         ...DEFAULT_USER,
+        bot: true,
         f: {
             auto: false,
             betted: true,
@@ -356,10 +389,11 @@ function bot_bet(id: string) {
             cashAmount: 0,
             orderNo: Date.now() + Math.floor(Math.random() * 1000),
             target: (Math.random() * (1 / Math.random() - 0.01)) + 1.01,
-        }
+        },
     }
-    totalBetAmount += fbetAmount;
+    // totalBetAmount += fbetAmount;
 }
+
 
 export const initSocket = (io: Server) => {
     // create bots
