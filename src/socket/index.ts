@@ -2,6 +2,7 @@ import { Server, Socket } from 'socket.io'
 import crypto from 'crypto';
 import path from 'path';
 import { config } from "dotenv";
+import uniqid from 'uniqid';
 import { getTime } from "../math"
 import { addHistory } from '../model'
 import { Authentication, bet, settle, cancelBet } from '../controllers/client';
@@ -109,11 +110,12 @@ let botIds = [] as string[];
 const diffLimit = 9; // When we lost money, decrease RTP by this value, but be careful, if this value is high, the more 1.00 x will appear and users might complain.
 const salt = process.env.SALT || '8783642fc5b7f51c08918793964ca303edca39823325a3729ad62f0a2';
 
-// const initBots = () => {
-//     for (var i = 0; i < 20; i++) {
-//         botIds.push(uniqid());
-//     }
-// }
+const initBots = () => {
+    for (var i = 0; i < 20; i++) {
+        botIds.push(uniqid());
+    }
+}
+
 const gameRun = async () => {
     setTimeout(() => {
         gameRun();
@@ -197,13 +199,16 @@ const gameRun = async () => {
 
                 const time = Date.now() - startTime;
                 mysocketIo.emit('gameState', { currentNum, currentSecondNum, GameState, time });
+                botIds.map((item) => {
+                    users[item] = { ...DEFAULT_USER, bot: true, userType: false }
+                })
             }
             break;
         case "GAMEEND":
             if (Date.now() - startTime > GAMEENDTIME) {
                 let i = 0;
                 let interval = setInterval(() => {
-                    // bet(botIds[i]);
+                    bot_bet(botIds[i]);
                     i++;
                     if (i > 19)
                         clearInterval(interval);
@@ -301,62 +306,64 @@ const sendPreviousHand = () => {
     mysocketIo.emit("previousHand", myPreHand);
 }
 
-//bot cash out here.
-// setInterval(() => {
-//     if (GameState === "PLAYING") {
-//         let _bots = botIds.filter(k => users[k] && users[k].f.target <= currentNum && users[k].f.betted)
-//         if (_bots.length) {
-//             for (let k of _bots) {
-//                 users[k].f.cashouted = true;
-//                 users[k].f.cashAmount = users[k].f.target * users[k].f.betAmount;
-//                 users[k].f.betted = false;
+// bot cash out here.
+setInterval(() => {
+    if (GameState === "PLAYING") {
+        let _bots = botIds.filter(k => users[k] && users[k].f.target <= currentNum && users[k].f.betted)
+        if (_bots.length) {
+            for (let k of _bots) {
+                users[k].f.cashouted = true;
+                users[k].f.cashAmount = users[k].f.target * users[k].f.betAmount;
+                users[k].f.betted = false;
 
-//                 cashoutAmount += users[k].f.target * users[k].f.betAmount;
-//             }
-//         }
+                cashoutAmount += users[k].f.target * users[k].f.betAmount;
+            }
+        }
 
-//         _bots = botIds.filter(k => users[k] && users[k].s.target <= currentNum && users[k].s.betted)
-//         if (_bots.length) {
-//             for (let k of _bots) {
-//                 users[k].s.cashouted = true;
-//                 users[k].s.cashAmount = users[k].s.target * users[k].s.betAmount;
-//                 users[k].s.betted = false;
+        _bots = botIds.filter(k => users[k] && users[k].s.target <= currentNum && users[k].s.betted)
+        if (_bots.length) {
+            for (let k of _bots) {
+                users[k].s.cashouted = true;
+                users[k].s.cashAmount = users[k].s.target * users[k].s.betAmount;
+                users[k].s.betted = false;
 
-//                 cashoutAmount += users[k].s.target * users[k].s.betAmount;
-//             }
-//         }
-//     }
-// }, 500);
+                cashoutAmount += users[k].s.target * users[k].s.betAmount;
+            }
+        }
+    }
+}, 500);
 
 // Bots bet in here.
-// function bet(id: string) {
-//     let fbetAmount = (Math.random() * 1000) + 1
-//     let sbetAmount = (Math.random() * 1000) + 1
-//     users[id] = {
-//         ...DEFAULT_USER,
-//         f: {
-//             auto: false,
-//             betted: true,
-//             cashouted: false,
-//             betAmount: fbetAmount,
-//             cashAmount: 0,
-//             target: (Math.random() * (1 / Math.random() - 0.01)) + 1.01,
-//         },
-//         s: {
-//             auto: false,
-//             betted: false,
-//             cashouted: false,
-//             betAmount: sbetAmount,
-//             cashAmount: 0,
-//             target: (Math.random() * (1 / Math.random() - 0.01)) + 1.01,
-//         }
-//     }
-//     totalBetAmount += fbetAmount;
-// }
+function bot_bet(id: string) {
+    let fbetAmount = (Math.random() * 1000) + 1
+    let sbetAmount = (Math.random() * 1000) + 1
+    users[id] = {
+        ...DEFAULT_USER,
+        f: {
+            auto: false,
+            betted: true,
+            cashouted: false,
+            betAmount: fbetAmount,
+            cashAmount: 0,
+            orderNo: Date.now() + Math.floor(Math.random() * 1000),
+            target: (Math.random() * (1 / Math.random() - 0.01)) + 1.01,
+        },
+        s: {
+            auto: false,
+            betted: false,
+            cashouted: false,
+            betAmount: sbetAmount,
+            cashAmount: 0,
+            orderNo: Date.now() + Math.floor(Math.random() * 1000),
+            target: (Math.random() * (1 / Math.random() - 0.01)) + 1.01,
+        }
+    }
+    totalBetAmount += fbetAmount;
+}
 
 export const initSocket = (io: Server) => {
     // create bots
-    // initBots()
+    initBots()
 
     mysocketIo = io;
     io.on("connection", async (socket) => {
