@@ -224,9 +224,10 @@ export const cancelBet = async (UserID: string, betid: string, amount: string, c
             amount,
             currency,
             Session_Token,
-            cancelbetid,
+            cancelbetid: "CAN1702461170676",
         }
         var hashed = await hashFunc(sendData);
+        console.log(hashed);
         const resData = await axios.post(cancelUrl, sendData, {
             headers: {
                 'Content-Type': 'application/json',
