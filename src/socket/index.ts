@@ -513,17 +513,14 @@ export const initSocket = (io: Server) => {
                             player.cashouted = true;
                             player.cashAmount = endTarget * player.betAmount;
                             player.betted = false;
-                            if (type === 'f') {
-                                u.f.orderNo = 0;
-                            } else {
-                                u.s.orderNo = 0;
-                            }
+                            player.orderNo = 0;
                             player.target = endTarget;
                             // u.balance += endTarget * player.betAmount;
-                            console.log('returnData', returnData)
                             u.balance = returnData.balance;
                             cashoutAmount += endTarget * player.betAmount;
                             // users[socket.id] = u;
+                            console.log('player', player)
+                            console.log('u', u)
                             socket.emit("finishGame", u);
                             socket.emit("success", `Successfully CashOuted ${Number(player.cashAmount).toFixed(2)}`);
                         } else {
