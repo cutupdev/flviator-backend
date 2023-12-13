@@ -453,7 +453,7 @@ export const initSocket = (io: Server) => {
             const { betAmount, target, type, auto } = data;
             if (GameState === "BET") {
                 let u = users[socket.id];
-
+                console.log('users', users)
                 if (!!u) {
                     if (betAmount >= localconfig.betting.min && betAmount <= localconfig.betting.max) {
                         if (u.balance - betAmount >= 0) {
