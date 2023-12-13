@@ -458,6 +458,7 @@ export const initSocket = (io: Server) => {
                     if (betAmount >= localconfig.betting.min && betAmount <= localconfig.betting.max) {
                         if (u.balance - betAmount >= 0) {
                             const betid = Date.now() + Math.floor(Math.random() * 1000);
+                            console.log(`the user is playing bet bet type is ${type} bet id is ${betid}`)
                             const betRes = await bet(users[socket.id].userId, `${betid}`, `${betAmount}`, u.currency, u.Session_Token);
                             if (betRes.status) {
                                 if (type === 'f') {
@@ -488,6 +489,8 @@ export const initSocket = (io: Server) => {
                         } else {
                             socket.emit('error', { message: "Your balance is not enough", index: type });
                         }
+                    } else {
+                        socket.emit('error', { message: `Your bet range is ${localconfig.betting.min}~${localconfig.betting.max}`, index: type });
                     }
                 } else {
                     socket.emit('error', { message: "Undefined User", index: type });
