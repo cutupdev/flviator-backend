@@ -521,9 +521,15 @@ export const initSocket = (io: Server) => {
                             var returnData: any = await settle(users[socket.id].userId, `${type === 'f' ? u.f.orderNo : u.s.orderNo}`, endTarget.toFixed(2), (endTarget * player.betAmount).toFixed(2), u.currency, u.Session_Token);
                             player.cashouted = true;
                             player.cashAmount = endTarget * player.betAmount;
+
                             if (u.f.betted === false && u.s.betted === false) {
                                 player.betted = false;
+                            }
+                            
+                            if (u.f.betted === false) {
                                 u.f.orderNo = 0;
+                            }
+                            if (u.s.betted === false) {
                                 u.s.orderNo = 0;
                             }
                             player.target = endTarget;
