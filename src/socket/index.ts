@@ -1,8 +1,8 @@
 import { Server, Socket } from 'socket.io'
 import crypto from 'crypto';
 import path from 'path';
-import uniqid from 'uniqid'
 import { config } from "dotenv";
+import uniqid from 'uniqid';
 import { getTime } from "../math"
 import { addHistory } from '../model'
 import { Authentication, bet, settle, cancelBet } from '../controllers/client';
@@ -12,6 +12,8 @@ import localconfig from "../config.json";
 const envUrl = process.env.NODE_ENV === 'development' ? '../../.env.development' : '../../.env.prod';
 config({ path: path.join(__dirname, envUrl) });
 require('dotenv').config({ path: path.join(__dirname, envUrl) });
+
+var botNum = Math.floor(Math.random() * 15);
 
 interface UserType {
     userId: string
@@ -110,11 +112,9 @@ let botIds = [] as string[];
 const diffLimit = 9; // When we lost money, decrease RTP by this value, but be careful, if this value is high, the more 1.00 x will appear and users might complain.
 const salt = process.env.SALT || '8783642fc5b7f51c08918793964ca303edca39823325a3729ad62f0a2';
 
-var botNum = Math.floor(Math.random() * 15);
-
 const initBots = () => {
     for (var i = 0; i < botNum; i++) {
-        botIds.push(uniqid());
+        botIds.push(`${uniqid()}`);
     }
 }
 
@@ -239,7 +239,6 @@ gameRun();
 //     return time;
 // }
 
-
 const sendInfo = () => {
     if (GameState !== "GAMEEND") {
         const info = [] as Array<{
@@ -311,6 +310,7 @@ const sendPreviousHand = () => {
     mysocketIo.emit("previousHand", myPreHand);
 }
 
+
 // bot cash out here.
 setInterval(() => {
     if (GameState === "PLAYING") {
@@ -377,8 +377,8 @@ function betBot(id: string) {
             betted: true,
             cashouted: false,
             betAmount: fbetAmount,
-            orderNo: Date.now() + Math.floor(Math.random() * 1000),
             cashAmount: 0,
+            orderNo: Date.now() + Math.floor(Math.random() * 1000),
             target: (Math.random() * (1 / Math.random() - 0.01)) + 1.01,
         },
         s: {
@@ -393,6 +393,7 @@ function betBot(id: string) {
     }
     // totalBetAmount += fbetAmount;
 }
+
 
 export const initSocket = (io: Server) => {
     // create bots
@@ -469,7 +470,6 @@ export const initSocket = (io: Server) => {
         })
         socket.on('playBet', async (data: any) => {
             const { betAmount, target, type, auto } = data;
-            console.log('betAmount, target, type, auto', betAmount, target, type, auto)
             if (GameState === "BET") {
                 let u = users[socket.id];
                 if (!!u) {
@@ -551,12 +551,12 @@ export const initSocket = (io: Server) => {
         })
 
         setInterval(() => {
-            if (GameState === NextGameState) {
-                NextGameState = NextState;
-                const time = Date.now() - startTime;
-                io.emit('gameState', { currentNum, currentSecondNum, GameState, time });
-                sendInfo();
-            }
+            // if (GameState === NextGameState) {
+            // NextGameState = NextState;
+            const time = Date.now() - startTime;
+            io.emit('gameState', { currentNum, currentSecondNum, GameState, time });
+            // }
+            sendInfo();
         }, 100)
     });
 
