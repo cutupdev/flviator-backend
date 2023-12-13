@@ -88,7 +88,7 @@ export const Authentication = async (token: string, UserID: string, currency: st
                 data: {
                     userId: UserID,
                     userName: _data.username,
-                    balance: _data.balance,
+                    balance: Number(_data.balance) || 0,
                     currency: _data.currency,
                     avatar: _data.avatar,
                 }
@@ -153,7 +153,7 @@ export const bet = async (UserID: string, betid: string, betAmount: string, curr
                 status: true,
                 orderNo: _data.betid,
                 currency: _data.currency,
-                balance: _data.updatedBalance
+                balance: Number(_data.updatedBalance) || 0
             };
         } else {
             console.log('_data.message', _data.message)
@@ -196,7 +196,7 @@ export const settle = async (UserID: string, orderNo: string, cashoutPoint: stri
         if (_data.code === 200) {
             return {
                 status: true,
-                balance: _data.data.updatedBalance,
+                balance: Number(_data.data.updatedBalance) || 0,
                 orderNo: orderNo
             };
         } else {
@@ -238,7 +238,7 @@ export const cancelBet = async (UserID: string, betid: string, amount: string, c
         if (_data.code === 200) {
             return {
                 status: true,
-                balance: _data.data.updatedBalance,
+                balance: Number(_data.data.updatedBalance) || 0,
                 orderNo: betid
             };
         } else {

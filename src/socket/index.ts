@@ -536,8 +536,7 @@ export const initSocket = (io: Server) => {
                             }
                             player.target = endTarget;
                             // u.balance += endTarget * player.betAmount;
-                            console.log(Number(returnData.balance))
-                            u.balance = Number(returnData.balance);
+                            u.balance = returnData.balance;
                             cashoutAmount += endTarget * player.betAmount;
                             // users[socket.id] = u;
                             socket.emit("finishGame", u);
