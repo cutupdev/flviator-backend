@@ -229,10 +229,7 @@ const gameRun = async () => {
             var currentTime = (Date.now() - startTime) / 1000;
             currentNum = 1 + 0.06 * currentTime + Math.pow((0.06 * currentTime), 2) - Math.pow((0.04 * currentTime), 3) + Math.pow((0.04 * currentTime), 4)
             currentSecondNum = currentNum;
-            let RTPAmount = cashoutAmount / totalBetAmount * 100;
-            if (RTPAmount >= RTP)
-                target = currentNum;
-            if (currentTime > gameTime || RTPAmount >= RTP) {
+            if (currentTime > gameTime) {
                 sendPreviousHand();
                 currentSecondNum = 0;
                 currentNum = target;
@@ -241,30 +238,6 @@ const gameRun = async () => {
                 totalBetAmount = 0;
                 cashoutAmount = 0;
                 startTime = Date.now();
-                for (const k in users) {
-                    const i = users[k];
-                    if (!i.bot) {
-                        if (i.f.betted || i.f.cashouted) {
-                            await addHistory(i.userName, i.f.betAmount, i.f.target, i.f.cashouted)
-                        }
-                        i.f.betted = false;
-                        i.f.cashouted = false;
-                        i.f.betAmount = 0;
-                        i.f.cashAmount = 0;
-                        if (i.s.betted || i.s.cashouted) {
-                            await addHistory(i.userName, i.s.betAmount, i.s.target, i.s.cashouted)
-                        }
-                        i.s.betted = false;
-                        i.s.cashouted = false;
-                        i.s.betAmount = 0;
-                        i.s.cashAmount = 0;
-                        sockets.map((socket) => {
-                            if (socket.id === i.socketId) {
-                                socket.emit("finishGame", i);
-                            }
-                        })
-                    }
-                }
 
                 const time = Date.now() - startTime;
                 mysocketIo.emit('gameState', { currentNum, currentSecondNum, GameState, time });
