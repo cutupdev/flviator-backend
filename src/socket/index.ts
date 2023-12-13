@@ -170,31 +170,30 @@ const gameRun = async () => {
                 GameState = "GAMEEND";
                 NextState = "BET";
                 startTime = Date.now();
-                // for (const k in users) {
-                //     const i = users[k];
-                //     let fBetted = i.f.betted;
-                //     if (i.f.betted || i.f.cashouted) {
-                //         addHistory(i.userId, i.f.betAmount, i.f.target, i.f.cashouted)
-                //     }
-                //     i.f.betted = false;
-                //     i.f.cashouted = false;
-                //     i.f.betAmount = 0;
-                //     i.f.cashAmount = 0;
-                //     let sBetted = i.s.betted;
-                //     if (i.s.betted || i.s.cashouted) {
-                //         addHistory(i.userId, i.s.betAmount, i.s.target, i.s.cashouted)
-                //     }
-                //     i.s.betted = false;
-                //     i.s.cashouted = false;
-                //     i.s.betAmount = 0;
-                //     i.s.cashAmount = 0;
-                //     sockets.map((socket) => {
-                //         if (socket.id === i.socketId && (fBetted || sBetted)) {
-                //             console.log('i', i)
-                //             // socket.emit("finishGame", i);
-                //         }
-                //     })
-                // }
+                for (const k in users) {
+                    const i = users[k];
+                    let fBetted = i.f.betted;
+                    if (i.f.betted || i.f.cashouted) {
+                        addHistory(i.userId, i.f.betAmount, i.f.target, i.f.cashouted)
+                    }
+                    i.f.betted = false;
+                    i.f.cashouted = false;
+                    i.f.betAmount = 0;
+                    i.f.cashAmount = 0;
+                    let sBetted = i.s.betted;
+                    if (i.s.betted || i.s.cashouted) {
+                        addHistory(i.userId, i.s.betAmount, i.s.target, i.s.cashouted)
+                    }
+                    i.s.betted = false;
+                    i.s.cashouted = false;
+                    i.s.betAmount = 0;
+                    i.s.cashAmount = 0;
+                    sockets.map((socket) => {
+                        if (socket.id === i.socketId && (fBetted || sBetted)) {
+                            socket.emit("finishGame", i);
+                        }
+                    })
+                }
 
                 const time = Date.now() - startTime;
                 mysocketIo.emit('gameState', { currentNum, currentSecondNum, GameState, time });
@@ -217,32 +216,6 @@ const gameRun = async () => {
                 const time = Date.now() - startTime;
                 mysocketIo.emit('gameState', { currentNum, currentSecondNum, GameState, time });
                 target = -1;
-
-                for (const k in users) {
-                    const i = users[k];
-                    let fBetted = i.f.betted;
-                    if (i.f.betted || i.f.cashouted) {
-                        addHistory(i.userId, i.f.betAmount, i.f.target, i.f.cashouted)
-                    }
-                    i.f.betted = false;
-                    i.f.cashouted = false;
-                    i.f.betAmount = 0;
-                    i.f.cashAmount = 0;
-                    let sBetted = i.s.betted;
-                    if (i.s.betted || i.s.cashouted) {
-                        addHistory(i.userId, i.s.betAmount, i.s.target, i.s.cashouted)
-                    }
-                    i.s.betted = false;
-                    i.s.cashouted = false;
-                    i.s.betAmount = 0;
-                    i.s.cashAmount = 0;
-                    sockets.map((socket) => {
-                        if (socket.id === i.socketId && (fBetted || sBetted)) {
-                            console.log('i', i)
-                            // socket.emit("finishGame", i);
-                        }
-                    })
-                }
             }
             break;
     }
@@ -477,7 +450,6 @@ export const initSocket = (io: Server) => {
                                     u.s.auto = auto;
                                     u.s.target = target;
                                 }
-                                console.log('betRes.balance', betRes.balance)
                                 u.balance = betRes.balance;
                                 // users[socket.id] = u;
                                 totalBetAmount += betAmount;
@@ -522,7 +494,6 @@ export const initSocket = (io: Server) => {
                             player.orderNo = 0;
                             player.target = endTarget;
                             // u.balance += endTarget * player.betAmount;
-                            console.log('returnData.balance', returnData.balance)
                             u.balance = returnData.balance;
                             cashoutAmount += endTarget * player.betAmount;
                             // users[socket.id] = u;
