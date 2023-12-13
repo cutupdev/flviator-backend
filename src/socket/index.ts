@@ -437,6 +437,7 @@ export const initSocket = (io: Server) => {
             if (token !== null && token !== undefined) {
                 var Session_Token = crypto.randomUUID();
                 const userInfo = await Authentication(token, UserID, currency, Session_Token);
+                console.log('userInfo', userInfo)
                 if (userInfo.status) {
                     users[socket.id] = {
                         ...DEFAULT_USER,
@@ -549,14 +550,14 @@ export const initSocket = (io: Server) => {
                 socket.emit('error', { message: 'Undefined User', index: type });
         })
 
-        // setInterval(() => {
-        //     // if (GameState === NextGameState) {
-        //     // NextGameState = NextState;
-        //     const time = Date.now() - startTime;
-        //     io.emit('gameState', { currentNum, currentSecondNum, GameState, time });
-        //     // }
-        //     // sendInfo();
-        // }, 100)
+        setInterval(() => {
+            // if (GameState === NextGameState) {
+            // NextGameState = NextState;
+            const time = Date.now() - startTime;
+            io.emit('gameState', { currentNum, currentSecondNum, GameState, time });
+            // }
+            sendInfo();
+        }, 100)
     });
 
     const closeServer = () => {
