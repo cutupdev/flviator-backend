@@ -219,7 +219,7 @@ export const cancelBet = async (UserID: string, betid: string, amount: string, c
     try {
         const cancelbetid = Date.now() + Math.floor(Math.random() * 1000);
         const sendData = {
-            userID:UserID,
+            userID: UserID,
             betid,
             amount,
             currency,
@@ -315,6 +315,7 @@ export const updateGameInfo = async (req: Request, res: Response) => {
 export const myInfo = async (req: Request, res: Response) => {
     try {
         let { userId } = req.body as { userId: string };
+        console.log("userId", userId);
         if (!userId) return res.status(404).send("invalid paramters")
         const data = await DHistories.find({ userId }).sort({ date: -1 }).limit(20).toArray();
         res.json({ status: true, data });
@@ -383,7 +384,7 @@ const testFunc = async () => {
     //     }
     // })
     // console.log(resData)
-    var result =  await cancelBet("Smith#167","1702461168478","22.12","INR","069eed7f-7f90-4882-b79a-8e5e5bf32c8b")
+    var result = await cancelBet("Smith#167", "1702461168478", "22.12", "INR", "069eed7f-7f90-4882-b79a-8e5e5bf32c8b")
     console.log(result);
 }
 
