@@ -249,7 +249,6 @@ gameRun();
 const getRandom = () => {
     var r = Math.random();
     target = 1 / r;
-    console.log(target);
     var time = getTime(target);
     return time;
 }
@@ -389,16 +388,13 @@ export const initSocket = (io: Server) => {
             socket.emit('sessionSecure', { sessionStatus: true })
         })
 
-        console.log("new User connected:" + socket.id);
         sockets.push(socket);
         socket.on('disconnect', async () => {
-            console.log("Disconnected User : ", socket.id, users[socket.id]);
             const checkIndex = sockets.findIndex((s) => (
                 s.id === socket.id
             ))
 
             if (checkIndex > -1) {
-                console.log("Disconnected User : ", socket.id);
                 if (users[socket.id]?.f?.orderNo > 0 || users[socket.id]?.s?.orderNo > 0) {
                     let betAmount = 0;
                     if (users[socket.id].f.betted && !users[socket.id].f.cashouted) {
@@ -420,7 +416,6 @@ export const initSocket = (io: Server) => {
             UserID = decodeURIComponent(UserID);
             currency = decodeURIComponent(currency);
 
-            console.log(`${UserID} entered the crash with ${token} token and currency is ${currency}`);
 
             socket.emit('getBetLimits', { max: localconfig.betting.max, min: localconfig.betting.min });
             if (token !== null && token !== undefined) {
@@ -460,10 +455,7 @@ export const initSocket = (io: Server) => {
                 let u = users[socket.id];
 
                 if (!!u) {
-                    console.log('u', u)
                     if (betAmount >= localconfig.betting.min && betAmount <= localconfig.betting.max) {
-                        console.log('u.balance', u.balance)
-                        console.log('betAmount', betAmount)
                         if (u.balance - betAmount >= 0) {
                             const betid = Date.now() + Math.floor(Math.random() * 1000);
                             const betRes = await bet(users[socket.id].userId, `${betid}`, `${betAmount}`, u.currency, u.Session_Token);
@@ -489,7 +481,6 @@ export const initSocket = (io: Server) => {
                                     cashoutAmount = 0;
                                 }
 
-                                console.log("UserId >>", users[socket.id].userId);
                                 socket.emit("myBetState", { user: u, type });
                             } else {
                                 socket.emit('error', { message: betRes.message, index: type, userInfo: u });
@@ -509,7 +500,6 @@ export const initSocket = (io: Server) => {
         })
         socket.on('cashOut', async (data) => {
             const { type, endTarget } = data;
-            console.log("Cashout>>", users[socket.id].userId);
             let u = users[socket.id];
             let player;
             if (type === 'f')
@@ -563,7 +553,6 @@ export const initSocket = (io: Server) => {
 
     const closeServer = () => {
         io.close(() => {
-            console.log('Socket server closed');
             process.exit(0);
         });
     }

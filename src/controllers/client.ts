@@ -18,7 +18,6 @@ const cashoutUrl = `${API_URL}${process.env.CASHOUT_URL || '/cashout'}`;
 const secret = process.env.JWT_SECRET || `brxJydVrU4agdgSSbnMNMQy01bNE8T5G`;
 
 export const hashFunc = async (obj: any) => {
-    console.log(JSON.stringify(obj).trim())
     var hmac = await crypto.createHmac('SHA256', secret)
         .update(JSON.stringify(obj).trim())
         .digest('base64');
@@ -38,7 +37,6 @@ export const GameLaunch = async (req: Request, res: Response) => {
 
             if (!userData) {
                 await addUser(UserID, "", 0, currency, '')
-                console.log('Added new user', UserID)
             }
 
             res.status(200).send({
@@ -53,7 +51,6 @@ export const GameLaunch = async (req: Request, res: Response) => {
         }
 
     } catch (err) {
-        console.log(err);
         return res.status(500).send("Internal error");
     }
 }
@@ -74,13 +71,11 @@ export const Authentication = async (token: string, UserID: string, currency: st
             }
         })
         var _data = resData.data;
-        console.log('_data', _data);
         if (_data.code === 200) {
             _data = _data.data;
             const userData = await DUsers.findOne({ "userId": UserID });
             if (!userData) {
                 await addUser(UserID, _data.username, _data.balance, _data.currency, _data.avatar)
-                console.log('Added new user', UserID, _data.balance)
             }
             // Code,Message,data:[userid,username,balance,currency,avatar]
             return {
@@ -94,7 +89,6 @@ export const Authentication = async (token: string, UserID: string, currency: st
                 }
             };
         } else {
-            console.log('_data.message', _data.message)
             return {
                 status: false,
                 message: _data.message
@@ -102,7 +96,6 @@ export const Authentication = async (token: string, UserID: string, currency: st
         }
 
     } catch (err) {
-        console.log(err);
         return {
             status: false
         }
@@ -143,11 +136,8 @@ export const bet = async (UserID: string, betid: string, betAmount: string, curr
                 'hashkey': hashed
             }
         })
-        console.log(sendData);
-        console.log(hashed);
 
         const _data = resData.data;
-        console.log('bet response', _data)
         if (_data.code === 200) {
             return {
                 status: true,
@@ -156,7 +146,6 @@ export const bet = async (UserID: string, betid: string, betAmount: string, curr
                 balance: Number(_data.updatedBalance) || 0
             };
         } else {
-            console.log('_data.message', _data.message)
             return {
                 status: false,
                 message: _data.message
@@ -190,9 +179,7 @@ export const settle = async (UserID: string, orderNo: string, cashoutPoint: stri
                 'hashkey': hashed
             }
         })
-        console.log("=====================")
         const _data = resData.data;
-        console.log("_data", _data)
         if (_data.code === 200) {
             return {
                 status: true,
@@ -200,7 +187,6 @@ export const settle = async (UserID: string, orderNo: string, cashoutPoint: stri
                 orderNo: orderNo
             };
         } else {
-            console.log('_data.message', _data.message)
             return {
                 status: false,
                 message: _data.message
@@ -227,7 +213,6 @@ export const cancelBet = async (UserID: string, betid: string, amount: string, c
             cancelbetid: "CAN1702461170676",
         }
         var hashed = await hashFunc(sendData);
-        console.log(hashed);
         const resData = await axios.post(cancelUrl, sendData, {
             headers: {
                 'Content-Type': 'application/json',
@@ -242,7 +227,6 @@ export const cancelBet = async (UserID: string, betid: string, amount: string, c
                 orderNo: betid
             };
         } else {
-            console.log('_data.message', _data.message)
             return {
                 status: false,
                 message: _data.message
@@ -315,7 +299,6 @@ export const updateGameInfo = async (req: Request, res: Response) => {
 export const myInfo = async (req: Request, res: Response) => {
     try {
         let { userId } = req.body as { userId: string };
-        console.log("userId", userId);
         if (!userId) return res.status(404).send("invalid paramters")
         const data = await DHistories.find({ userId }).sort({ date: -1 }).limit(20).toArray();
         res.json({ status: true, data });
@@ -373,19 +356,16 @@ export const yearHistory = async (req: Request, res: Response) => {
 
 
 
-const testFunc = async () => {
-    // var sendData = {"userID":"Smith#167","betid":"1702461168478","amount":"22.12","currency":"INR","Session_Token":"069eed7f-7f90-4882-b79a-8e5e5bf32c8b","cancelbetid":"CAN1702461170676"}
-    // var hash = await hashFunc(sendData)
-    // console.log(hash)
-    // const resData = await axios.post(betUrl, sendData, {
-    //     headers: {
-    //         'Content-Type': 'application/json',
-    //         'hashkey': hash
-    //     }
-    // })
-    // console.log(resData)
-    var result = await cancelBet("Smith#167", "1702461168478", "22.12", "INR", "069eed7f-7f90-4882-b79a-8e5e5bf32c8b")
-    console.log(result);
-}
+// const testFunc = async () => {
+//     // var sendData = {"userID":"Smith#167","betid":"1702461168478","amount":"22.12","currency":"INR","Session_Token":"069eed7f-7f90-4882-b79a-8e5e5bf32c8b","cancelbetid":"CAN1702461170676"}
+//     // var hash = await hashFunc(sendData)
+//     // const resData = await axios.post(betUrl, sendData, {
+//     //     headers: {
+//     //         'Content-Type': 'application/json',
+//     //         'hashkey': hash
+//     //     }
+//     // })
+//     var result = await cancelBet("Smith#167", "1702461168478", "22.12", "INR", "069eed7f-7f90-4882-b79a-8e5e5bf32c8b")
+// }
 
-testFunc();
+// testFunc();
