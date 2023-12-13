@@ -192,12 +192,12 @@ export const settle = async (UserID: string, orderNo: string, cashoutPoint: stri
         const cashoutid = `${Date.now() + Math.floor(Math.random() * 1000)}`;
         const sendData = {
             UserID,
-            cashoutid,
             betid: orderNo,
             cashoutPoint,
             amount,
             currency,
-            Session_Token
+            Session_Token,
+            cashoutid
         }
         var hashed = await hashFunc(sendData);
         const resData = await axios.post(cashoutUrl, sendData, {
