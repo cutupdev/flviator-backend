@@ -26,23 +26,6 @@ export const hashFunc = async (obj: any) => {
     return hmac;
 }
 
-const testFunc = async () => {
-    // var sendData = {"userID":"Smith#167","betid":"1702461168478","amount":"22.12","currency":"INR","Session_Token":"069eed7f-7f90-4882-b79a-8e5e5bf32c8b","cancelbetid":"CAN1702461170676"}
-    // var hash = await hashFunc(sendData)
-    // console.log(hash)
-    // const resData = await axios.post(betUrl, sendData, {
-    //     headers: {
-    //         'Content-Type': 'application/json',
-    //         'hashkey': hash
-    //     }
-    // })
-    // console.log(resData)
-    var result =  await cancelBet("Smith#167","1702461168478","22.12","INR","069eed7f-7f90-4882-b79a-8e5e5bf32c8b")
-    console.log(result);
-}
-
-testFunc();
-
 export const GameLaunch = async (req: Request, res: Response) => {
     try {
         var hashed = await hashFunc(req.body);
@@ -384,3 +367,23 @@ export const yearHistory = async (req: Request, res: Response) => {
         res.json({ status: false });
     }
 }
+
+
+
+
+const testFunc = async () => {
+    // var sendData = {"userID":"Smith#167","betid":"1702461168478","amount":"22.12","currency":"INR","Session_Token":"069eed7f-7f90-4882-b79a-8e5e5bf32c8b","cancelbetid":"CAN1702461170676"}
+    // var hash = await hashFunc(sendData)
+    // console.log(hash)
+    // const resData = await axios.post(betUrl, sendData, {
+    //     headers: {
+    //         'Content-Type': 'application/json',
+    //         'hashkey': hash
+    //     }
+    // })
+    // console.log(resData)
+    var result =  await cancelBet("Smith#167","1702461168478","22.12","INR","069eed7f-7f90-4882-b79a-8e5e5bf32c8b")
+    console.log(result);
+}
+
+testFunc();
