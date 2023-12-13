@@ -206,8 +206,11 @@ export const settle = async (UserID: string, orderNo: string, cashoutPoint: stri
                 'hashkey': hashed
             }
         })
+        console.log("=====================")
         console.log("sendData", sendData)
         console.log("resData", resData)
+        console.log("hashed", hashed)
+        console.log("=====================")
         const _data = resData.data;
         if (_data.code === 200) {
             return {
