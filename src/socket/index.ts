@@ -389,6 +389,7 @@ export const initSocket = (io: Server) => {
             }
         })
         socket.on('enterRoom', async (props) => {
+            console.log('enterRoom')
             var { token, UserID, currency } = props;
             token = decodeURIComponent(token);
             UserID = decodeURIComponent(UserID);
