@@ -437,7 +437,6 @@ export const initSocket = (io: Server) => {
             if (token !== null && token !== undefined) {
                 var Session_Token = crypto.randomUUID();
                 const userInfo = await Authentication(token, UserID, currency, Session_Token);
-                console.log('userInfo', userInfo)
                 if (userInfo.status) {
                     users[socket.id] = {
                         ...DEFAULT_USER,
@@ -470,6 +469,7 @@ export const initSocket = (io: Server) => {
         })
         socket.on('playBet', async (data: any) => {
             const { betAmount, target, type, auto } = data;
+            console.log('betAmount, target, type, auto', betAmount, target, type, auto)
             if (GameState === "BET") {
                 let u = users[socket.id];
                 if (!!u) {
