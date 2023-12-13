@@ -143,7 +143,7 @@ export const Authentication = async (token: string, UserID: string, currency: st
 // }
 
 
-export const bet = async (betid: string, UserID: string, betAmount: string, currency: string, Session_Token: string) => {
+export const bet = async (UserID: string, betid: string, betAmount: string, currency: string, Session_Token: string) => {
     try {
         const sendData = {
             UserID,
@@ -187,12 +187,12 @@ export const bet = async (betid: string, UserID: string, betAmount: string, curr
     }
 }
 
-export const settle = async (orderNo: string, UserID: string, cashoutPoint: string, amount: string, currency: string, Session_Token: string) => {
+export const settle = async (UserID: string, orderNo: string, cashoutPoint: string, amount: string, currency: string, Session_Token: string) => {
     try {
         const cashoutid = `${Date.now() + Math.floor(Math.random() * 1000)}`;
         const sendData = {
-            cashoutid,
             UserID,
+            cashoutid,
             betid: orderNo,
             cashoutPoint,
             amount,
