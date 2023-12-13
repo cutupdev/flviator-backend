@@ -26,21 +26,22 @@ export const hashFunc = async (obj: any) => {
     return hmac;
 }
 
-// const testFunc = async () => {
-//     var sendData = { "UserID": "Smith#167", "betAmount": "20", "betid": "1702413307764", "currency": "INR", "Session_Token": "2275ee09-2a82-4280-9f17-733702d30068" }
-//     var hash = await hashFunc(sendData)
-//     console.log(hash)
-//     const resData = await axios.post(betUrl, sendData, {
-//         headers: {
-//             'Content-Type': 'application/json',
-//             'hashkey': hash
-//         }
-//     })
-//     console.log(resData)
+const testFunc = async () => {
+    // var sendData = {"userID":"Smith#167","betid":"1702461168478","amount":"22.12","currency":"INR","Session_Token":"069eed7f-7f90-4882-b79a-8e5e5bf32c8b","cancelbetid":"CAN1702461170676"}
+    // var hash = await hashFunc(sendData)
+    // console.log(hash)
+    // const resData = await axios.post(betUrl, sendData, {
+    //     headers: {
+    //         'Content-Type': 'application/json',
+    //         'hashkey': hash
+    //     }
+    // })
+    // console.log(resData)
+    var result =  await cancelBet("Smith#167","1702461168478","22.12","INR","069eed7f-7f90-4882-b79a-8e5e5bf32c8b")
+    console.log(result);
+}
 
-// }
-
-// testFunc();
+testFunc();
 
 export const GameLaunch = async (req: Request, res: Response) => {
     try {
@@ -231,12 +232,12 @@ export const settle = async (UserID: string, orderNo: string, cashoutPoint: stri
     }
 }
 
-export const cancelBet = async (UserID: string, orderNo: string, amount: string, currency: string, Session_Token: string) => {
+export const cancelBet = async (UserID: string, betid: string, amount: string, currency: string, Session_Token: string) => {
     try {
         const cancelbetid = Date.now() + Math.floor(Math.random() * 1000);
         const sendData = {
-            UserID,
-            betid: orderNo,
+            userID:UserID,
+            betid,
             amount,
             currency,
             Session_Token,
@@ -253,8 +254,8 @@ export const cancelBet = async (UserID: string, orderNo: string, amount: string,
         if (_data.code === 200) {
             return {
                 status: true,
-                balance: _data.updatedBalance,
-                orderNo: orderNo
+                balance: _data.data.updatedBalance,
+                orderNo: betid
             };
         } else {
             console.log('_data.message', _data.message)
@@ -329,16 +330,10 @@ export const updateGameInfo = async (req: Request, res: Response) => {
 
 export const myInfo = async (req: Request, res: Response) => {
     try {
-        const sendData = req.body
-        var hashed = await hashFunc(sendData);
-        if (hashed === req.get('hashkey')) {
-            let { id } = req.body as { id: string };
-            if (!id) return res.status(404).send("invalid paramters")
-            const data = await DHistories.find({ userId: id }).sort({ date: -1 }).limit(20).toArray();
-            res.json({ status: true, data });
-        } else {
-            return res.status(401).send("User token is invalid");
-        }
+        let { userId } = req.body as { userId: string };
+        if (!userId) return res.status(404).send("invalid paramters")
+        const data = await DHistories.find({ userId }).sort({ date: -1 }).limit(20).toArray();
+        res.json({ status: true, data });
     } catch (error) {
         setlog('myInfo', error)
         res.json({ status: false });
