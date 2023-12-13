@@ -13,7 +13,7 @@ router.get('/get-total-users', totalUsers);
 router.get('/get-game-info', getGameInfo);
 
 router.post('/GameLaunch', GameLaunch);
-router.post('/Authentication', myInfo);
+router.post('/my-info', myInfo);
 router.post("/update-game-info", updateGameInfo);
 
 export default router
