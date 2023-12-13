@@ -230,8 +230,8 @@ const gameRun = async () => {
             currentNum = 1 + 0.06 * currentTime + Math.pow((0.06 * currentTime), 2) - Math.pow((0.04 * currentTime), 3) + Math.pow((0.04 * currentTime), 4)
             currentSecondNum = currentNum;
             if (currentTime > gameTime) {
+                console.log("here");
                 sendPreviousHand();
-                currentSecondNum = 0;
                 // currentNum = target;
                 GameState = "GAMEEND";
                 NextState = "BET";
@@ -529,6 +529,7 @@ export const initSocket = (io: Server) => {
             if (!!u) {
                 if (GameState === "PLAYING") {
                     if (!player.cashouted && player.betted) {
+                        console.log('endTarget <= currentSecondNum', endTarget, currentSecondNum)
                         if (endTarget <= currentSecondNum) {
                             var returnData: any = await settle(users[socket.id].userId, `${player.orderNo}`, endTarget.toFixed(2), (endTarget * player.betAmount).toFixed(2), u.currency, u.Session_Token);
                             console.log('returnData', returnData)
