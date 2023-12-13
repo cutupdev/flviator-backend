@@ -18,6 +18,7 @@ const cashoutUrl = `${API_URL}${process.env.CASHOUT_URL || '/cashout'}`;
 const secret = process.env.JWT_SECRET || `brxJydVrU4agdgSSbnMNMQy01bNE8T5G`;
 
 export const hashFunc = async (obj: any) => {
+    console.log(JSON.stringify(obj).trim())
     var hmac = await crypto.createHmac('SHA256', secret)
         .update(JSON.stringify(obj).trim())
         .digest('base64');
@@ -25,17 +26,21 @@ export const hashFunc = async (obj: any) => {
     return hmac;
 }
 
-// const testFunc = async () => {
-//     console.log(await hashFunc({
-//         UserID: "Smith#167",
-//         betAmount: "20",
-//         betid: "1702412024640",
-//         currency: "INR",
-//         Session_Token: "d3e8f9da-b341-4a3d-bff6-d92b820dba5e"
-//     }))
-// }
+const testFunc = async () => {
+    var sendData = { "UserID": "Smith#167", "betAmount": "20", "betid": "1702413307764", "currency": "INR", "Session_Token": "2275ee09-2a82-4280-9f17-733702d30068" }
+    var hash = await hashFunc(sendData)
+    console.log(hash)
+    const resData = await axios.post(getBalanceUrl, sendData, {
+        headers: {
+            'Content-Type': 'application/json',
+            'hashkey': hash
+        }
+    })
+    console.log(resData)
 
-// testFunc();
+}
+
+testFunc();
 
 export const GameLaunch = async (req: Request, res: Response) => {
     try {
@@ -158,7 +163,6 @@ export const bet = async (betid: string, UserID: string, betAmount: string, curr
         console.log(hashed);
 
         const _data = resData.data;
-        console.log('bet response', resData)
         console.log('bet response', _data)
         if (_data.code === 200) {
             return {

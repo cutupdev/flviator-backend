@@ -483,7 +483,7 @@ export const initSocket = (io: Server) => {
                                 console.log("UserId >>", users[socket.id].userId);
                                 socket.emit("myBetState", { user: u, type });
                             } else {
-                                socket.emit('error', { message: betRes.message, index: type });
+                                socket.emit('error', { message: betRes.message, index: type, userInfo: u });
                             }
                         } else {
                             socket.emit('error', { message: "Your balance is not enough", index: type });
