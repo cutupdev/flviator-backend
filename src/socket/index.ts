@@ -241,6 +241,31 @@ const gameRun = async () => {
                 totalBetAmount = 0;
                 cashoutAmount = 0;
                 startTime = Date.now();
+                for (const k in users) {
+                    const i = users[k];
+                    if (!i.bot) {
+                        if (i.f.betted || i.f.cashouted) {
+                            await addHistory(i.userName, i.f.betAmount, i.f.target, i.f.cashouted)
+                        }
+                        i.f.betted = false;
+                        i.f.cashouted = false;
+                        i.f.betAmount = 0;
+                        i.f.cashAmount = 0;
+                        if (i.s.betted || i.s.cashouted) {
+                            await addHistory(i.userName, i.s.betAmount, i.s.target, i.s.cashouted)
+                        }
+                        i.s.betted = false;
+                        i.s.cashouted = false;
+                        i.s.betAmount = 0;
+                        i.s.cashAmount = 0;
+                        sockets.map((socket) => {
+                            if (socket.id === i.socketId) {
+                                socket.emit("finishGame", i);
+                            }
+                        })
+                    }
+                }
+
                 const time = Date.now() - startTime;
                 mysocketIo.emit('gameState', { currentNum, currentSecondNum, GameState, time });
             }
