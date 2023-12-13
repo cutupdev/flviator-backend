@@ -223,12 +223,12 @@ const gameRun = async () => {
 
 gameRun();
 
-const getRandom = () => {
-    var r = Math.random();
-    target = 1 / r;
-    var time = getTime(target);
-    return time;
-}
+// const getRandom = () => {
+//     var r = Math.random();
+//     target = 1 / r;
+//     var time = getTime(target);
+//     return time;
+// }
 
 // const sendInfo = () => {
 //     if (GameState !== "GAMEEND") {
