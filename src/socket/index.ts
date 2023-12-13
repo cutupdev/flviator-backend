@@ -457,8 +457,8 @@ export const initSocket = (io: Server) => {
                 if (!!u) {
                     if (betAmount >= localconfig.betting.min && betAmount <= localconfig.betting.max) {
                         if (u.balance - betAmount >= 0) {
-                            const betid = `${Date.now() + Math.floor(Math.random() * 1000)}`;
-                            const betRes = await bet(betid, users[socket.id].userId, `${betAmount}`, u.currency, u.Session_Token);
+                            const betid = Date.now() + Math.floor(Math.random() * 1000);
+                            const betRes = await bet(`${betid}`, users[socket.id].userId, `${betAmount}`, u.currency, u.Session_Token);
                             if (betRes.status) {
                                 if (type === 'f') {
                                     u.f.betAmount = betAmount;
@@ -472,7 +472,7 @@ export const initSocket = (io: Server) => {
                                     u.s.target = target;
                                 }
                                 u.balance = betRes.balance;
-                                u.orderNo = betRes.orderNo;
+                                u.orderNo = betid;
                                 // users[socket.id] = u;
                                 totalBetAmount += betAmount;
                                 if (totalBetAmount > Number.MAX_SAFE_INTEGER) {
@@ -509,7 +509,7 @@ export const initSocket = (io: Server) => {
                 if (GameState === "PLAYING") {
                     if (!player.cashouted && player.betted) {
                         if (endTarget <= currentSecondNum) {
-                            settle(users[socket.id].userId, `${u.orderNo}`, `${endTarget}`, `${endTarget * player.betAmount}`, u.token, u.Session_Token);
+                            settle(`${u.orderNo}`, users[socket.id].userId, `${endTarget}`, `${endTarget * player.betAmount}`, u.token, u.Session_Token);
                             player.cashouted = true;
                             player.cashAmount = endTarget * player.betAmount;
                             player.betted = false;
