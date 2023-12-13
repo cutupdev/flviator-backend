@@ -509,7 +509,7 @@ export const initSocket = (io: Server) => {
                 if (GameState === "PLAYING") {
                     if (!player.cashouted && player.betted) {
                         if (endTarget <= currentSecondNum) {
-                            settle(users[socket.id].userId, `${u.orderNo}`, endTarget.toFixed(2), (endTarget * player.betAmount).toFixed(2), u.token, u.Session_Token);
+                            settle(users[socket.id].userId, `${u.orderNo}`, endTarget.toFixed(2), (endTarget * player.betAmount).toFixed(2), u.currency, u.Session_Token);
                             player.cashouted = true;
                             player.cashAmount = endTarget * player.betAmount;
                             player.betted = false;
