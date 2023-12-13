@@ -19,13 +19,13 @@ interface UserType {
     balance: number
     avatar: string
     token: string
-    orderNo: number
     socketId: string
     Session_Token: string
     f: {
         auto: boolean
         betted: boolean
         cashouted: boolean
+        orderNo: number
         betAmount: number
         cashAmount: number
         target: number
@@ -34,6 +34,7 @@ interface UserType {
         auto: boolean
         betted: boolean
         cashouted: boolean
+        orderNo: number
         betAmount: number
         cashAmount: number
         target: number
@@ -57,13 +58,13 @@ const DEFAULT_USER = {
     balance: 0,
     avatar: '',
     token: '',
-    orderNo: 0,
     socketId: '',
     Session_Token: '',
     f: {
         auto: false,
         betted: false,
         cashouted: false,
+        orderNo: 0,
         betAmount: 0,
         cashAmount: 0,
         target: 0,
@@ -72,6 +73,7 @@ const DEFAULT_USER = {
         auto: false,
         betted: false,
         cashouted: false,
+        orderNo: 0,
         betAmount: 0,
         cashAmount: 0,
         target: 0,
@@ -397,12 +399,15 @@ export const initSocket = (io: Server) => {
 
             if (checkIndex > -1) {
                 console.log("Disconnected User : ", socket.id);
-                if (users[socket.id]?.orderNo > 0) {
+                if (users[socket.id]?.f?.orderNo > 0 || users[socket.id]?.s?.orderNo > 0) {
                     let betAmount = 0;
-                    if (users[socket.id].f.betted && !users[socket.id].f.cashouted) betAmount += users[socket.id].f.betAmount;
-                    if (users[socket.id].s.betted && !users[socket.id].s.cashouted) betAmount += users[socket.id].s.betAmount;
-                    if (betAmount > 0) {
-                        cancelBet(users[socket.id].userId, `${users[socket.id].orderNo}`, `${betAmount}`, users[socket.id].token, users[socket.id].Session_Token);
+                    if (users[socket.id].f.betted && !users[socket.id].f.cashouted) {
+                        betAmount += users[socket.id].f.betAmount;
+                        cancelBet(users[socket.id].userId, `${users[socket.id].f.orderNo}`, `${betAmount}`, users[socket.id].token, users[socket.id].Session_Token);
+                    }
+                    if (users[socket.id].s.betted && !users[socket.id].s.cashouted) {
+                        betAmount += users[socket.id].s.betAmount;
+                        cancelBet(users[socket.id].userId, `${users[socket.id].s.orderNo}`, `${betAmount}`, users[socket.id].token, users[socket.id].Session_Token);
                     }
                 }
                 sockets.splice(checkIndex, 1);
@@ -464,16 +469,17 @@ export const initSocket = (io: Server) => {
                                 if (type === 'f') {
                                     u.f.betAmount = betAmount;
                                     u.f.betted = true;
+                                    u.f.orderNo = betid;
                                     u.f.auto = auto;
                                     u.f.target = target;
                                 } else if (type === 's') {
                                     u.s.betAmount = betAmount;
                                     u.s.betted = true;
+                                    u.s.orderNo = betid;
                                     u.s.auto = auto;
                                     u.s.target = target;
                                 }
                                 u.balance = betRes.balance;
-                                u.orderNo = betid;
                                 // users[socket.id] = u;
                                 totalBetAmount += betAmount;
                                 if (totalBetAmount > Number.MAX_SAFE_INTEGER) {
@@ -512,15 +518,18 @@ export const initSocket = (io: Server) => {
                 if (GameState === "PLAYING") {
                     if (!player.cashouted && player.betted) {
                         if (endTarget <= currentSecondNum) {
-                            var returnData: any = await settle(users[socket.id].userId, `${u.orderNo}`, endTarget.toFixed(2), (endTarget * player.betAmount).toFixed(2), u.currency, u.Session_Token);
+                            var returnData: any = await settle(users[socket.id].userId, `${type === 'f' ? u.f.orderNo : u.s.orderNo}`, endTarget.toFixed(2), (endTarget * player.betAmount).toFixed(2), u.currency, u.Session_Token);
                             player.cashouted = true;
                             player.cashAmount = endTarget * player.betAmount;
-                            player.betted = false;
+                            if (u.f.betted === false && u.s.betted === false) {
+                                player.betted = false;
+                                u.f.orderNo = 0;
+                                u.s.orderNo = 0;
+                            }
                             player.target = endTarget;
                             // u.balance += endTarget * player.betAmount;
                             console.log(Number(returnData.balance))
                             u.balance = Number(returnData.balance);
-                            u.orderNo = 0;
                             cashoutAmount += endTarget * player.betAmount;
                             // users[socket.id] = u;
                             socket.emit("finishGame", u);
