@@ -231,12 +231,12 @@ const gameRun = async () => {
             currentSecondNum = currentNum;
             if (currentTime > gameTime) {
                 sendPreviousHand();
-                currentSecondNum = 0;
-                currentNum = target;
+                // currentSecondNum = 0;
+                // currentNum = target;
                 GameState = "GAMEEND";
                 NextState = "BET";
-                totalBetAmount = 0;
-                cashoutAmount = 0;
+                // totalBetAmount = 0;
+                // cashoutAmount = 0;
                 startTime = Date.now();
 
                 const time = Date.now() - startTime;
