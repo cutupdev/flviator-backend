@@ -160,84 +160,41 @@ const gameRun = async () => {
             }
             break;
         case "PLAYING":
-            // var currentTime = (Date.now() - startTime) / 1000;
-            // currentNum = 1 + 0.06 * currentTime + Math.pow((0.06 * currentTime), 2) - Math.pow((0.04 * currentTime), 3) + Math.pow((0.04 * currentTime), 4)
-            // // for (const k in users) {
-            // //     const i = users[k];
-            // //     if (i.f.target >= 1.01 && i.f.betted && !i.f.cashouted && target >= i.f.target && currentNum >= i.f.target) {
-
-            // //         settle(i.userId, i.orderNo, i.f.target, i.f.target * i.f.betAmount, i.currency);
-
-            // //         i.f.cashouted = true;
-            // //         i.f.cashAmount = i.f.target * i.f.betAmount;
-            // //         i.f.betted = false;
-            // //         i.balance += i.f.target * i.f.betAmount;
-            // //         i.orderNo = 0;
-            // //         cashoutAmount += i.f.target * i.f.betAmount;
-            // //         mysocketIo.emit("finishGame", i);
-            // //         mysocketIo.emit("success", `Successfully CashOuted ${Number(i.f.cashAmount).toFixed(2)}`);
-            // //     }
-            // //     if (i.s.target >= 1.01 && i.s.betted && !i.s.cashouted && target >= i.s.target && currentNum >= i.s.target) {
-            // //         settle(i.userId, i.orderNo, i.s.target, i.s.target * i.s.betAmount, i.currency);
-            // //         i.s.cashouted = true;
-            // //         i.s.cashAmount = i.s.target * i.s.betAmount;
-            // //         i.s.betted = false;
-            // //         i.balance += i.s.target * i.s.betAmount;
-            // //         i.orderNo = 0;
-            // //         cashoutAmount += i.s.target * i.s.betAmount;
-            // //         mysocketIo.emit("finishGame", i);
-            // //         mysocketIo.emit("success", `Successfully CashOuted ${Number(i.s.cashAmount).toFixed(2)}`);
-            // //     }
-            // // }
-            // currentSecondNum = currentNum;
-            // if (currentTime > gameTime) {
-            //     sendPreviousHand();
-            //     currentSecondNum = 0;
-            //     currentNum = target;
-            //     GameState = "GAMEEND";
-            //     NextState = "BET";
-            //     startTime = Date.now();
-            //     // for (const k in users) {
-            //     //     const i = users[k];
-            //     //     let fBetted = i.f.betted;
-            //     //     if (i.f.betted || i.f.cashouted) {
-            //     //         addHistory(i.userId, i.f.betAmount, i.f.target, i.f.cashouted)
-            //     //     }
-            //     //     i.f.betted = false;
-            //     //     i.f.cashouted = false;
-            //     //     i.f.betAmount = 0;
-            //     //     i.f.cashAmount = 0;
-            //     //     let sBetted = i.s.betted;
-            //     //     if (i.s.betted || i.s.cashouted) {
-            //     //         addHistory(i.userId, i.s.betAmount, i.s.target, i.s.cashouted)
-            //     //     }
-            //     //     i.s.betted = false;
-            //     //     i.s.cashouted = false;
-            //     //     i.s.betAmount = 0;
-            //     //     i.s.cashAmount = 0;
-            //     //     sockets.map((socket) => {
-            //     //         if (socket.id === i.socketId && (fBetted || sBetted)) {
-            //     //             socket.emit("finishGame", i);
-            //     //         }
-            //     //     })
-            //     // }
-
-            //     const time = Date.now() - startTime;
-            //     mysocketIo.emit('gameState', { currentNum, currentSecondNum, GameState, time });
-            // }
-            // break;
             var currentTime = (Date.now() - startTime) / 1000;
             currentNum = 1 + 0.06 * currentTime + Math.pow((0.06 * currentTime), 2) - Math.pow((0.04 * currentTime), 3) + Math.pow((0.04 * currentTime), 4)
             currentSecondNum = currentNum;
             if (currentTime > gameTime) {
-                console.log("here");
                 sendPreviousHand();
-                // currentNum = target;
+                currentSecondNum = 0;
+                currentNum = target;
                 GameState = "GAMEEND";
                 NextState = "BET";
-                // totalBetAmount = 0;
-                // cashoutAmount = 0;
                 startTime = Date.now();
+                for (const k in users) {
+                    const i = users[k];
+                    let fBetted = i.f.betted;
+                    if (i.f.betted || i.f.cashouted) {
+                        addHistory(i.userId, i.f.betAmount, i.f.target, i.f.cashouted)
+                    }
+                    i.f.betted = false;
+                    i.f.cashouted = false;
+                    i.f.betAmount = 0;
+                    i.f.cashAmount = 0;
+                    let sBetted = i.s.betted;
+                    if (i.s.betted || i.s.cashouted) {
+                        addHistory(i.userId, i.s.betAmount, i.s.target, i.s.cashouted)
+                    }
+                    i.s.betted = false;
+                    i.s.cashouted = false;
+                    i.s.betAmount = 0;
+                    i.s.cashAmount = 0;
+                    sockets.map((socket) => {
+                        if (socket.id === i.socketId && (fBetted || sBetted)) {
+                            console.log('i', i)
+                            // socket.emit("finishGame", i);
+                        }
+                    })
+                }
 
                 const time = Date.now() - startTime;
                 mysocketIo.emit('gameState', { currentNum, currentSecondNum, GameState, time });
@@ -526,16 +483,11 @@ export const initSocket = (io: Server) => {
                 player = u.f
             else if (type === 's')
                 player = u.s
-            console.log('u', u)
-            console.log('GameState', GameState)
-            console.log('player', player)
-            console.log('endTarget <= currentSecondNum', endTarget, currentSecondNum)
             if (!!u) {
                 if (GameState === "PLAYING") {
                     if (!player.cashouted && player.betted) {
                         if (endTarget <= currentSecondNum) {
                             var returnData: any = await settle(users[socket.id].userId, `${player.orderNo}`, endTarget.toFixed(2), (endTarget * player.betAmount).toFixed(2), u.currency, u.Session_Token);
-                            console.log('returnData', returnData)
                             player.cashouted = true;
                             player.cashAmount = endTarget * player.betAmount;
                             player.betted = false;
