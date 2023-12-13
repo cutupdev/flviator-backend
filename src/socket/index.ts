@@ -244,7 +244,6 @@ const gameRun = async () => {
                 for (const k in users) {
                     const i = users[k];
                     if (!i.bot) {
-                        let orders = [];
                         if (i.f.betted || i.f.cashouted) {
                             await addHistory(i.userName, i.f.betAmount, i.f.target, i.f.cashouted)
                         }
@@ -269,9 +268,6 @@ const gameRun = async () => {
 
                 const time = Date.now() - startTime;
                 mysocketIo.emit('gameState', { currentNum, currentSecondNum, GameState, time });
-                botIds.map((item) => {
-                    users[item] = { ...DEFAULT_USER, bot: true, userType: false }
-                })
             }
             break;
         case "GAMEEND":
