@@ -170,6 +170,54 @@ const gameRun = async () => {
                 GameState = "GAMEEND";
                 NextState = "BET";
                 startTime = Date.now();
+                // for (const k in users) {
+                //     const i = users[k];
+                //     let fBetted = i.f.betted;
+                //     if (i.f.betted || i.f.cashouted) {
+                //         addHistory(i.userId, i.f.betAmount, i.f.target, i.f.cashouted)
+                //     }
+                //     i.f.betted = false;
+                //     i.f.cashouted = false;
+                //     i.f.betAmount = 0;
+                //     i.f.cashAmount = 0;
+                //     let sBetted = i.s.betted;
+                //     if (i.s.betted || i.s.cashouted) {
+                //         addHistory(i.userId, i.s.betAmount, i.s.target, i.s.cashouted)
+                //     }
+                //     i.s.betted = false;
+                //     i.s.cashouted = false;
+                //     i.s.betAmount = 0;
+                //     i.s.cashAmount = 0;
+                //     sockets.map((socket) => {
+                //         if (socket.id === i.socketId && (fBetted || sBetted)) {
+                //             console.log('i', i)
+                //             // socket.emit("finishGame", i);
+                //         }
+                //     })
+                // }
+
+                const time = Date.now() - startTime;
+                mysocketIo.emit('gameState', { currentNum, currentSecondNum, GameState, time });
+            }
+            break;
+        case "GAMEEND":
+            if (Date.now() - startTime > GAMEENDTIME) {
+                let i = 0;
+                let interval = setInterval(() => {
+                    // bet(botIds[i]);
+                    i++;
+                    if (i > 19)
+                        clearInterval(interval);
+                }, 100)
+                startTime = Date.now();
+                GameState = "BET";
+                NextState = "READY";
+                history.unshift(target);
+                mysocketIo.emit("history", history);
+                const time = Date.now() - startTime;
+                mysocketIo.emit('gameState', { currentNum, currentSecondNum, GameState, time });
+                target = -1;
+
                 for (const k in users) {
                     const i = users[k];
                     let fBetted = i.f.betted;
@@ -195,28 +243,6 @@ const gameRun = async () => {
                         }
                     })
                 }
-
-                const time = Date.now() - startTime;
-                mysocketIo.emit('gameState', { currentNum, currentSecondNum, GameState, time });
-            }
-            break;
-        case "GAMEEND":
-            if (Date.now() - startTime > GAMEENDTIME) {
-                let i = 0;
-                let interval = setInterval(() => {
-                    // bet(botIds[i]);
-                    i++;
-                    if (i > 19)
-                        clearInterval(interval);
-                }, 100)
-                startTime = Date.now();
-                GameState = "BET";
-                NextState = "READY";
-                history.unshift(target);
-                mysocketIo.emit("history", history);
-                const time = Date.now() - startTime;
-                mysocketIo.emit('gameState', { currentNum, currentSecondNum, GameState, time });
-                target = -1;
             }
             break;
     }
@@ -389,13 +415,10 @@ export const initSocket = (io: Server) => {
             }
         })
         socket.on('enterRoom', async (props) => {
-            console.log('enterRoom')
             var { token, UserID, currency } = props;
             token = decodeURIComponent(token);
             UserID = decodeURIComponent(UserID);
             currency = decodeURIComponent(currency);
-
-            console.log('token, UserID, currency', token, UserID, currency)
 
             socket.emit('getBetLimits', { max: localconfig.betting.max, min: localconfig.betting.min });
             if (token !== null && token !== undefined) {
