@@ -30,7 +30,7 @@ const testFunc = async () => {
     var sendData = { "UserID": "Smith#167", "betAmount": "20", "betid": "1702413307764", "currency": "INR", "Session_Token": "2275ee09-2a82-4280-9f17-733702d30068" }
     var hash = await hashFunc(sendData)
     console.log(hash)
-    const resData = await axios.post(getBalanceUrl, sendData, {
+    const resData = await axios.post(betUrl, sendData, {
         headers: {
             'Content-Type': 'application/json',
             'hashkey': hash
