@@ -529,6 +529,7 @@ export const initSocket = (io: Server) => {
             console.log('u', u)
             console.log('GameState', GameState)
             console.log('player', player)
+            console.log('endTarget <= currentSecondNum', endTarget, currentSecondNum)
             if (!!u) {
                 if (GameState === "PLAYING") {
                     if (!player.cashouted && player.betted) {
