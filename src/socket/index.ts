@@ -1,4 +1,5 @@
 import { Server, Socket } from 'socket.io'
+import random from 'random-name'
 import crypto from 'crypto';
 import path from 'path';
 import { config } from "dotenv";
@@ -58,7 +59,7 @@ interface preHandType {
 
 const DEFAULT_USER = {
     userId: '0',
-    userName: 'test',
+    userName: `${random.first()} ${random.last()}`,
     currency: 'INR',
     balance: 0,
     avatar: '',
@@ -202,7 +203,7 @@ const gameRun = async () => {
                 const time = Date.now() - startTime;
                 mysocketIo.emit('gameState', { currentNum, currentSecondNum, GameState, time });
                 botIds.map((item) => {
-                    users[item] = { ...DEFAULT_USER, bot: true, userType: false }
+                    users[item] = { ...DEFAULT_USER, bot: true, userType: false, userName: `${random.first()} ${random.last()}` }
                 })
             }
             break;
