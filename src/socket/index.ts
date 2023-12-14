@@ -110,11 +110,8 @@ let botIds = [] as string[];
 const diffLimit = 9; // When we lost money, decrease RTP by this value, but be careful, if this value is high, the more 1.00 x will appear and users might complain.
 const salt = process.env.SALT || '8783642fc5b7f51c08918793964ca303edca39823325a3729ad62f0a2';
 
-
-var botNum = Math.floor(Math.random() * 15);
-
 const initBots = () => {
-    for (var i = 0; i < botNum; i++) {
+    for (var i = 0; i < 15; i++) {
         botIds.push(`${uniqid()}`);
     }
 }
@@ -208,14 +205,13 @@ const gameRun = async () => {
             }
             break;
         case "GAMEEND":
-            botNum = Math.floor(Math.random() * 15);
             initBots()
             if (Date.now() - startTime > GAMEENDTIME) {
                 let i = 0;
                 interval = setInterval(() => {
                     betBot(botIds[i]);
                     i++;
-                    if (i > botNum)
+                    if (i > 15)
                         clearInterval(interval);
                 }, 100)
                 startTime = Date.now();
