@@ -62,7 +62,7 @@ interface preHandType {
 
 const DEFAULT_USER = {
     userId: '0',
-    userName: 'test',
+    userName: 'Hidden',
     currency: 'INR',
     balance: 0,
     avatar: '',
@@ -207,6 +207,9 @@ const gameRun = async () => {
 
                 const time = Date.now() - startTime;
                 mysocketIo.emit('gameState', { currentNum, currentSecondNum, GameState, time });
+                botIds.map((item) => {
+                    users[item] = { ...DEFAULT_USER, bot: true, userType: false }
+                })
             }
             break;
         case "GAMEEND":
@@ -449,7 +452,7 @@ export const initSocket = (io: Server) => {
                     users[socket.id] = {
                         ...DEFAULT_USER,
                         userId: userInfo.data.userId,
-                        userName: userInfo.data.userName,
+                        userName: userInfo.data.userName || "Custom",
                         balance: userInfo.data.balance,
                         avatar: userInfo.data.avatar,
                         currency: userInfo.data.currency,
