@@ -378,32 +378,32 @@ function betBot(id: string) {
     // totalBetAmount += fbetAmount;
 }
 
-//  // bot cash out here.
-// setInterval(() => {
-//     if (GameState === "PLAYING") {
-//         let _bots = botIds.filter(k => users[k] && users[k].f.target <= currentNum && users[k].f.betted)
-//         if (_bots.length) {
-//             for (let k of _bots) {
-//                 users[k].f.cashouted = true;
-//                 users[k].f.cashAmount = users[k].f.target * users[k].f.betAmount;
-//                 users[k].f.betted = false;
+// bot cash out here.
+setInterval(() => {
+    if (GameState === "PLAYING") {
+        let _bots = botIds.filter(k => users[k] && users[k].f.target <= currentNum && users[k].f.betted)
+        if (_bots.length) {
+            for (let k of _bots) {
+                users[k].f.cashouted = true;
+                users[k].f.cashAmount = users[k].f.target * users[k].f.betAmount;
+                users[k].f.betted = false;
 
-//                 cashoutAmount += users[k].f.target * users[k].f.betAmount;
-//             }
-//         }
+                // cashoutAmount += users[k].f.target * users[k].f.betAmount;
+            }
+        }
 
-//         _bots = botIds.filter(k => users[k] && users[k].s.target <= currentNum && users[k].s.betted)
-//         if (_bots.length) {
-//             for (let k of _bots) {
-//                 users[k].s.cashouted = true;
-//                 users[k].s.cashAmount = users[k].s.target * users[k].s.betAmount;
-//                 users[k].s.betted = false;
+        _bots = botIds.filter(k => users[k] && users[k].s.target <= currentNum && users[k].s.betted)
+        if (_bots.length) {
+            for (let k of _bots) {
+                users[k].s.cashouted = true;
+                users[k].s.cashAmount = users[k].s.target * users[k].s.betAmount;
+                users[k].s.betted = false;
 
-//                 cashoutAmount += users[k].s.target * users[k].s.betAmount;
-//             }
-//         }
-//     }
-// }, 500);
+                // cashoutAmount += users[k].s.target * users[k].s.betAmount;
+            }
+        }
+    }
+}, 500);
 
 export const initSocket = (io: Server) => {
     // // create bots
