@@ -56,7 +56,7 @@ interface preHandType {
 
 const DEFAULT_USER = {
     userId: '0',
-    userName: 'test',
+    userName: 'Hidden',
     currency: 'INR',
     balance: 0,
     avatar: '',
@@ -212,7 +212,7 @@ const gameRun = async () => {
             initBots()
             if (Date.now() - startTime > GAMEENDTIME) {
                 let i = 0;
-                let interval = setInterval(() => {
+                interval = setInterval(() => {
                     betBot(botIds[i]);
                     i++;
                     if (i > botNum)
