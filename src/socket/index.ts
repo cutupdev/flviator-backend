@@ -3,7 +3,7 @@ import crypto from 'crypto';
 import path from 'path';
 import { config } from "dotenv";
 import { getTime } from "../math"
-import { DHistories, addHistory } from '../model'
+import { addHistory } from '../model'
 import { Authentication, bet, settle, cancelBet } from '../controllers/client';
 
 import localconfig from "../config.json";
@@ -362,16 +362,7 @@ export const initSocket = (io: Server) => {
     io.on("connection", async (socket) => {
 
         socket.on('sessionCheck', async ({ token, UserID, currency, returnurl }) => {
-            token = decodeURIComponent(token);
-            UserID = decodeURIComponent(UserID);
-            currency = decodeURIComponent(currency);
-
-            if (!token || !UserID || !currency) {
-                socket.emit('sessionSecure', { sessionStatus: false, userHistory: { status: false, data: {} } })
-            } else {
-                const userHistory = await DHistories.find({ userId: UserID }).sort({ date: -1 }).limit(20).toArray() || { status: false, data: {} };
-                socket.emit('sessionSecure', { sessionStatus: true, userHistory })
-            }
+            socket.emit('sessionSecure', { sessionStatus: true })
         })
 
         sockets.push(socket);
