@@ -362,7 +362,30 @@ export const initSocket = (io: Server) => {
     io.on("connection", async (socket) => {
 
         socket.on('sessionCheck', async ({ token, UserID, currency, returnurl }) => {
-            socket.emit('sessionSecure', { sessionStatus: true })
+            token = decodeURIComponent(token);
+            UserID = decodeURIComponent(UserID);
+            currency = decodeURIComponent(currency);
+
+            var Session_Token = crypto.randomUUID();
+            const userInfo = await Authentication(token, UserID, currency, Session_Token);
+            if (userInfo.status) {
+                users[socket.id] = {
+                    ...DEFAULT_USER,
+                    userId: userInfo.data.userId,
+                    userName: userInfo.data.userName,
+                    balance: userInfo.data.balance,
+                    avatar: userInfo.data.avatar,
+                    currency: userInfo.data.currency,
+                    Session_Token,
+                    token,
+                    socketId: socket.id
+                }
+                socket.emit('sessionSecure', { sessionStatus: true })
+                socket.emit('myInfo', users[socket.id]);
+                io.emit('history', history);
+            } else {
+                socket.emit('sessionSecure', { sessionStatus: true })
+            }
         })
 
         sockets.push(socket);
@@ -395,7 +418,10 @@ export const initSocket = (io: Server) => {
 
             socket.emit('getBetLimits', { max: localconfig.betting.max, min: localconfig.betting.min });
             if (token !== null && token !== undefined) {
-                var Session_Token = crypto.randomUUID();
+                var Session_Token: string = crypto.randomUUID();
+                if (users[socket.id]?.Session_Token) {
+                    Session_Token = users[socket.id]?.Session_Token;
+                }
                 const userInfo = await Authentication(token, UserID, currency, Session_Token);
                 if (userInfo.status) {
                     users[socket.id] = {
