@@ -230,46 +230,46 @@ gameRun();
 //     return time;
 // }
 
-// const sendInfo = () => {
-//     if (GameState !== "GAMEEND") {
-//         const info = [] as Array<{
-//             name: string
-//             betAmount: number
-//             cashOut: number
-//             cashouted: boolean
-//             target: number
-//             img: string
-//         }>
+const sendInfo = () => {
+    if (GameState !== "GAMEEND") {
+        const info = [] as Array<{
+            name: string
+            betAmount: number
+            cashOut: number
+            cashouted: boolean
+            target: number
+            img: string
+        }>
 
-//         for (let i in users) {
-//             if (!!users[i]) {
-//                 let u = users[i];
-//                 if (u.f.betted || u.f.cashouted) {
-//                     info.push({
-//                         name: u.userName,
-//                         betAmount: u.f.betAmount,
-//                         cashOut: u.f.cashAmount,
-//                         cashouted: u.f.cashouted,
-//                         target: u.f.target,
-//                         img: u.img
-//                     })
-//                 }
+        for (let i in users) {
+            if (!!users[i]) {
+                let u = users[i];
+                if (u.f.betted || u.f.cashouted) {
+                    info.push({
+                        name: u.userName,
+                        betAmount: u.f.betAmount,
+                        cashOut: u.f.cashAmount,
+                        cashouted: u.f.cashouted,
+                        target: u.f.target,
+                        img: u.avatar
+                    })
+                }
 
-//                 if (u.s.betted || u.s.cashouted) {
-//                     info.push({
-//                         name: u.userName,
-//                         betAmount: u.s.betAmount,
-//                         cashOut: u.s.cashAmount,
-//                         cashouted: u.s.cashouted,
-//                         target: u.s.target,
-//                         img: u.img
-//                     })
-//                 }
-//             }
-//         }
-//         if (info.length) mysocketIo.emit("bettedUserInfo", info);
-//     }
-// }
+                if (u.s.betted || u.s.cashouted) {
+                    info.push({
+                        name: u.userName,
+                        betAmount: u.s.betAmount,
+                        cashOut: u.s.cashAmount,
+                        cashouted: u.s.cashouted,
+                        target: u.s.target,
+                        img: u.avatar
+                    })
+                }
+            }
+        }
+        if (info.length) mysocketIo.emit("bettedUserInfo", info);
+    }
+}
 
 const sendPreviousHand = () => {
     let myPreHand = [] as preHandType[];
@@ -509,14 +509,14 @@ export const initSocket = (io: Server) => {
                 socket.emit('error', { message: 'Undefined User', index: type });
         })
 
-        // setInterval(() => {
-        //     // if (GameState === NextGameState) {
-        //     // NextGameState = NextState;
-        //     const time = Date.now() - startTime;
-        //     io.emit('gameState', { currentNum, currentSecondNum, GameState, time });
-        //     // }
-        //     // sendInfo();
-        // }, 100)
+        setInterval(() => {
+            // if (GameState === NextGameState) {
+            // NextGameState = NextState;
+            // const time = Date.now() - startTime;
+            // io.emit('gameState', { currentNum, currentSecondNum, GameState, time });
+            // }
+            sendInfo();
+        }, 100)
     });
 
     const closeServer = () => {
