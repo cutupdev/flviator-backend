@@ -3,7 +3,7 @@ import crypto from 'crypto';
 import path from 'path';
 import { config } from "dotenv";
 import { getTime } from "../math"
-import { addHistory } from '../model'
+import { DHistories, addHistory } from '../model'
 import { Authentication, bet, settle, cancelBet } from '../controllers/client';
 
 import localconfig from "../config.json";
@@ -366,25 +366,11 @@ export const initSocket = (io: Server) => {
             UserID = decodeURIComponent(UserID);
             currency = decodeURIComponent(currency);
 
-            var Session_Token = crypto.randomUUID();
-            const userInfo = await Authentication(token, UserID, currency, Session_Token);
-            if (userInfo.status) {
-                users[socket.id] = {
-                    ...DEFAULT_USER,
-                    userId: userInfo.data.userId,
-                    userName: userInfo.data.userName,
-                    balance: userInfo.data.balance,
-                    avatar: userInfo.data.avatar,
-                    currency: userInfo.data.currency,
-                    Session_Token,
-                    token,
-                    socketId: socket.id
-                }
-                socket.emit('sessionSecure', { sessionStatus: true })
-                socket.emit('myInfo', users[socket.id]);
-                io.emit('history', history);
+            if (!token || !UserID || !currency) {
+                socket.emit('sessionSecure', { sessionStatus: false, userHistory: { status: false, data: {} } })
             } else {
-                socket.emit('sessionSecure', { sessionStatus: true })
+                const userHistory = await DHistories.find({ userId: UserID }).sort({ date: -1 }).limit(20).toArray() || { status: false, data: {} };
+                socket.emit('sessionSecure', { sessionStatus: true, userHistory })
             }
         })
 
@@ -418,10 +404,7 @@ export const initSocket = (io: Server) => {
 
             socket.emit('getBetLimits', { max: localconfig.betting.max, min: localconfig.betting.min });
             if (token !== null && token !== undefined) {
-                var Session_Token: string = crypto.randomUUID();
-                if (users[socket.id]?.Session_Token) {
-                    Session_Token = users[socket.id]?.Session_Token;
-                }
+                var Session_Token = crypto.randomUUID();
                 const userInfo = await Authentication(token, UserID, currency, Session_Token);
                 if (userInfo.status) {
                     users[socket.id] = {
