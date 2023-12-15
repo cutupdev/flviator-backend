@@ -1,8 +1,8 @@
 {
-  "name": "unity-socketio-testserver",
+  "name": "aviator-server",
   "version": "1.0.0",
-  "author": "DasPeTe (daspetemail@gmail.com)",
-  "description": "The SocketIO testserver for the unity3d socketio package",
+  "author": "Jay West (vecnazmaga@gmail.com)",
+  "description": "The aviator server",
   "main": "server.js",
   "scripts": {
     "dev": "set NODE_ENV=development&&nodemon ./src/app.ts",
