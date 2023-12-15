@@ -32,7 +32,8 @@ connect().then(async loaded => {
             app.use(bodyParser.raw({ type: "application/vnd.custom-type" }));
             app.use(bodyParser.text({ type: "text/html" }));
             app.use("/api", routers);
-            app.get("*", (req, res) => res.sendFile(__dirname + "../build/index.html"));
+            app.use(express.static(path.join(__dirname, "../build")));
+            app.get("*", (req, res) => res.sendFile(path.join(__dirname, "../build/index.html")));
 
             const io = new Server(server, { cors: { origin: "*", methods: ["GET", "POST"] } });
             initSocket(io);
