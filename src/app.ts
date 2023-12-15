@@ -1,6 +1,6 @@
 import http from 'http'
-import https from 'https';
-import fs from 'fs';
+// import https from 'https';
+// import fs from 'fs';
 import express from 'express'
 import cors from 'cors'
 import bodyParser from "body-parser";
@@ -22,10 +22,10 @@ process.on("uncaughtException", (error) => setlog('exception', error));
 process.on("unhandledRejection", (error) => setlog('rejection', error));
 
 // This line is from the Node.js HTTPS documentation.
-var options = {
-    key: fs.readFileSync(path.join(__dirname, './certificates/key.pem')),
-    cert: fs.readFileSync(path.join(__dirname, './certificates/server.crt'))
-};
+// var options = {
+//     key: fs.readFileSync(path.join(__dirname, './certificates/key.pem')),
+//     cert: fs.readFileSync(path.join(__dirname, './certificates/server.crt'))
+// };
 
 // let botIds = [];
 
@@ -36,7 +36,7 @@ var options = {
 const port = process.env.PORT || 5001;
 const app = express();
 const server = http.createServer(app);
-https.createServer(options, app).listen(port);
+// https.createServer(options, app).listen(port);
 
 connect().then(async loaded => {
     if (loaded === true) {
