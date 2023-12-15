@@ -1,6 +1,4 @@
 import http from 'http'
-// import https from 'https';
-// import fs from 'fs';
 import express from 'express'
 import cors from 'cors'
 import bodyParser from "body-parser";
@@ -21,11 +19,9 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 process.on("uncaughtException", (error) => setlog('exception', error));
 process.on("unhandledRejection", (error) => setlog('rejection', error));
 
-// This line is from the Node.js HTTPS documentation.
-// var options = {
-//     key: fs.readFileSync(path.join(__dirname, './certificates/key.pem')),
-//     cert: fs.readFileSync(path.join(__dirname, './certificates/server.crt'))
-// };
+// const router = express.Router();
+
+// ConnectDatabase(config.mongoURI);
 
 // let botIds = [];
 
@@ -33,10 +29,12 @@ process.on("unhandledRejection", (error) => setlog('rejection', error));
 //     var id = uniqid();
 //     botIds.push(id);
 // }
+
 const port = process.env.PORT || 5001;
 const app = express();
 const server = http.createServer(app);
-// https.createServer(options, app).listen(port);
+// const socket = require("./socket/index.js");
+
 
 connect().then(async loaded => {
     if (loaded === true) {
