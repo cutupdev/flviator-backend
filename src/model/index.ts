@@ -1,11 +1,7 @@
 import { MongoClient } from 'mongodb';
-import path from 'path';
 
-import config from '../config.json'
+import projectConfig from '../config.json'
 import { currentTime, setlog } from '../helper';
-
-const envUrl = process.env.NODE_ENV ? (process.env.NODE_ENV === 'development' ? '../../.env.development' : '.env.' + process.env.NODE_ENV) : '.env.test';
-require('dotenv').config({ path: path.join(__dirname, envUrl) });
 
 const dbUser = process.env.DB_USER || 'app';
 const dbPwd = process.env.DB_PWD || '5uikrEmaEblyTmfa';
@@ -13,7 +9,8 @@ const dbHost = process.env.DB_HOST || '192.168.0.19';
 const dbPort = process.env.DB_PORT || 27017;
 const dbName = process.env.DB_NAME || 'crash';
 
-const mongoURL = process.env.NODE_ENV === 'development' ? 'mongodb://127.0.0.1:27017' : `mongodb://${dbUser}:${dbPwd}@${dbHost}:${dbPort}`;
+// const mongoURL = process.env.NODE_ENV === 'development' ? 'mongodb://127.0.0.1:27017' : `mongodb://${dbUser}:${dbPwd}@${dbHost}:${dbPort}`;
+const mongoURL = 'mongodb://127.0.0.1:27017';
 
 const client = new MongoClient(mongoURL);
 const db = client.db(dbName);
@@ -49,12 +46,12 @@ export const connect = async () => {
 export const getBettingAmounts = async () => {
     try {
         const d = await DGame.findOne({ _id: DEFAULT_GAMEID })
-        const minBetAmount = d?.minBetAmount || config.betting.min;
-        const maxBetAmount = d?.maxBetAmount || config.betting.max;
+        const minBetAmount = d?.minBetAmount || projectConfig.betting.min;
+        const maxBetAmount = d?.maxBetAmount || projectConfig.betting.max;
         return { minBetAmount, maxBetAmount }
     } catch (error) {
         setlog('addHistory', error)
-        return { minBetAmount: config.betting.min, maxBetAmount: config.betting.max }
+        return { minBetAmount: projectConfig.betting.min, maxBetAmount: projectConfig.betting.max }
     }
 
 }

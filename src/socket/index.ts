@@ -8,10 +8,6 @@ import { Authentication, bet, settle, cancelBet } from '../controllers/client';
 
 import localconfig from "../config.json";
 
-const envUrl = process.env.NODE_ENV === 'development' ? '../../.env.development' : '../../.env.prod';
-config({ path: path.join(__dirname, envUrl) });
-require('dotenv').config({ path: path.join(__dirname, envUrl) });
-
 interface UserType {
     userId: string
     userName: string
@@ -357,7 +353,6 @@ const sendPreviousHand = () => {
 export const initSocket = (io: Server) => {
     // create bots
     // initBots()
-
     mysocketIo = io;
     io.on("connection", async (socket) => {
 

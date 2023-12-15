@@ -3,11 +3,7 @@ import { Request, Response } from "express";
 import { DEFAULT_GAMEID, DGame, DHistories, DUsers, getBettingAmounts, addUser } from "../model";
 import { setlog, getPaginationMeta } from "../helper";
 import axios from "axios";
-import path from 'path';
 import crypto from 'crypto';
-
-const envUrl = process.env.NODE_ENV ? (process.env.NODE_ENV === 'development' ? '../../.env.development' : '.env.' + process.env.NODE_ENV) : '.env.test';
-require('dotenv').config({ path: path.join(__dirname, envUrl) });
 
 const serverURL = process.env.SERVER_URL || 'http://45.8.22.45:3000';
 const API_URL = process.env.API_URL || 'https://crashgame.vkingplays.com';
