@@ -5,7 +5,7 @@ import { setlog, getPaginationMeta } from "../helper";
 import axios from "axios";
 import crypto from 'crypto';
 
-const serverURL = process.env.SERVER_URL || 'http://45.8.22.45:3000';
+const serverURL = process.env.SERVER_URL || 'https://crashgameapi.vkingplays.com';
 const API_URL = process.env.API_URL || 'https://crashgame.vkingplays.com';
 const getBalanceUrl = `${API_URL}${process.env.GET_BALANCE_URL || '/Authentication'}`;
 const betUrl = `${API_URL}${process.env.BET_URL || '/placeBet'}`;
