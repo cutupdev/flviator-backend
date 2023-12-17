@@ -104,7 +104,7 @@ let interval: any;
 let botIds = [] as string[];
 const diffLimit = 9; // When we lost money, decrease RTP by this value, but be careful, if this value is high, the more 1.00 x will appear and users might complain.
 const salt = process.env.SALT || '8783642fc5b7f51c08918793964ca303edca39823325a3729ad62f0a2';
-
+var seed = crypto.createHash('sha256').update(`${Date.now()}`).digest('hex');
 // const initBots = () => {
 //     for (var i = 0; i < 20; i++) {
 //         botIds.push(uniqid());
@@ -119,7 +119,7 @@ const gameRun = async () => {
         case "BET":
             if (target == -1) {
                 const nBits = 52;
-                const seed = crypto.createHash('sha256').update(`${Date.now()}`).digest('hex');
+                seed = crypto.createHash('sha256').update(`${Date.now()}`).digest('hex');
                 let hash = crypto.createHmac("sha256", salt).update(seed).digest('hex');
                 hash = hash.slice(0, nBits / 4);
                 const r = parseInt(hash, 16);
@@ -358,6 +358,10 @@ export const initSocket = (io: Server) => {
 
         socket.on('sessionCheck', async ({ token, UserID, currency, returnurl }) => {
             socket.emit('sessionSecure', { sessionStatus: true })
+        })
+
+        socket.on("getSeed", () => {
+            socket.emit("serverSeed", seed);
         })
 
         sockets.push(socket);
