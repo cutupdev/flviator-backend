@@ -435,7 +435,7 @@ export const initSocket = (io: Server) => {
                     users[socket.id] = {
                         ...DEFAULT_USER,
                         userId: userInfo.data.userId,
-                        userName: userInfo.data.userName,
+                        userName: userInfo.data.userName || 'test',
                         balance: userInfo.data.balance,
                         avatar: userInfo.data.avatar,
                         currency: userInfo.data.currency,
