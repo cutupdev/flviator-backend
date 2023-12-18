@@ -69,6 +69,7 @@ export const Authentication = async (token: string, UserID: string, currency: st
         var _data = resData.data;
         if (_data.code === 200) {
             _data = _data.data;
+            console.log('_data', _data)
             const userData = await DUsers.findOne({ "userId": UserID });
             if (!userData) {
                 await addUser(UserID, _data.username, _data.balance, _data.currency, _data.avatar)
