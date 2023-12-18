@@ -66,8 +66,16 @@ export const getBotRandomBetAmount = () => {
 }
 
 export const getRandomName = () => {
-    return `${randomModule.first()} ${randomModule.last()}`;
-}
+    const characters =
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    let result = "";
+    for (let i = 0; i < 8; i++) {
+        result += characters.charAt(
+            Math.floor(Math.random() * characters.length)
+        );
+    }
+    return result;
+};
 
 export const getRandomAvatar = () => {
     return `./avatars/av-${Math.floor(Math.random() * 71) + 1}.png`;
