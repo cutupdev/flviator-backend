@@ -1,85 +1,27 @@
 import { Server, Socket } from 'socket.io'
 import crypto from 'crypto';
 import path from 'path';
-import uniqid from 'uniqid';
 import { config } from "dotenv";
 import { getTime } from "../math"
 import { addHistory } from '../model'
 import { Authentication, bet, settle, cancelBet } from '../controllers/client';
 
 import localconfig from "../config.json";
-
-interface UserType {
-    userId: string
-    userName: string
-    currency: string
-    balance: number
-    avatar: string
-    token: string
-    socketId: string
-    Session_Token: string
-    bot: boolean
-    userType: boolean
-    f: {
-        auto: boolean
-        betted: boolean
-        cashouted: boolean
-        orderNo: number
-        betAmount: number
-        cashAmount: number
-        target: number
-    }
-    s: {
-        auto: boolean
-        betted: boolean
-        cashouted: boolean
-        orderNo: number
-        betAmount: number
-        cashAmount: number
-        target: number
-    }
-}
-
-interface preHandType {
-    img: string
-    userName: string
-    betted: boolean
-    cashouted: boolean
-    betAmount: number
-    cashAmount: number
-    target: number
-}
-
-const DEFAULT_USER = {
-    userId: '0',
-    userName: 'test',
-    currency: 'INR',
-    balance: 0,
-    avatar: './avatars/av-5.png',
-    token: '',
-    socketId: '',
-    Session_Token: '',
-    bot: false,
-    userType: false,
-    f: {
-        auto: false,
-        betted: false,
-        cashouted: false,
-        orderNo: 0,
-        betAmount: 0,
-        cashAmount: 0,
-        target: 0,
-    },
-    s: {
-        auto: false,
-        betted: false,
-        cashouted: false,
-        orderNo: 0,
-        betAmount: 0,
-        cashAmount: 0,
-        target: 0,
-    }
-}
+import {
+    UserType,
+    PreHandType
+} from "../types"
+import {
+    DEFAULT_USER,
+    READYTIME,
+    BETINGTIME,
+    GAMEENDTIME,
+    RTP,
+    getRandomName,
+    getBotRandomBetAmount,
+    getRandomAvatar,
+} from "./config"
+import { botIds, initBots } from "./bots"
 
 let mysocketIo: Server;
 let users = {} as { [key: string]: UserType }
@@ -89,29 +31,17 @@ let history = [] as number[];
 let GameState = "BET";
 let NextGameState = "READY";
 let NextState = "READY";
-const READYTIME = 1000;
-const BETINGTIME = 5000;
-const GAMEENDTIME = 3000;
 let startTime = Date.now();
 let gameTime: number;
 let currentNum: number;
 let currentSecondNum: number;
 let target: number = -1;
-const RTP = localconfig.RTP;
 let cashoutAmount = 0;
 let totalBetAmount = 0;
 
-let interval: any;
-let botIds = [] as string[];
 const diffLimit = 9; // When we lost money, decrease RTP by this value, but be careful, if this value is high, the more 1.00 x will appear and users might complain.
 const salt = process.env.SALT || '8783642fc5b7f51c08918793964ca303edca39823325a3729ad62f0a2';
 var seed = crypto.createHash('sha256').update(`${Date.now()}`).digest('hex');
-
-const initBots = () => {
-    for (var i = 0; i < 15; i++) {
-        botIds.push(uniqid());
-    }
-}
 
 const gameRun = async () => {
     setTimeout(() => {
@@ -198,7 +128,8 @@ const gameRun = async () => {
                 mysocketIo.emit('gameState', { currentNum, currentSecondNum, GameState, time });
 
                 botIds.map((item) => {
-                    users[item] = { ...DEFAULT_USER, bot: true, userType: false }
+                    let userItem = { ...DEFAULT_USER, userName: getRandomName(), bot: true, userType: false }
+                    users[item] = userItem
                 })
             }
             break;
@@ -226,13 +157,6 @@ const gameRun = async () => {
 
 gameRun();
 
-// const getRandom = () => {
-//     var r = Math.random();
-//     target = 1 / r;
-//     var time = getTime(target);
-//     return time;
-// }
-
 const sendInfo = () => {
     if (GameState !== "GAMEEND") {
         const info = [] as Array<{
@@ -243,7 +167,6 @@ const sendInfo = () => {
             target: number
             avatar: string
         }>
-
         for (let i in users) {
             if (!!users[i]) {
                 let u = users[i];
@@ -275,7 +198,7 @@ const sendInfo = () => {
 }
 
 const sendPreviousHand = () => {
-    let myPreHand = [] as preHandType[];
+    let myPreHand = [] as PreHandType[];
     for (let i in previousHand) {
         let u = previousHand[i];
         if (u.f.betted || u.f.cashouted) {
@@ -304,6 +227,37 @@ const sendPreviousHand = () => {
     mysocketIo.emit("previousHand", myPreHand);
 }
 
+// Bots bet in here.
+function betBot(id: string) {
+    let fbetAmount = getBotRandomBetAmount();
+    let sbetAmount = getBotRandomBetAmount();
+    users[id] = {
+        ...DEFAULT_USER,
+        userName: getRandomName(),
+        avatar: getRandomAvatar(),
+        bot: true,
+        f: {
+            auto: false,
+            betted: true,
+            cashouted: false,
+            betAmount: fbetAmount,
+            cashAmount: 0,
+            orderNo: Date.now() + Math.floor(Math.random() * 1000),
+            target: (Math.random() * (1 / Math.random() - 0.01)) + 1.01,
+        },
+        s: {
+            auto: false,
+            betted: false,
+            cashouted: false,
+            betAmount: sbetAmount,
+            cashAmount: 0,
+            orderNo: Date.now() + Math.floor(Math.random() * 1000),
+            target: (Math.random() * (1 / Math.random() - 0.01)) + 1.01,
+        },
+    }
+    // totalBetAmount += fbetAmount;
+}
+
 // bot cash out here.
 setInterval(() => {
     if (GameState === "PLAYING") {
@@ -330,60 +284,6 @@ setInterval(() => {
         }
     }
 }, 500);
-
-function getMultiValue(num: number) {
-    return (Math.floor(Math.random() * 10) + 1) * num;
-}
-
-function getBotRandomBetAmount() {
-    let a = 20, b = 50, c = 100;
-
-    var rd = Math.floor(Math.random() * 6) + 1;
-
-    if (rd === 1) {
-        return getMultiValue(a);
-    } else if (rd === 2) {
-        return getMultiValue(b);
-    } else if (rd === 3) {
-        return getMultiValue(c);
-    } else if (rd === 4) {
-        return getMultiValue(a) + getMultiValue(b);
-    } else if (rd === 5) {
-        return getMultiValue(a) + getMultiValue(b) + getMultiValue(c);
-    } else {
-        return (Math.random() * 1000) + 1;
-    }
-
-}
-
-// Bots bet in here.
-function betBot(id: string) {
-    let fbetAmount = getBotRandomBetAmount();
-    let sbetAmount = getBotRandomBetAmount();
-    users[id] = {
-        ...DEFAULT_USER,
-        bot: true,
-        f: {
-            auto: false,
-            betted: true,
-            cashouted: false,
-            betAmount: fbetAmount,
-            cashAmount: 0,
-            orderNo: Date.now() + Math.floor(Math.random() * 1000),
-            target: (Math.random() * (1 / Math.random() - 0.01)) + 1.01,
-        },
-        s: {
-            auto: false,
-            betted: false,
-            cashouted: false,
-            betAmount: sbetAmount,
-            cashAmount: 0,
-            orderNo: Date.now() + Math.floor(Math.random() * 1000),
-            target: (Math.random() * (1 / Math.random() - 0.01)) + 1.01,
-        },
-    }
-    // totalBetAmount += fbetAmount;
-}
 
 export const initSocket = (io: Server) => {
     // create bots
@@ -435,7 +335,7 @@ export const initSocket = (io: Server) => {
                     users[socket.id] = {
                         ...DEFAULT_USER,
                         userId: userInfo.data.userId,
-                        userName: userInfo.data.userName || 'test',
+                        userName: userInfo.data.userName || getRandomName(),
                         balance: userInfo.data.balance,
                         avatar: userInfo.data.avatar,
                         currency: userInfo.data.currency,
