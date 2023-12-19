@@ -339,6 +339,8 @@ export const initSocket = (io: Server) => {
                         balance: userInfo.data.balance,
                         avatar: userInfo.data.avatar,
                         currency: userInfo.data.currency,
+                        audioStatus: userInfo.data.audioStatus,
+                        musicStatus: userInfo.data.musicStatus,
                         Session_Token,
                         token,
                         socketId: socket.id
@@ -437,6 +439,7 @@ export const initSocket = (io: Server) => {
                                 msg: "You have cashed out!",
                                 currency: player.currency,
                                 point: endTarget.toFixed(2),
+                                cashoutAmount: (endTarget * player.betAmount).toFixed(2),
                             });
                         } else {
                             socket.emit("error", { message: "You can't cash out!", index: type });

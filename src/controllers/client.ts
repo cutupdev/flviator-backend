@@ -69,10 +69,11 @@ export const Authentication = async (token: string, UserID: string, currency: st
         var _data = resData.data;
         if (_data.code === 200) {
             _data = _data.data;
-            const userData = await DUsers.findOne({ "userId": UserID });
+            const userData: any = await DUsers.findOne({ "userId": UserID });
             if (!userData) {
                 await addUser(UserID, _data.userName, _data.balance, _data.currency, _data.avatar)
             }
+            console.log('userData', userData)
             // Code,Message,data:[userid,userName,balance,currency,avatar]
             return {
                 status: true,
@@ -81,6 +82,8 @@ export const Authentication = async (token: string, UserID: string, currency: st
                     userName: _data.userName,
                     balance: Number(_data.balance) || 0,
                     currency: _data.currency,
+                    audioStatus: userData.audioStatus,
+                    musicStatus: userData.musicStatus,
                     avatar: _data.avatar,
                 }
             };
