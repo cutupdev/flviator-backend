@@ -84,9 +84,11 @@ export const addUser = async (userId: string, name: string, balance: number, cur
                 userId,
                 currency,
                 balance,
+                soundStatus: false,
+                musicStatus: false,
                 session_created: now,
                 updated: now,
-                created: now
+                created: now,
             })
             return true
         } else {

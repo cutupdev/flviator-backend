@@ -1,17 +1,19 @@
 declare interface SchemaUser {
-    _id:          number
+    _id: number
     name: string
     img: string
     userId: string
     currency: string
     balance: number
+    soundStatus: boolean
+    musicStatus: boolean
     session_created: number
     updated: number
     created: number
 }
 
 declare interface SchemaGame {
-    _id:          number
+    _id: number
     minBetAmount: number
     maxBetAmount: number
 }

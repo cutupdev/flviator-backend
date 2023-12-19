@@ -412,7 +412,7 @@ export const initSocket = (io: Server) => {
         socket.on('cashOut', async (data) => {
             const { type, endTarget } = data;
             let u = users[socket.id];
-            let player;
+            let player: any;
             if (type === 'f')
                 player = u.f
             else if (type === 's')
@@ -432,7 +432,12 @@ export const initSocket = (io: Server) => {
                             cashoutAmount += endTarget * player.betAmount;
                             // users[socket.id] = u;
                             socket.emit("finishGame", u);
-                            socket.emit("success", `Successfully CashOuted ${Number(player.cashAmount).toFixed(2)}`);
+                            // socket.emit("success", `Successfully CashOuted ${Number(player.cashAmount).toFixed(2)}`);
+                            socket.emit("success", {
+                                msg: "You have cashed out!",
+                                currency: player.currency,
+                                point: endTarget,
+                            });
                         } else {
                             socket.emit("error", { message: "You can't cash out!", index: type });
                         }
