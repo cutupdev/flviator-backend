@@ -436,7 +436,7 @@ export const initSocket = (io: Server) => {
                             socket.emit("success", {
                                 msg: "You have cashed out!",
                                 currency: player.currency,
-                                point: endTarget,
+                                point: endTarget.toFixed(2),
                             });
                         } else {
                             socket.emit("error", { message: "You can't cash out!", index: type });
