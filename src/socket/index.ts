@@ -334,7 +334,7 @@ export const initSocket = (io: Server) => {
                 if (userInfo.status) {
                     users[socket.id] = {
                         ...DEFAULT_USER,
-                        userId: userInfo.data.userId,
+                        userId: UserID,
                         userName: userInfo.data.userName || getRandomName(),
                         balance: userInfo.data.balance,
                         avatar: userInfo.data.avatar,
