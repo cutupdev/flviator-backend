@@ -454,8 +454,8 @@ export const initSocket = (io: Server) => {
         setInterval(() => {
             // if (GameState === NextGameState) {
             // NextGameState = NextState;
-            const time = Date.now() - startTime;
-            io.emit('gameState', { currentNum, currentSecondNum, GameState, time });
+            // const time = Date.now() - startTime;
+            // io.emit('gameState', { currentNum, currentSecondNum, GameState, time });
             // }
             sendInfo();
         }, 100)
