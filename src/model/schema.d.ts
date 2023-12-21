@@ -32,5 +32,6 @@ declare interface SchemaChatHistory {
     socketId: string
     msgType: string
     msg: string
+    likes: number
     createdAt: number
 }

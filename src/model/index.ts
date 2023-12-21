@@ -126,6 +126,7 @@ export const addChatHistory = async (userId: string, socketId: string, msgType: 
             socketId,
             msgType,
             msg,
+            likes: 0,
             createdAt: Date.now()
         })
         return true
