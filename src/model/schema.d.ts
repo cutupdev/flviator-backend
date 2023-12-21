@@ -7,6 +7,7 @@ declare interface SchemaUser {
     balance: number
     soundStatus: boolean
     musicStatus: boolean
+    msgVisible: boolean
     session_created: number
     updated: number
     created: number
@@ -33,5 +34,6 @@ declare interface SchemaChatHistory {
     msgType: string
     msg: string
     likes: number
+    likesIDs: Array
     createdAt: number
 }

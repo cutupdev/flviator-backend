@@ -314,12 +314,6 @@ export const initSocket = (io: Server) => {
             socket.broadcast.emit("newMsg", sendObj);
         })
 
-        socket.on("getMsgs", async () => {
-            console.log('Here is get all msgs')
-            const msgs = await getAllChatHistory();
-            socket.emit("allMsgs", msgs)
-        })
-
         sockets.push(socket);
         socket.on('disconnect', async () => {
             const checkIndex = sockets.findIndex((s) => (

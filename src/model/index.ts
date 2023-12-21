@@ -88,6 +88,7 @@ export const addUser = async (userId: string, name: string, balance: number, cur
                 balance,
                 soundStatus: false,
                 musicStatus: false,
+                msgVisible: false,
                 session_created: now,
                 updated: now,
                 created: now,
@@ -114,8 +115,31 @@ export const updateUserBalance = async (name: string, balance: number) => {
 }
 
 export const getAllChatHistory = async () => {
-    const allHistories = await DChatHistories.find({});
+    const allHistories = await DChatHistories.find().limit(50).toArray();
+    console.log('allHistories', allHistories)
     return allHistories;
+}
+
+export const likesToChat = async (chatID: number, userId: string) => {
+    try {
+        const result = await DChatHistories.findOne({ _id: chatID, likesIDs: { $in: [userId] } });
+        let shouldAdd = result === null;
+
+        const updateQuery: any = shouldAdd
+            ? {
+                $addToSet: { likesIDs: userId },
+                $inc: { likes: 1 }
+            }
+            : {
+                $pull: { likesIDs: userId },
+                $inc: { likes: -1 }
+            };
+
+        await DChatHistories.updateOne({ _id: chatID }, updateQuery);
+        return { status: true };
+    } catch (error) {
+        return { status: false };
+    }
 }
 
 export const addChatHistory = async (userId: string, socketId: string, msgType: string, msg: string) => {
@@ -127,6 +151,7 @@ export const addChatHistory = async (userId: string, socketId: string, msgType: 
             msgType,
             msg,
             likes: 0,
+            likesIDs: [],
             createdAt: Date.now()
         })
         return true

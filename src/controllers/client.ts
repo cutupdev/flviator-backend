@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 
-import { DEFAULT_GAMEID, DGame, DHistories, DUsers, getBettingAmounts, addUser } from "../model";
+import { DEFAULT_GAMEID, DGame, DHistories, DUsers, getBettingAmounts, addUser, likesToChat, getAllChatHistory } from "../model";
 import { setlog, getPaginationMeta } from "../helper";
 import axios from "axios";
 import crypto from 'crypto';
@@ -62,6 +62,7 @@ export const Authentication = async (token: string, UserID: string, currency: st
                 currency: "INR",
                 audioStatus: true,
                 musicStatus: true,
+                msgVisible: true,
                 avatar: "",
             }
         };
@@ -96,6 +97,7 @@ export const Authentication = async (token: string, UserID: string, currency: st
                     currency: _data.currency,
                     audioStatus: userData.audioStatus,
                     musicStatus: userData.musicStatus,
+                    msgVisible: userData.msgVisible,
                     avatar: _data.avatar,
                 }
             };
@@ -372,6 +374,28 @@ export const yearHistory = async (req: Request, res: Response) => {
         res.json({ status: true, data: result });
     } catch (error) {
         setlog('myInfo', error)
+        res.json({ status: false });
+    }
+}
+
+export const getAllChats = async (req: Request, res: Response) => {
+    try {
+        const data = await getAllChatHistory();
+        res.json({ status: true, data });
+    } catch (error) {
+        setlog('get all chats', error)
+        res.json({ status: false });
+    }
+}
+
+export const likesToChatFunc = async (req: Request, res: Response) => {
+    try {
+        let { chatID, userId } = req.body as { chatID: number, userId: string };
+        if (!chatID || !userId) return res.status(404).send("Invalid Paramters");
+        const data = await likesToChat(chatID, userId);
+        res.json({ ...data });
+    } catch (error) {
+        setlog('like chats', error)
         res.json({ status: false });
     }
 }
