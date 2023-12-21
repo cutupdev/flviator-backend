@@ -118,12 +118,13 @@ export const getAllChatHistory = async () => {
     return allHistories;
 }
 
-export const addChatHistory = async (userId: string, socketId: string, msg: string) => {
+export const addChatHistory = async (userId: string, socketId: string, msgType: string, msg: string) => {
     try {
         await DChatHistories.insertOne({
             _id: Date.now(),
             userId,
             socketId,
+            msgType,
             msg,
             createdAt: Date.now()
         })

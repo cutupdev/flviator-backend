@@ -30,6 +30,7 @@ declare interface SchemaChatHistory {
     _id: number
     userId: string
     socketId: string
+    msgType: string
     msg: string
     createdAt: number
 }

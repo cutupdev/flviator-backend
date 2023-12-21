@@ -301,13 +301,14 @@ export const initSocket = (io: Server) => {
         })
 
         // msg section
-        socket.on("sendMsg", async (msg) => {
-            await addChatHistory(users[socket.id].userId, socket.id, msg);
+        socket.on("sendMsg", async ({ msgType, msgContent }) => {
+            await addChatHistory(users[socket.id].userId, socket.id, msgType, msgContent);
             let sendObj = {
                 userId: users[socket.id].userId,
                 userName: users[socket.id].userName,
                 avatar: users[socket.id].avatar,
-                msg
+                msgType,
+                msg: msgContent
             }
             socket.emit("newMsg", sendObj);
             socket.broadcast.emit("newMsg", sendObj);
