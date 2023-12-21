@@ -53,19 +53,19 @@ export const GameLaunch = async (req: Request, res: Response) => {
 
 export const Authentication = async (token: string, UserID: string, currency: string, Session_Token: string) => {
     try {
-        return {
-            status: true,
-            data: {
-                userId: UserID,
-                userName: "_data.userName",
-                balance: 50000,
-                currency: "INR",
-                audioStatus: true,
-                musicStatus: true,
-                msgVisible: true,
-                avatar: "",
-            }
-        };
+        // return {
+        //     status: true,
+        //     data: {
+        //         userId: UserID,
+        //         userName: "_data.userName",
+        //         balance: 50000,
+        //         currency: "INR",
+        //         audioStatus: true,
+        //         musicStatus: true,
+        //         msgVisible: true,
+        //         avatar: "",
+        //     }
+        // };
         const sendData = {
             UserID,
             User_Token: token,
@@ -86,7 +86,7 @@ export const Authentication = async (token: string, UserID: string, currency: st
             if (!userData) {
                 await addUser(UserID, _data.userName, _data.balance, _data.currency, _data.avatar)
             }
-            console.log('userData', userData)
+            // console.log('userData', userData)
             // Code,Message,data:[userid,userName,balance,currency,avatar]
             return {
                 status: true,
