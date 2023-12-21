@@ -116,7 +116,6 @@ export const updateUserBalance = async (name: string, balance: number) => {
 
 export const getAllChatHistory = async () => {
     const allHistories = await DChatHistories.find().limit(50).toArray();
-    console.log('allHistories', allHistories)
     return allHistories;
 }
 
