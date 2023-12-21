@@ -3,7 +3,7 @@ import crypto from 'crypto';
 import path from 'path';
 import { config } from "dotenv";
 import { getTime } from "../math"
-import { addHistory } from '../model'
+import { addChatHistory, addHistory, getAllChatHistory } from '../model'
 import { Authentication, bet, settle, cancelBet } from '../controllers/client';
 
 import localconfig from "../config.json";
@@ -76,7 +76,6 @@ const gameRun = async () => {
                 gameTime = getTime(target);
                 const time = Date.now() - startTime;
 
-                console.log('1111111111111')
                 mysocketIo.emit('gameState', { currentNum, currentSecondNum, GameState, time });
             }
             break;
@@ -86,7 +85,6 @@ const gameRun = async () => {
                 NextState = "GAMEEND";
                 startTime = Date.now();
                 const time = Date.now() - startTime;
-                console.log('222222222222222')
                 mysocketIo.emit('gameState', { currentNum, currentSecondNum, GameState, time });
             }
             break;
@@ -127,7 +125,6 @@ const gameRun = async () => {
                 }
 
                 const time = Date.now() - startTime;
-                console.log('3333333333333333333')
                 mysocketIo.emit('gameState', { currentNum, currentSecondNum, GameState, time });
 
                 botIds.map((item) => {
@@ -151,7 +148,6 @@ const gameRun = async () => {
                 history.unshift(target);
                 mysocketIo.emit("history", history);
                 const time = Date.now() - startTime;
-                console.log('4444444444444444444')
                 mysocketIo.emit('gameState', { currentNum, currentSecondNum, GameState, time });
                 target = -1;
             }
@@ -296,11 +292,31 @@ export const initSocket = (io: Server) => {
     io.on("connection", async (socket) => {
 
         socket.on('sessionCheck', async ({ token, UserID, currency, returnurl }) => {
-            socket.emit('sessionSecure', { sessionStatus: true })
+            if (token && UserID && currency && returnurl)
+                socket.emit('sessionSecure', { sessionStatus: true })
         })
 
         socket.on("getSeed", () => {
             socket.emit("serverSeed", seed);
+        })
+
+        // msg section
+        socket.on("sendMsg", async (msg) => {
+            await addChatHistory(users[socket.id].userId, socket.id, msg);
+            let sendObj = {
+                userId: users[socket.id].userId,
+                userName: users[socket.id].userName,
+                avatar: users[socket.id].avatar,
+                msg
+            }
+            socket.emit("newMsg", sendObj);
+            socket.broadcast.emit("newMsg", sendObj);
+        })
+
+        socket.on("getMsgs", async () => {
+            console.log('Here is get all msgs')
+            const msgs = await getAllChatHistory();
+            socket.emit("allMsgs", msgs)
         })
 
         sockets.push(socket);
@@ -352,7 +368,6 @@ export const initSocket = (io: Server) => {
                     socket.emit('myInfo', users[socket.id]);
                     io.emit('history', history);
                     const time = Date.now() - startTime;
-                    console.log('555555555555555555555')
                     io.emit('gameState', { currentNum, currentSecondNum, GameState, time });
                 } else {
                     console.log("Unregistered User")

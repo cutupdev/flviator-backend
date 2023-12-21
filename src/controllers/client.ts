@@ -53,6 +53,18 @@ export const GameLaunch = async (req: Request, res: Response) => {
 
 export const Authentication = async (token: string, UserID: string, currency: string, Session_Token: string) => {
     try {
+        return {
+            status: true,
+            data: {
+                userId: UserID,
+                userName: "_data.userName",
+                balance: 50000,
+                currency: "INR",
+                audioStatus: true,
+                musicStatus: true,
+                avatar: "",
+            }
+        };
         const sendData = {
             UserID,
             User_Token: token,

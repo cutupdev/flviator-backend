@@ -26,3 +26,10 @@ declare interface SchemaHistory {
     cashouted: boolean
     date: number
 }
+declare interface SchemaChatHistory {
+    _id: number
+    userId: string
+    socketId: string
+    msg: string
+    createdAt: number
+}

@@ -19,6 +19,7 @@ export const DEFAULT_GAMEID = 1
 export const DUsers = db.collection<SchemaUser>('users');
 export const DGame = db.collection<SchemaGame>('game');
 export const DHistories = db.collection<SchemaHistory>('histories');
+export const DChatHistories = db.collection<SchemaChatHistory>('chat-histories');
 
 const lastIds = {
     lastHistoryId: 0,
@@ -55,6 +56,7 @@ export const getBettingAmounts = async () => {
     }
 
 }
+
 export const addHistory = async (userId: string, betAmount: number, cashoutAt: number, cashouted: boolean) => {
     try {
         await DHistories.insertOne({
@@ -111,4 +113,23 @@ export const updateUserBalance = async (name: string, balance: number) => {
     }
 }
 
+export const getAllChatHistory = async () => {
+    const allHistories = await DChatHistories.find({});
+    return allHistories;
+}
 
+export const addChatHistory = async (userId: string, socketId: string, msg: string) => {
+    try {
+        await DChatHistories.insertOne({
+            _id: Date.now(),
+            userId,
+            socketId,
+            msg,
+            createdAt: Date.now()
+        })
+        return true
+    } catch (error) {
+        setlog('addHistory', error)
+        return false
+    }
+}
