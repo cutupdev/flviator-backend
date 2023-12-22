@@ -33,11 +33,10 @@ export interface UserType {
 }
 
 export interface PreHandType {
-    img: string
-    userName: string
-    betted: boolean
-    cashouted: boolean
+    name: string
     betAmount: number
-    cashAmount: number
+    cashOut: number
     target: number
+    avatar: string
+    cashouted: boolean
 }

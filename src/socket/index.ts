@@ -203,24 +203,22 @@ const sendPreviousHand = () => {
         let u = previousHand[i];
         if (u.f.betted || u.f.cashouted) {
             myPreHand.push({
-                img: u.avatar,
-                userName: u.userName,
-                betted: u.f.betted,
-                cashouted: u.f.cashouted,
+                name: u.userName,
                 betAmount: u.f.betAmount,
-                cashAmount: u.f.cashAmount,
+                cashOut: u.f.cashAmount,
                 target: u.f.target,
+                avatar: u.avatar,
+                cashouted: u.f.cashouted,
             });
         }
         if (u.s.betted || u.s.cashouted) {
             myPreHand.push({
-                img: u.avatar,
-                userName: u.userName,
-                betted: u.s.betted,
-                cashouted: u.s.cashouted,
+                name: u.userName,
                 betAmount: u.s.betAmount,
-                cashAmount: u.s.cashAmount,
+                cashOut: u.s.cashAmount,
                 target: u.s.target,
+                avatar: u.avatar,
+                cashouted: u.s.cashouted,
             });
         }
     }
