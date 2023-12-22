@@ -143,7 +143,7 @@ export const likesToChat = async (chatID: number, userId: string) => {
 
 export const addChatHistory = async (userId: string, socketId: string, msgType: string, msg: string) => {
     try {
-        await DChatHistories.insertOne({
+        var data: any = {
             _id: Date.now(),
             userId,
             socketId,
@@ -152,10 +152,17 @@ export const addChatHistory = async (userId: string, socketId: string, msgType: 
             likes: 0,
             likesIDs: [],
             createdAt: Date.now()
-        })
-        return true
+        }
+        await DChatHistories.insertOne(data)
+        return {
+            status: true,
+            data
+        }
     } catch (error) {
         setlog('addHistory', error)
-        return false
+        return {
+            status: false,
+            data: {}
+        }
     }
 }

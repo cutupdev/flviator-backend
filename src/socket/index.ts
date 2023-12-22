@@ -135,13 +135,15 @@ const gameRun = async () => {
             break;
         case "GAMEEND":
             if (Date.now() - startTime > GAMEENDTIME) {
+
                 let i = 0;
                 let interval = setInterval(() => {
                     betBot(botIds[i]);
                     i++;
-                    if (i > 15)
-                        clearInterval(interval);
+                    sendInfo();
+                    if (i > 15) clearInterval(interval);
                 }, 100)
+
                 startTime = Date.now();
                 GameState = "BET";
                 NextState = "READY";
@@ -158,43 +160,41 @@ const gameRun = async () => {
 gameRun();
 
 const sendInfo = () => {
-    if (GameState !== "GAMEEND") {
-        const info = [] as Array<{
-            name: string
-            betAmount: number
-            cashOut: number
-            cashouted: boolean
-            target: number
-            avatar: string
-        }>
-        for (let i in users) {
-            if (!!users[i]) {
-                let u = users[i];
-                if (u.f.betted || u.f.cashouted) {
-                    info.push({
-                        name: u.userName,
-                        betAmount: u.f.betAmount,
-                        cashOut: u.f.cashAmount,
-                        cashouted: u.f.cashouted,
-                        target: u.f.target,
-                        avatar: u.avatar
-                    })
-                }
+    const info = [] as Array<{
+        name: string
+        betAmount: number
+        cashOut: number
+        cashouted: boolean
+        target: number
+        avatar: string
+    }>
+    for (let i in users) {
+        if (!!users[i]) {
+            let u = users[i];
+            if (u.f.betted || u.f.cashouted) {
+                info.push({
+                    name: u.userName,
+                    betAmount: u.f.betAmount,
+                    cashOut: u.f.cashAmount,
+                    cashouted: u.f.cashouted,
+                    target: u.f.target,
+                    avatar: u.avatar
+                })
+            }
 
-                if (u.s.betted || u.s.cashouted) {
-                    info.push({
-                        name: u.userName,
-                        betAmount: u.s.betAmount,
-                        cashOut: u.s.cashAmount,
-                        cashouted: u.s.cashouted,
-                        target: u.s.target,
-                        avatar: u.avatar
-                    })
-                }
+            if (u.s.betted || u.s.cashouted) {
+                info.push({
+                    name: u.userName,
+                    betAmount: u.s.betAmount,
+                    cashOut: u.s.cashAmount,
+                    cashouted: u.s.cashouted,
+                    target: u.s.target,
+                    avatar: u.avatar
+                })
             }
         }
-        if (info.length) mysocketIo.emit("bettedUserInfo", info);
     }
+    if (info.length) mysocketIo.emit("bettedUserInfo", info);
 }
 
 const sendPreviousHand = () => {
@@ -282,6 +282,7 @@ setInterval(() => {
                 // cashoutAmount += users[k].s.target * users[k].s.betAmount;
             }
         }
+        sendInfo();
     }
 }, 500);
 
@@ -302,8 +303,9 @@ export const initSocket = (io: Server) => {
 
         // msg section
         socket.on("sendMsg", async ({ msgType, msgContent }) => {
-            await addChatHistory(users[socket.id].userId, socket.id, msgType, msgContent);
+            let data: any = await addChatHistory(users[socket.id].userId, socket.id, msgType, msgContent);
             let sendObj = {
+                _id: data._id,
                 userId: users[socket.id].userId,
                 userName: users[socket.id].userName,
                 avatar: users[socket.id].avatar,
@@ -466,14 +468,14 @@ export const initSocket = (io: Server) => {
                 socket.emit('error', { message: 'Undefined User', index: type });
         })
 
-        setInterval(() => {
-            // if (GameState === NextGameState) {
-            // NextGameState = NextState;
-            // const time = Date.now() - startTime;
-            // io.emit('gameState', { currentNum, currentSecondNum, GameState, time });
-            // }
-            sendInfo();
-        }, 100)
+        // setInterval(() => {
+        // if (GameState === NextGameState) {
+        // NextGameState = NextState;
+        // const time = Date.now() - startTime;
+        // io.emit('gameState', { currentNum, currentSecondNum, GameState, time });
+        // }
+        // }, 100)
+        // sendInfo();
     });
 
     const closeServer = () => {
