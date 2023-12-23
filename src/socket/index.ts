@@ -92,6 +92,9 @@ const gameRun = async () => {
             var currentTime = (Date.now() - startTime) / 1000;
             currentNum = 1 + 0.06 * currentTime + Math.pow((0.06 * currentTime), 2) - Math.pow((0.04 * currentTime), 3) + Math.pow((0.04 * currentTime), 4)
             currentSecondNum = currentNum;
+
+            let time = Date.now() - startTime;
+
             if (currentTime > gameTime) {
                 sendPreviousHand();
                 currentSecondNum = 0;
@@ -124,14 +127,14 @@ const gameRun = async () => {
                     })
                 }
 
-                const time = Date.now() - startTime;
-                mysocketIo.emit('gameState', { currentNum, currentSecondNum, GameState, time });
+                time = Date.now() - startTime;
 
                 botIds.map((item) => {
                     let userItem = { ...DEFAULT_USER, userName: getRandomName(), bot: true, userType: false }
                     users[item] = userItem
                 })
             }
+            mysocketIo.emit('gameState', { currentNum, currentSecondNum, GameState, time });
             break;
         case "GAMEEND":
             if (Date.now() - startTime > GAMEENDTIME) {
