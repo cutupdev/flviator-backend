@@ -63,7 +63,7 @@ export const Authentication = async (token: string, UserID: string, currency: st
         //         audioStatus: true,
         //         musicStatus: true,
         //         msgVisible: true,
-        //         avatar: "",
+        //         avatar: "./avatars/av-3.png",
         //     }
         // };
         const sendData = {
@@ -336,18 +336,36 @@ export const myInfo = async (req: Request, res: Response) => {
 export const dayHistory = async (req: Request, res: Response) => {
     try {
         let nowDate_ = Date.now();
-        let nowDate = Math.round(nowDate_ / 1000)
-        let oneDay = 60 * 60 * 24;
-        // limit = Number(limit) || 20
-        // if (limit < 10) limit = 10
-        // if (limit > 100) limit = 100
-        // const count = await DHistories.count({})
-        // const meta = getPaginationMeta(Number(page) || 0, count, limit)
-        // const result = await DHistories.find({ _id: { $gte: meta.page * meta.limit, $lt: (meta.page * meta.limit + meta.limit) } }).sort({ date: -1 }).toArray()
-        const result = await DHistories.find({ cashouted: true, date: { $gte: (nowDate - oneDay), $lt: nowDate } }).sort({ cashoutAt: -1 }).limit(20).toArray()
+        let nowDate = Math.round(nowDate_)
+        let oneDay = 60 * 60 * 24 * 1000;
+
+        const result = await DHistories.aggregate([
+            {
+                $lookup: {
+                    from: "users",
+                    localField: "userId",
+                    foreignField: "userId",
+                    as: "userinfo"
+                }
+            },
+            {
+                $match: {
+                    userId: { $ne: "0" },
+                    cashouted: true,
+                    date: { $gte: (nowDate - oneDay), $lt: nowDate }
+                }
+            },
+            {
+                $sort: { date: -1 }
+            },
+            {
+                $limit: 20
+            }
+        ]).toArray();
+
         res.json({ status: true, data: result });
     } catch (error) {
-        setlog('myInfo', error)
+        setlog('dayHistory', error)
         res.json({ status: false });
     }
 }
@@ -355,12 +373,36 @@ export const dayHistory = async (req: Request, res: Response) => {
 export const monthHistory = async (req: Request, res: Response) => {
     try {
         let nowDate_ = Date.now();
-        let nowDate = Math.round(nowDate_ / 1000)
-        let oneDay = 60 * 60 * 24 * 30;
-        const result = await DHistories.find({ cashouted: true, date: { $gte: (nowDate - oneDay), $lt: nowDate } }).sort({ cashoutAt: -1 }).limit(20).toArray()
+        let nowDate = Math.round(nowDate_)
+        let oneDay = 60 * 60 * 24 * 30 * 1000;
+
+        const result = await DHistories.aggregate([
+            {
+                $lookup: {
+                    from: "users",
+                    localField: "userId",
+                    foreignField: "userId",
+                    as: "userinfo"
+                }
+            },
+            {
+                $match: {
+                    userId: { $ne: "0" },
+                    cashouted: true,
+                    date: { $gte: (nowDate - oneDay), $lt: nowDate }
+                }
+            },
+            {
+                $sort: { date: -1 }
+            },
+            {
+                $limit: 20
+            }
+        ]).toArray();
+
         res.json({ status: true, data: result });
     } catch (error) {
-        setlog('myInfo', error)
+        setlog('monthHistory', error)
         res.json({ status: false });
     }
 }
@@ -368,12 +410,34 @@ export const monthHistory = async (req: Request, res: Response) => {
 export const yearHistory = async (req: Request, res: Response) => {
     try {
         let nowDate_ = Date.now();
-        let nowDate = Math.round(nowDate_ / 1000)
-        let oneDay = 60 * 60 * 24 * 365;
-        const result = await DHistories.find({ cashouted: true, date: { $gte: (nowDate - oneDay), $lt: nowDate } }).sort({ cashoutAt: -1 }).limit(20).toArray()
+        let nowDate = Math.round(nowDate_)
+        let oneDay = 60 * 60 * 24 * 365 * 1000;
+        const result = await DHistories.aggregate([
+            {
+                $lookup: {
+                    from: "users",
+                    localField: "userId",
+                    foreignField: "userId",
+                    as: "userinfo"
+                }
+            },
+            {
+                $match: {
+                    userId: { $ne: "0" },
+                    cashouted: true,
+                    date: { $gte: (nowDate - oneDay), $lt: nowDate }
+                }
+            },
+            {
+                $sort: { date: -1 }
+            },
+            {
+                $limit: 20
+            }
+        ]).toArray();
         res.json({ status: true, data: result });
     } catch (error) {
-        setlog('myInfo', error)
+        setlog('yearHistory', error)
         res.json({ status: false });
     }
 }

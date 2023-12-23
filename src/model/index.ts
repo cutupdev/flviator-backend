@@ -82,7 +82,7 @@ export const addUser = async (userId: string, name: string, balance: number, cur
             await DUsers.insertOne({
                 _id: ++lastIds.lastUserId,
                 name,
-                img,
+                img: img || "./avatars/av-5.png",
                 userId,
                 currency,
                 balance,
