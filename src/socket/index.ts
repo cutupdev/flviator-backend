@@ -22,6 +22,10 @@ import {
     getRandomAvatar,
 } from "./config"
 import { botIds, initBots } from "./bots"
+import { addChat } from '../model/chat';
+import { updateBetByBetId } from '../model/bet';
+import { updateCashoutByBetId } from '../model/cashout';
+import { addFlyDetail, updateFlyDetailByBetId } from '../model/flydetail';
 
 let mysocketIo: Server;
 let users = {} as { [key: string]: UserType }
@@ -42,6 +46,12 @@ let totalBetAmount = 0;
 const diffLimit = 9; // When we lost money, decrease RTP by this value, but be careful, if this value is high, the more 1.00 x will appear and users might complain.
 const salt = process.env.SALT || '8783642fc5b7f51c08918793964ca303edca39823325a3729ad62f0a2';
 var seed = crypto.createHash('sha256').update(`${Date.now()}`).digest('hex');
+let fbetid = 0;
+let fbeted = false;
+let sbetid = 0;
+let sbeted = false;
+let betNum = 0;
+let cashoutNum = 0;
 
 const gameRun = async () => {
     setTimeout(() => {
@@ -84,7 +94,13 @@ const gameRun = async () => {
                 GameState = "PLAYING";
                 NextState = "GAMEEND";
                 startTime = Date.now();
+                fbeted = false;
+                sbeted = false;
+                fbetid = Date.now() + Math.floor(Math.random() * 1000);
+                sbetid = Date.now() + Math.floor(Math.random() * 1000);
                 const time = Date.now() - startTime;
+                await addFlyDetail(`${fbetid}`, startTime, startTime, startTime, 0, 0, 0, 0, 0, 0, 0);
+                await addFlyDetail(`${sbetid}`, startTime, startTime, startTime, 0, 0, 0, 0, 0, 0, 0);
                 mysocketIo.emit('gameState', { currentNum, currentSecondNum, GameState, time });
             }
             break;
@@ -94,8 +110,34 @@ const gameRun = async () => {
             currentSecondNum = currentNum;
 
             let time = Date.now() - startTime;
-
             if (currentTime > gameTime) {
+                let cancelTime = Date.now()
+                if (fbeted === true) {
+                    await updateFlyDetailByBetId(`${fbetid}`, {
+                        flyEndTime: cancelTime,
+                        flyAway: currentSecondNum
+                    })
+                    await updateBetByBetId(`${fbetid}`, {
+                        isCancel: true,
+                        cancelTime
+                    })
+                    await updateCashoutByBetId(`${fbetid}`, {
+                        flyAway: currentSecondNum
+                    })
+                }
+                if (sbeted === true) {
+                    await updateFlyDetailByBetId(`${sbetid}`, {
+                        flyEndTime: cancelTime,
+                        flyAway: currentSecondNum
+                    })
+                    await updateBetByBetId(`${sbetid}`, {
+                        isCancel: true,
+                        cancelTime
+                    })
+                    await updateCashoutByBetId(`${sbetid}`, {
+                        flyAway: currentSecondNum
+                    })
+                }
                 sendPreviousHand();
                 currentSecondNum = 0;
                 currentNum = target;
@@ -243,7 +285,7 @@ function betBot(id: string) {
             cashouted: false,
             betAmount: fbetAmount,
             cashAmount: 0,
-            orderNo: Date.now() + Math.floor(Math.random() * 1000),
+            betid: Date.now() + Math.floor(Math.random() * 1000),
             target: (Math.random() * (1 / Math.random() - 0.01)) + 1.01,
         },
         s: {
@@ -252,7 +294,7 @@ function betBot(id: string) {
             cashouted: false,
             betAmount: sbetAmount,
             cashAmount: 0,
-            orderNo: Date.now() + Math.floor(Math.random() * 1000),
+            betid: Date.now() + Math.floor(Math.random() * 1000),
             target: (Math.random() * (1 / Math.random() - 0.01)) + 1.01,
         },
     }
@@ -304,7 +346,7 @@ export const initSocket = (io: Server) => {
 
         // msg section
         socket.on("sendMsg", async ({ msgType, msgContent }) => {
-            let data: any = await addChatHistory(users[socket.id].userId, socket.id, msgType, msgContent);
+            let data: any = await addChat(users[socket.id].userId, msgContent, msgType === "img" ? msgContent : "", msgContent)
             let sendObj = {
                 _id: data._id,
                 userId: users[socket.id].userId,
@@ -324,15 +366,15 @@ export const initSocket = (io: Server) => {
             ))
 
             if (checkIndex > -1) {
-                if (users[socket.id]?.f?.orderNo > 0 || users[socket.id]?.s?.orderNo > 0) {
+                if (users[socket.id]?.f?.betid > 0 || users[socket.id]?.s?.betid > 0) {
                     let betAmount = 0;
                     if (users[socket.id].f.betted && !users[socket.id].f.cashouted) {
                         betAmount += users[socket.id].f.betAmount;
-                        cancelBet(users[socket.id].userId, `${users[socket.id].f.orderNo}`, `${betAmount}`, users[socket.id].token, users[socket.id].Session_Token);
+                        cancelBet(users[socket.id].userId, `${users[socket.id].f.betid}`, `${betAmount}`, users[socket.id].token, users[socket.id].Session_Token);
                     }
                     if (users[socket.id].s.betted && !users[socket.id].s.cashouted) {
                         betAmount += users[socket.id].s.betAmount;
-                        cancelBet(users[socket.id].userId, `${users[socket.id].s.orderNo}`, `${betAmount}`, users[socket.id].token, users[socket.id].Session_Token);
+                        cancelBet(users[socket.id].userId, `${users[socket.id].s.betid}`, `${betAmount}`, users[socket.id].token, users[socket.id].Session_Token);
                     }
                 }
                 sockets.splice(checkIndex, 1);
@@ -388,29 +430,44 @@ export const initSocket = (io: Server) => {
                 if (!!u) {
                     if (betAmount >= localconfig.betting.min && betAmount <= localconfig.betting.max) {
                         if (u.balance - betAmount >= 0) {
-                            const betid = Date.now() + Math.floor(Math.random() * 1000);
-                            const betRes = await bet(users[socket.id].userId, `${betid}`, `${betAmount}`, u.currency, u.Session_Token);
+                            let betid = 0;
+                            if (type === 'f') {
+                                betid = fbetid;
+                                fbeted = true;
+                            }
+                            if (type === 's') {
+                                betid = sbetid;
+                                sbeted = true;
+                            }
+                            const betRes = await bet(users[socket.id].userId, `${betid}`, u.balance, `${betAmount}`, u.currency, u.Session_Token);
                             if (betRes.status) {
                                 if (type === 'f') {
                                     u.f.betAmount = betAmount;
                                     u.f.betted = true;
-                                    u.f.orderNo = betid;
+                                    u.f.betid = betid;
                                     u.f.auto = auto;
                                     u.f.target = target;
                                 } else if (type === 's') {
                                     u.s.betAmount = betAmount;
                                     u.s.betted = true;
-                                    u.s.orderNo = betid;
+                                    u.s.betid = betid;
                                     u.s.auto = auto;
                                     u.s.target = target;
                                 }
                                 u.balance = betRes.balance;
                                 // users[socket.id] = u;
+                                betNum++;
                                 totalBetAmount += betAmount;
                                 if (totalBetAmount > Number.MAX_SAFE_INTEGER) {
                                     totalBetAmount = betAmount;
                                     cashoutAmount = 0;
                                 }
+                                await updateFlyDetailByBetId(`${betid}`, {
+                                    totalUsers: betNum,
+                                    totalBets: betNum,
+                                    totalBetsAmount: totalBetAmount,
+                                    flyEndTime: Date.now()
+                                })
 
                                 socket.emit("myBetState", { user: u, type });
                             } else {
@@ -441,15 +498,23 @@ export const initSocket = (io: Server) => {
                 if (GameState === "PLAYING") {
                     if (!player.cashouted && player.betted) {
                         if (endTarget <= currentSecondNum && endTarget * player.betAmount) {
-                            var returnData: any = await settle(users[socket.id].userId, `${player.orderNo}`, endTarget.toFixed(2), (endTarget * player.betAmount).toFixed(2), u.currency, u.Session_Token);
+                            var returnData: any = await settle(users[socket.id].userId, `${player.betid}`, player.betAmount.toFixed(2), endTarget.toFixed(2), (endTarget * player.betAmount).toFixed(2), u.currency, u.Session_Token);
                             player.cashouted = true;
                             player.cashAmount = endTarget * player.betAmount;
                             player.betted = false;
-                            player.orderNo = 0;
+                            player.betid = 0;
                             player.target = endTarget;
                             // u.balance += endTarget * player.betAmount;
                             u.balance = returnData.balance;
+                            cashoutNum++;
                             cashoutAmount += endTarget * player.betAmount;
+                            let betid = 0;
+                            if (type === 'f') betid = fbetid;
+                            if (type === 's') betid = sbetid;
+                            await updateFlyDetailByBetId(`${betid}`, {
+                                totalCashout: cashoutNum,
+                                totalCashoutAmount: cashoutAmount
+                            })
                             // users[socket.id] = u;
                             socket.emit("finishGame", u);
                             // socket.emit("success", `Successfully CashOuted ${Number(player.cashAmount).toFixed(2)}`);

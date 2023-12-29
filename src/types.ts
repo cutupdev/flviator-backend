@@ -16,7 +16,7 @@ export interface UserType {
         auto: boolean
         betted: boolean
         cashouted: boolean
-        orderNo: number
+        betid: number
         betAmount: number
         cashAmount: number
         target: number
@@ -25,7 +25,7 @@ export interface UserType {
         auto: boolean
         betted: boolean
         cashouted: boolean
-        orderNo: number
+        betid: number
         betAmount: number
         cashAmount: number
         target: number

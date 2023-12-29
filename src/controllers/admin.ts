@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { DHistories, DUsers } from "../model";
+import { DHistories, TblUser } from "../model";
 import { getPaginationMeta, setlog } from "../helper";
 
 export const totalHistory = async (req: Request, res: Response) => {
@@ -24,9 +24,9 @@ export const totalUsers = async (req: Request, res: Response) => {
         limit = Number(limit) || 20
         if (limit < 10) limit = 10
         if (limit > 100) limit = 100
-        const count = await DUsers.count({})
+        const count = await TblUser.count({})
         const meta = getPaginationMeta(Number(page) || 0, count, limit)
-        const result = await DUsers.find({ _id: { $gte: meta.page * meta.limit, $lt: (meta.page * meta.limit + meta.limit) } }).sort({ date: -1 }).toArray()
+        const result = await TblUser.find({ _id: { $gte: meta.page * meta.limit, $lt: (meta.page * meta.limit + meta.limit) } }).sort({ date: -1 }).toArray()
         res.json({ status: true, data: result });
     } catch (error) {
         setlog('myInfo', error)
