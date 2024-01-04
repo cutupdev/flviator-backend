@@ -16,7 +16,7 @@ import { getAllChatHistory } from "../model/chat";
 import { addCancelBet } from "../model/cancelbet";
 import { addCancelBetLog } from "../model/cancelbetlog";
 
-const serverURL = process.env.SERVER_URL || 'https://crashgameapi.vkingplays.com';
+const serverURL = process.env.SERVER_URL || 'https://crash.casinocarnival.games';
 const API_URL = process.env.API_URL || 'https://crash.casinocarnival.games';
 const getBalanceUrl = `${API_URL}${process.env.GET_BALANCE_URL || '/Authentication'}`;
 const betUrl = `${API_URL}${process.env.BET_URL || '/placeBet'}`;
