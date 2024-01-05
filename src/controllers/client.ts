@@ -41,7 +41,7 @@ export const GameLaunch = async (req: Request, res: Response) => {
             if (!UserID || !token || !currency) return res.status(404).send("Invalid paramters");
 
             const userData = await TblUser.findOne({ "userId": UserID });
-            let ipAddress = req.socket.remoteAddress;
+            let ipAddress = req.socket.remoteAddress || "0.0.0.0";
 
             if (!userData) {
                 await addUser("userName", UserID, currency, 0, "", "", "admin", ipAddress)
