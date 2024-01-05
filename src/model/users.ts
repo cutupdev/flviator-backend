@@ -89,7 +89,7 @@ export const addUser = async (
       isSoundEnable: true,
       isMusicEnable: true,
       isChatEnable: true,
-      ipAddress,
+      ipAddress: ipAddress || "0.0.0.0",
     })
     return true
   } catch (error) {
