@@ -57,6 +57,23 @@ export const addUser = async (
 ) => {
   try {
     let dt = Date.now();
+    console.log({
+      _id: dt,
+      userName,
+      userId,
+      currency,
+      balance,
+      avatar,
+      isActive: true,
+      isBetAllow: true,
+      platform,
+      createdDate: dt,
+      createdBy,
+      isSoundEnable: true,
+      isMusicEnable: true,
+      isChatEnable: true,
+      ipAddress,
+    })
     await TblUser.insertOne({
       _id: dt,
       userName,
