@@ -57,40 +57,26 @@ export const addUser = async (
 ) => {
   try {
     let dt = Date.now();
-    console.log({
-      _id: dt,
-      userName,
-      userId,
-      currency,
-      balance,
-      avatar,
-      isActive: true,
-      isBetAllow: true,
-      platform,
-      createdDate: dt,
-      createdBy,
-      isSoundEnable: true,
-      isMusicEnable: true,
-      isChatEnable: true,
-      ipAddress,
-    })
-    await TblUser.insertOne({
-      _id: dt,
-      userName,
-      userId,
-      currency,
-      balance,
-      avatar,
-      isActive: true,
-      isBetAllow: true,
-      platform,
-      createdDate: dt,
-      createdBy,
-      isSoundEnable: true,
-      isMusicEnable: true,
-      isChatEnable: true,
-      ipAddress: ipAddress || "0.0.0.0",
-    })
+    const user = await TblUser.findOne({ userId });
+    if (!user) {
+      await TblUser.insertOne({
+        _id: dt,
+        userName,
+        userId,
+        currency,
+        balance,
+        avatar,
+        isActive: true,
+        isBetAllow: true,
+        platform,
+        createdDate: dt,
+        createdBy,
+        isSoundEnable: true,
+        isMusicEnable: true,
+        isChatEnable: true,
+        ipAddress: ipAddress || "0.0.0.0",
+      })
+    }
     return true
   } catch (error) {
     setlog('addUser', error)

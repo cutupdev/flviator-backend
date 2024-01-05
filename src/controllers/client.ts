@@ -40,7 +40,7 @@ export const GameLaunch = async (req: Request, res: Response) => {
 
             if (!UserID || !token || !currency) return res.status(404).send("Invalid paramters");
 
-            const userData = await TblUser.findOne({ "userId": UserID });
+            const userData = await TblUser.findOne({ userId: UserID });
             let ipAddress = req.socket.remoteAddress || "0.0.0.0";
 
             if (!userData) {
@@ -97,7 +97,7 @@ export const Authentication = async (token: string, UserID: string, currency: st
         var _data = resData.data;
         if (_data.code === 200) {
             _data = _data.data;
-            const userData: any = await TblUser.findOne({ "userId": UserID });
+            const userData: any = await TblUser.findOne({ userId: UserID });
             let balance = Number(_data.balance) || 0;
             if (!userData) {
                 await addUser(_data.userName, UserID, _data.currency, balance, _data.avatar, "", "admin", "server")
@@ -320,7 +320,7 @@ export const cancelBet = async (UserID: string, betid: string, amount: string, c
 //         };
 
 //     } catch (err) {
-    // console.log(err);
+// console.log(err);
 //         return {
 //             status: false,
 //             message: "Internal Exception"
