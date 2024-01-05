@@ -40,11 +40,11 @@ export const GameLaunch = async (req: Request, res: Response) => {
 
             if (!UserID || !token || !currency) return res.status(404).send("Invalid paramters");
 
-            const userData = await TblUser.findOne({ userId: UserID });
+            let userData: any = await TblUser.findOne({ userId: UserID });
             let ipAddress = req.socket.remoteAddress || "0.0.0.0";
 
             if (!userData) {
-                await addUser("userName", UserID, currency, 0, "", "", "admin", ipAddress)
+                userData = await addUser("userName", UserID, currency, 0, "", "", "admin", ipAddress)
             }
             const responseJson = {
                 code: 200,
@@ -97,10 +97,10 @@ export const Authentication = async (token: string, UserID: string, currency: st
         var _data = resData.data;
         if (_data.code === 200) {
             _data = _data.data;
-            const userData: any = await TblUser.findOne({ userId: UserID });
+            let userData: any = await TblUser.findOne({ userId: UserID });
             let balance = Number(_data.balance) || 0;
             if (!userData) {
-                await addUser(_data.userName, UserID, _data.currency, balance, _data.avatar, "", "admin", "server")
+                userData = await addUser(_data.userName, UserID, _data.currency, balance, _data.avatar, "", "admin", "server")
             }
             await updateUserById(UserID, { balance })
             let responseTime = Date.now()
@@ -261,7 +261,7 @@ export const cancelBet = async (UserID: string, betid: string, amount: string, c
             Session_Token,
             cancelbetid: cancelbetid,
         }
-        const userData: any = await getUserById(UserID);
+        let userData: any = await getUserById(UserID);
         var hashed = await hashFunc(sendData);
         let requestTime = Date.now();
         const resData = await axios.post(cancelUrl, sendData, {

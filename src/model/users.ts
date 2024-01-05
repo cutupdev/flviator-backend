@@ -58,26 +58,27 @@ export const addUser = async (
   try {
     let dt = Date.now();
     const user = await TblUser.findOne({ userId });
-    if (!user) {
-      await TblUser.insertOne({
-        _id: dt,
-        userName,
-        userId,
-        currency,
-        balance,
-        avatar,
-        isActive: true,
-        isBetAllow: true,
-        platform,
-        createdDate: dt,
-        createdBy,
-        isSoundEnable: true,
-        isMusicEnable: true,
-        isChatEnable: true,
-        ipAddress: ipAddress || "0.0.0.0",
-      })
+    let userData = {
+      _id: dt,
+      userName,
+      userId,
+      currency,
+      balance,
+      avatar,
+      isActive: true,
+      isBetAllow: true,
+      platform,
+      createdDate: dt,
+      createdBy,
+      isSoundEnable: true,
+      isMusicEnable: true,
+      isChatEnable: true,
+      ipAddress: ipAddress || "0.0.0.0",
     }
-    return true
+    if (!user) {
+      await TblUser.insertOne(userData)
+    }
+    return userData
   } catch (error) {
     setlog('addUser', error)
     return false
