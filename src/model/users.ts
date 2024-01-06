@@ -1,27 +1,80 @@
 import { setlog } from "../helper";
-import { TblUser } from "./index";
 
-// declare interface SchemaTblUser {
-//   _id: number
-//   userName: string
-//   userId: string
-//   currency: string
-//   avatar: string
-//   isActive: boolean
-//   isBetAllow: boolean
-//   platform: string
-//   balance: number
-//   createdDate: number
-//   createdBy: string
-//   isSoundEnable: boolean
-//   isMusicEnable: boolean
-//   isChatEnable: boolean
-//   ipAddress: string
-// }
+import mongoose, { Types } from "mongoose";
+
+const UserSchema = new mongoose.Schema({
+  userName: {
+    type: String,
+    require: true
+  },
+  userId: {
+    type: String,
+    require: true
+  },
+  currency: {
+    type: String,
+    default: "INR"
+  },
+  avatar: {
+    type: String,
+    default: "./avatars/av-5.png"
+  },
+  isActive: {
+    type: Boolean,
+    default: true
+  },
+  isBetAllow: {
+    type: Boolean,
+    default: true
+  },
+  platform: {
+    type: String,
+    default: "desktop"
+  },
+  balance: {
+    type: Number,
+    default: 0
+  },
+  createdBy: {
+    type: String,
+    default: "admin"
+  },
+  isSoundEnable: {
+    type: Boolean,
+    default: true
+  },
+  isMusicEnable: {
+    type: Boolean,
+    default: true
+  },
+  isChatEnable: {
+    type: Boolean,
+    default: true
+  },
+  ipAddress: {
+    type: String,
+    default: "0.0.0.0"
+  },
+});
+
+const UserModel = mongoose.model("users", UserSchema);
+
+export const getAllUsers = async () => {
+  try {
+    const users = await UserModel.find({})
+    return {
+      status: true,
+      data: users
+    }
+  } catch (error) {
+    setlog('getAllUsers', error)
+    return { status: false, message: "Something went wrong." }
+  }
+}
 
 export const getUserById = async (userId: string) => {
   try {
-    const user = await TblUser.find({ userId })
+    const user = await UserModel.find({ userId })
     return {
       status: true,
       data: user
@@ -32,18 +85,7 @@ export const getUserById = async (userId: string) => {
   }
 }
 
-export const getAllUsers = async () => {
-  try {
-    const users = await TblUser.find({})
-    return {
-      status: true,
-      data: users
-    }
-  } catch (error) {
-    setlog('getAllUsers', error)
-    return { status: false, message: "Something went wrong." }
-  }
-}
+
 
 export const addUser = async (
   userName: string,
@@ -57,7 +99,7 @@ export const addUser = async (
 ) => {
   try {
     let dt = Date.now();
-    const user = await TblUser.findOne({ userId });
+    const user = await UserModel.findOne({ userId });
     let userData = {
       _id: dt,
       userName,
@@ -75,9 +117,8 @@ export const addUser = async (
       isChatEnable: true,
       ipAddress: ipAddress || "0.0.0.0",
     }
-    console.log(userData)
     if (!user) {
-      await TblUser.insertOne(userData)
+      await UserModel.create(userData)
     }
     return userData
   } catch (error) {
@@ -91,9 +132,7 @@ export const updateUser = async (
   updateData: object,
 ) => {
   try {
-    await TblUser.updateOne({ _id }, {
-      $set: updateData
-    })
+    await UserModel.findOneAndUpdate({ _id }, updateData)
     return true
   } catch (error) {
     setlog('updateUser', error)
@@ -106,9 +145,7 @@ export const updateUserById = async (
   updateData: object,
 ) => {
   try {
-    await TblUser.updateOne({ userId }, {
-      $set: updateData
-    })
+    await UserModel.findOneAndUpdate({ userId }, updateData)
     return true
   } catch (error) {
     setlog('updateUser', error)
@@ -120,10 +157,12 @@ export const deleteUser = async (
   _id: number
 ) => {
   try {
-    await TblUser.deleteOne({ _id })
+    await UserModel.deleteOne({ _id: new Types.ObjectId(_id) })
     return true
   } catch (error) {
     setlog('deleteUser', error)
     return false
   }
 }
+
+export default UserModel;
