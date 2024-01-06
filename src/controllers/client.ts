@@ -115,6 +115,7 @@ export const Authentication = async (token: string, UserID: string, currency: st
         })
         let requestTime = Date.now()
         var _data = resData.data;
+        console.log(_data)
         if (_data.code === 200) {
             _data = _data.data;
             let userData: any = await TblUser.findOne({ userId: UserID });
