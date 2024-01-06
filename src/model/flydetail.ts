@@ -1,7 +1,6 @@
-import { setlog } from "../helper";
-import { TblFlyDetail } from "./index";
+import { currentTime, setlog } from "../helper";
 
-// declare interface SchemaTblFlyDetail {
+// declare interface SchemaFlyDetailModel {
 //   _id: number
 //   betId: string
 //   betStartTime: number
@@ -16,9 +15,50 @@ import { TblFlyDetail } from "./index";
 //   flyEndTime: number
 // }
 
+import mongoose, { Types } from "mongoose";
+
+const FlyDetailSchema = new mongoose.Schema({
+  betId: {
+    type: String,
+  },
+  betStartTime: {
+    type: Number,
+  },
+  betEndTime: {
+    type: Number,
+  },
+  flyStartTime: {
+    type: Number,
+  },
+  totalUsers: {
+    type: Number,
+  },
+  totalBets: {
+    type: Number,
+  },
+  totalBetsAmount: {
+    type: Number,
+  },
+  totalCashout: {
+    type: Number,
+  },
+  totalCashoutAmount: {
+    type: Number,
+  },
+  flyAway: {
+    type: Number,
+  },
+  flyEndTime: {
+    type: Number,
+  },
+});
+
+
+const FlyDetailModel = mongoose.model("histories", FlyDetailSchema);
+
 export const getAllFlyDetail = async () => {
   try {
-    const flydetails = await TblFlyDetail.find({})
+    const flydetails = await FlyDetailModel.find({})
     return {
       status: true,
       data: flydetails
@@ -43,9 +83,7 @@ export const addFlyDetail = async (
   flyEndTime: number,
 ) => {
   try {
-    let dt = Date.now();
-    await TblFlyDetail.insertOne({
-      _id: dt,
+    await FlyDetailModel.create({
       betId,
       betStartTime,
       betEndTime,
@@ -70,9 +108,7 @@ export const updateFlyDetail = async (
   updateData: object,
 ) => {
   try {
-    await TblFlyDetail.updateOne({ _id }, {
-      $set: updateData
-    })
+    await FlyDetailModel.findOneAndUpdate({ _id: new Types.ObjectId(_id) }, updateData)
     return true
   } catch (error) {
     setlog('updateFlyDetail', error)
@@ -85,9 +121,7 @@ export const updateFlyDetailByBetId = async (
   updateData: object,
 ) => {
   try {
-    await TblFlyDetail.updateOne({ betId }, {
-      $set: updateData
-    })
+    await FlyDetailModel.findOneAndUpdate({ betId }, updateData)
     return true
   } catch (error) {
     setlog('updateFlyDetail', error)
@@ -99,10 +133,12 @@ export const deleteFlyDetail = async (
   _id: number
 ) => {
   try {
-    await TblFlyDetail.deleteOne({ _id })
+    await FlyDetailModel.deleteOne({ _id })
     return true
   } catch (error) {
     setlog('deleteFlyDetail', error)
     return false
   }
 }
+
+export default FlyDetailModel;

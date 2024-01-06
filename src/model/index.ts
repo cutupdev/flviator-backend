@@ -104,28 +104,28 @@ export const getBettingAmounts = async () => {
         const maxBetAmount = d?.maxBetAmount || projectConfig.betting.max;
         return { minBetAmount, maxBetAmount }
     } catch (error) {
-        setlog('addHistory', error)
+        setlog('getBettingAmounts', error)
         return { minBetAmount: projectConfig.betting.min, maxBetAmount: projectConfig.betting.max }
     }
 
 }
 
-export const addHistory = async (userId: string, betAmount: number, cashoutAt: number, cashouted: boolean) => {
-    try {
-        await DHistories.insertOne({
-            _id: ++lastIds.lastHistoryId,
-            userId,
-            betAmount,
-            cashoutAt,
-            cashouted,
-            date: currentTime()
-        })
-        return true
-    } catch (error) {
-        setlog('addHistory', error)
-        return false
-    }
-}
+// export const addHistory = async (userId: string, betAmount: number, cashoutAt: number, cashouted: boolean) => {
+//     try {
+//         await DHistories.insertOne({
+//             _id: ++lastIds.lastHistoryId,
+//             userId,
+//             betAmount,
+//             cashoutAt,
+//             cashouted,
+//             date: currentTime()
+//         })
+//         return true
+//     } catch (error) {
+//         setlog('addHistory', error)
+//         return false
+//     }
+// }
 
 // export const addUser = async (userId: string, name: string, balance: number, currency: string, img: string) => {
 //     try {

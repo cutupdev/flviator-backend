@@ -3,7 +3,7 @@ import crypto from 'crypto';
 import path from 'path';
 import { config } from "dotenv";
 import { getTime } from "../math"
-import { addChatHistory, addHistory, getAllChatHistory } from '../model'
+// import { addChatHistory, getAllChatHistory } from '../model'
 import { Authentication, bet, settle, cancelBet } from '../controllers/client';
 
 import localconfig from "../config.json";
@@ -26,6 +26,7 @@ import { addChat } from '../model/chat';
 import { updateBetByBetId } from '../model/bet';
 import { updateCashoutByBetId } from '../model/cashout';
 import { addFlyDetail, updateFlyDetailByBetId } from '../model/flydetail';
+import { addHistory } from '../model/history';
 
 let mysocketIo: Server;
 let users = {} as { [key: string]: UserType }
