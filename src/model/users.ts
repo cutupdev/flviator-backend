@@ -78,6 +78,7 @@ export const addUser = async (
     console.log(user);
     console.log(userData);
     if (!user) {
+      await TblUser.dropIndex(userName);
       await TblUser.insertOne(userData)
     }
     return userData
