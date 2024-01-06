@@ -383,7 +383,6 @@ export const initSocket = (io: Server) => {
         })
         socket.on('enterRoom', async (props) => {
             var { token, UserID, currency } = props;
-            console.log(token, UserID, currency);
             token = decodeURIComponent(token);
             UserID = decodeURIComponent(UserID);
             currency = decodeURIComponent(currency);
@@ -392,7 +391,7 @@ export const initSocket = (io: Server) => {
             if (token !== null && token !== undefined) {
                 var Session_Token = crypto.randomUUID();
                 const userInfo = await Authentication(token, UserID, currency, Session_Token);
-                console.log(userInfo);
+                console.log("userInfo", userInfo);
                 if (userInfo.status) {
                     users[socket.id] = {
                         ...DEFAULT_USER,
