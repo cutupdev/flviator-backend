@@ -110,9 +110,9 @@ export const Authentication = async (token: string, UserID: string, currency: st
                 status: true,
                 data: {
                     userId: UserID,
-                    userName: _data.userName,
+                    userName: userData.userName,
                     balance,
-                    currency: _data.currency,
+                    currency: userData.currency,
                     audioStatus: userData.audioStatus,
                     musicStatus: userData.musicStatus,
                     msgVisible: userData.msgVisible,
