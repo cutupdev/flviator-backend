@@ -40,12 +40,32 @@ export const GameLaunch = async (req: Request, res: Response) => {
 
             if (!UserID || !token || !currency) return res.status(404).send("Invalid paramters");
 
+            
             let userData: any = await TblUser.findOne({ userId: UserID });
             let ipAddress = req.socket.remoteAddress || "0.0.0.0";
 
-            if (!userData) {
-                userData = await addUser("userName", UserID, currency, 0, "", "", "admin", ipAddress)
+            var Session_Token = crypto.randomUUID();
+            const sendData = {
+                UserID,
+                User_Token: token,
+                Session_Token,
+                currency
             }
+            var hashed = await hashFunc(sendData);
+            const resData = await axios.post(getBalanceUrl, sendData, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'hashkey': hashed
+                }
+            })
+            var _data = resData.data;
+
+            if (!userData) {
+                let balance = Number(_data.balance) || 0;
+                userData = await addUser(_data.userName, UserID, _data.currency, balance, _data.avatar, "", "admin", ipAddress)
+            }
+
+
             const responseJson = {
                 code: 200,
                 message: "success",

@@ -391,7 +391,6 @@ export const initSocket = (io: Server) => {
             if (token !== null && token !== undefined) {
                 var Session_Token = crypto.randomUUID();
                 const userInfo = await Authentication(token, UserID, currency, Session_Token);
-                console.log("userInfo", userInfo);
                 if (userInfo.status) {
                     users[socket.id] = {
                         ...DEFAULT_USER,
