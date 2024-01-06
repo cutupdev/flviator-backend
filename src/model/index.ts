@@ -37,7 +37,7 @@ export const TblChat = db.collection<SchemaTblChat>('chat');
 export const TblBlock = db.collection<SchemaTblBlock>('block');
 
 export const DGame = db.collection<SchemaGame>('game');
-export const DHistories = db.collection<SchemaHistory>('histories');
+// export const DHistories = db.collection<SchemaHistory>('histories');
 export const DChatHistories = db.collection<SchemaChatHistory>('chat-histories');
 
 const lastIds = {
@@ -79,23 +79,23 @@ const lastIds = {
 
 // addCancelBetManually()
 
-export const connect = async () => {
-    try {
-        await client.connect();
-        await TblUser.createIndex({ name: 1 }, { unique: true, name: 'users-name' });
-        await DHistories.createIndex({ name: 1 }, { unique: false, name: 'logs-name' });
-        await DHistories.createIndex({ date: 1 }, { unique: false, name: 'logs-date' });
+// export const connect = async () => {
+//     try {
+//         await client.connect();
+//         await TblUser.createIndex({ name: 1 }, { unique: true, name: 'users-name' });
+//         await DHistories.createIndex({ name: 1 }, { unique: false, name: 'logs-name' });
+//         await DHistories.createIndex({ date: 1 }, { unique: false, name: 'logs-date' });
 
-        const d = await DHistories.aggregate([{ $group: { _id: null, max: { $max: "$_id" } } }]).toArray();
-        lastIds.lastHistoryId = d?.[0]?.max || 0
-        const d1 = await TblUser.aggregate([{ $group: { _id: null, max: { $max: "$_id" } } }]).toArray();
-        lastIds.lastUserId = d1?.[0]?.max || 0
-        return true
-    } catch (error) {
-        setlog('mongodb-initialization', error)
-        return error
-    }
-}
+//         const d = await DHistories.aggregate([{ $group: { _id: null, max: { $max: "$_id" } } }]).toArray();
+//         lastIds.lastHistoryId = d?.[0]?.max || 0
+//         const d1 = await TblUser.aggregate([{ $group: { _id: null, max: { $max: "$_id" } } }]).toArray();
+//         lastIds.lastUserId = d1?.[0]?.max || 0
+//         return true
+//     } catch (error) {
+//         setlog('mongodb-initialization', error)
+//         return error
+//     }
+// }
 
 export const getBettingAmounts = async () => {
     try {
