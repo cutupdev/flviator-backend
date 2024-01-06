@@ -75,8 +75,6 @@ export const addUser = async (
       isChatEnable: true,
       ipAddress: ipAddress || "0.0.0.0",
     }
-    console.log(user);
-    console.log(userData);
     if (!user) {
       await TblUser.insertOne(userData)
     }
