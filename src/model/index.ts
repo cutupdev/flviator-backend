@@ -6,6 +6,8 @@ import { addCurrency } from './currency';
 import { addGameSetting } from './gamesetting';
 import { addCancelBet } from './cancelbet';
 import { addCancelBetLog } from './cancelbetlog';
+import HistoryModel from './history';
+import UserModel from './users';
 
 const dbUser = process.env.DB_USER || 'app';
 const dbPwd = process.env.DB_PWD || '5uikrEmaEblyTmfa';
@@ -21,7 +23,7 @@ const db = client.db(dbName);
 export const DEFAULT_GAMEID = 1
 
 export const TblCurrency = db.collection<SchemaTblCurrency>('currency');
-export const TblUser = db.collection<SchemaTblUser>('users');
+// export const UserModel = db.collection<SchemaUserModel>('users');
 export const TblSession = db.collection<SchemaTblSession>('sessions');
 export const TblFlyDetail = db.collection<SchemaTblFlyDetail>('flydetail');
 export const TblGameSetting = db.collection<SchemaTblGameSetting>('gamesetting');
@@ -37,7 +39,7 @@ export const TblChat = db.collection<SchemaTblChat>('chat');
 export const TblBlock = db.collection<SchemaTblBlock>('block');
 
 export const DGame = db.collection<SchemaGame>('game');
-// export const DHistories = db.collection<SchemaHistory>('histories');
+// export const HistoryModel = db.collection<SchemaHistory>('histories');
 export const DChatHistories = db.collection<SchemaChatHistory>('chat-histories');
 
 const lastIds = {
@@ -79,23 +81,24 @@ const lastIds = {
 
 // addCancelBetManually()
 
-// export const connect = async () => {
-//     try {
-//         await client.connect();
-//         await TblUser.createIndex({ name: 1 }, { unique: true, name: 'users-name' });
-//         await DHistories.createIndex({ name: 1 }, { unique: false, name: 'logs-name' });
-//         await DHistories.createIndex({ date: 1 }, { unique: false, name: 'logs-date' });
+export const connect = async () => {
+    try {
+        await client.connect();
+        // await UserModel.createIndex({ userName: 1 }, { unique: true, name: 'users-name' });
+        // await HistoryModel.createIndex({ userName: 1 }, { unique: false, name: 'logs-name' });
+        // await HistoryModel.createIndex({ date: 1 }, { unique: false, name: 'logs-date' });
 
-//         const d = await DHistories.aggregate([{ $group: { _id: null, max: { $max: "$_id" } } }]).toArray();
-//         lastIds.lastHistoryId = d?.[0]?.max || 0
-//         const d1 = await TblUser.aggregate([{ $group: { _id: null, max: { $max: "$_id" } } }]).toArray();
-//         lastIds.lastUserId = d1?.[0]?.max || 0
-//         return true
-//     } catch (error) {
-//         setlog('mongodb-initialization', error)
-//         return error
-//     }
-// }
+        // const d = await HistoryModel.aggregate([{ $group: { _id: null, max: { $max: "$_id" } } }]);
+        // lastIds.lastHistoryId = d?.[0]?.max || 0
+        // const d1 = await UserModel.aggregate([{ $group: { _id: null, max: { $max: "$_id" } } }])
+        // ;
+        // lastIds.lastUserId = d1?.[0]?.max || 0
+        return true
+    } catch (error) {
+        setlog('mongodb-initialization', error)
+        return error
+    }
+}
 
 export const getBettingAmounts = async () => {
     try {
@@ -112,7 +115,7 @@ export const getBettingAmounts = async () => {
 
 // export const addHistory = async (userId: string, betAmount: number, cashoutAt: number, cashouted: boolean) => {
 //     try {
-//         await DHistories.insertOne({
+//         await HistoryModel.insertOne({
 //             _id: ++lastIds.lastHistoryId,
 //             userId,
 //             betAmount,
@@ -129,10 +132,10 @@ export const getBettingAmounts = async () => {
 
 // export const addUser = async (userId: string, name: string, balance: number, currency: string, img: string) => {
 //     try {
-//         const findUser = await TblUser.findOne({ userId });
+//         const findUser = await UserModel.findOne({ userId });
 //         if (!findUser) {
 //             const now = currentTime()
-//             await TblUser.insertOne({
+//             await UserModel.insertOne({
 //                 _id: ++lastIds.lastUserId,
 //                 name,
 //                 img: img || "./avatars/av-5.png",
@@ -159,7 +162,7 @@ export const getBettingAmounts = async () => {
 
 export const updateUserBalance = async (name: string, balance: number) => {
     try {
-        await TblUser.updateOne({ name }, { $set: { balance } })
+        await UserModel.updateOne({ name }, { $set: { balance } })
         return true
     } catch (error) {
         setlog('updateUserBalance', error)

@@ -5,7 +5,8 @@ import mongoose, { Types } from "mongoose";
 const UserSchema = new mongoose.Schema({
   userName: {
     type: String,
-    require: true
+    require: true,
+    index: true
   },
   userId: {
     type: String,

@@ -8,7 +8,7 @@ declare interface SchemaTblCurrency {
     createdBy: string
 }
 
-declare interface SchemaTblUser {
+declare interface SchemaUserModel {
     _id: number
     userName: string
     userId: string

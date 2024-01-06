@@ -54,7 +54,7 @@ const FlyDetailSchema = new mongoose.Schema({
 });
 
 
-const FlyDetailModel = mongoose.model("histories", FlyDetailSchema);
+const FlyDetailModel = mongoose.model("fly-details", FlyDetailSchema);
 
 export const getAllFlyDetail = async () => {
   try {

@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
-import { DHistories, TblUser } from "../model";
 import { getPaginationMeta, setlog } from "../helper";
+import UserModel from "../model/users";
+import HistoryModel from "../model/history";
 
 export const totalHistory = async (req: Request, res: Response) => {
     try {
@@ -8,9 +9,9 @@ export const totalHistory = async (req: Request, res: Response) => {
         limit = Number(limit) || 20
         if (limit < 10) limit = 10
         if (limit > 100) limit = 100
-        const count = await DHistories.count({})
+        const count = await HistoryModel.count({})
         const meta = getPaginationMeta(Number(page) || 0, count, limit)
-        const result = await DHistories.find({ _id: { $gte: meta.page * meta.limit, $lt: (meta.page * meta.limit + meta.limit) } }).sort({ date: -1 }).toArray()
+        const result = await HistoryModel.find({ _id: { $gte: meta.page * meta.limit, $lt: (meta.page * meta.limit + meta.limit) } }).sort({ date: -1 })
         res.json({ status: true, data: result });
     } catch (error) {
         setlog('myInfo', error)
@@ -24,9 +25,9 @@ export const totalUsers = async (req: Request, res: Response) => {
         limit = Number(limit) || 20
         if (limit < 10) limit = 10
         if (limit > 100) limit = 100
-        const count = await TblUser.count({})
+        const count = await UserModel.count({})
         const meta = getPaginationMeta(Number(page) || 0, count, limit)
-        const result = await TblUser.find({ _id: { $gte: meta.page * meta.limit, $lt: (meta.page * meta.limit + meta.limit) } }).sort({ date: -1 }).toArray()
+        const result = await UserModel.find({ _id: { $gte: meta.page * meta.limit, $lt: (meta.page * meta.limit + meta.limit) } }).sort({ date: -1 })
         res.json({ status: true, data: result });
     } catch (error) {
         setlog('myInfo', error)

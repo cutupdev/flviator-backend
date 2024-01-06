@@ -20,7 +20,8 @@ const HistorySchema = new mongoose.Schema({
     },
     date: {
         type: Date,
-        default: Date.now
+        default: Date.now,
+        index: true
     },
 });
 
@@ -39,7 +40,7 @@ export const addHistory = async (userId: string, betAmount: number, cashoutAt: n
         })
         return true
     } catch (error) {
-        setlog('addHistory', error)
+        setlog('add History', error)
         return false
     }
 }

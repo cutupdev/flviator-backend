@@ -1,11 +1,11 @@
 import { Request, Response } from "express";
 
-import { DEFAULT_GAMEID, DGame, DHistories, TblUser, getBettingAmounts, likesToChat } from "../model";
+import { DEFAULT_GAMEID, DGame, getBettingAmounts, likesToChat } from "../model";
 import { setlog, getPaginationMeta } from "../helper";
 import axios from "axios";
 import crypto from 'crypto';
 import { addAuthenticationLog } from "../model/authenticationlog";
-import { addUser, getUserById, updateUserById } from "../model/users";
+import UserModel, { addUser, getUserById, updateUserById } from "../model/users";
 import { addSession } from "../model/sessions";
 import { addBet } from "../model/bet";
 import { addBetLog } from "../model/betlog";
@@ -15,6 +15,7 @@ import { addGameLaunch } from "../model/gamelaunch";
 import { getAllChatHistory } from "../model/chat";
 import { addCancelBet } from "../model/cancelbet";
 import { addCancelBetLog } from "../model/cancelbetlog";
+import HistoryModel from "../model/history";
 
 const serverURL = process.env.SERVER_URL || 'https://crash.casinocarnival.games';
 const API_URL = process.env.API_URL || 'https://crashgame.vkingplays.com';
@@ -40,8 +41,8 @@ export const GameLaunch = async (req: Request, res: Response) => {
 
             if (!UserID || !token || !currency) return res.status(404).send("Invalid paramters");
 
-            
-            let userData: any = await TblUser.findOne({ userId: UserID });
+
+            let userData: any = await UserModel.findOne({ userId: UserID });
             let ipAddress = req.socket.remoteAddress || "0.0.0.0";
 
             var Session_Token = crypto.randomUUID();
@@ -118,7 +119,7 @@ export const Authentication = async (token: string, UserID: string, currency: st
         console.log(_data)
         if (_data.code === 200) {
             _data = _data.data;
-            let userData: any = await TblUser.findOne({ userId: UserID });
+            let userData: any = await UserModel.findOne({ userId: UserID });
             let balance = Number(_data.balance) || 0;
             if (!userData) {
                 userData = await addUser(_data.userName, UserID, _data.currency, balance, _data.avatar, "", "admin", "server")
@@ -363,7 +364,7 @@ export const updateUserInfo = async (req: Request, res: Response) => {
     try {
         const { userId, updateData } = req.body as { userId: string, updateData: any }
         if (!userId || !updateData) return res.status(404).send("Invalid paramters")
-        await TblUser.updateOne({ userId }, { $set: { ...updateData } }, { upsert: true });
+        await UserModel.updateOne({ userId }, { $set: { ...updateData } }, { upsert: true });
         res.json({ status: true });
     } catch (error) {
         setlog("updateUserInfo", error)
@@ -389,7 +390,7 @@ export const myInfo = async (req: Request, res: Response) => {
     try {
         let { userId } = req.body as { userId: string };
         if (!userId) return res.status(404).send("invalid paramters")
-        const data = await DHistories.find({ userId }).sort({ date: -1 }).limit(20).toArray();
+        const data = await HistoryModel.find({ userId }).sort({ date: -1 }).limit(20);
         res.json({ status: true, data });
     } catch (error) {
         setlog('myInfo', error)
@@ -403,7 +404,7 @@ export const dayHistory = async (req: Request, res: Response) => {
         let nowDate = Math.round(nowDate_)
         let oneDay = 60 * 60 * 24 * 1000;
 
-        const result = await DHistories.aggregate([
+        const result = await HistoryModel.aggregate([
             {
                 $lookup: {
                     from: "users",
@@ -425,7 +426,7 @@ export const dayHistory = async (req: Request, res: Response) => {
             {
                 $limit: 20
             }
-        ]).toArray();
+        ]);
 
         res.json({ status: true, data: result });
     } catch (error) {
@@ -440,7 +441,7 @@ export const monthHistory = async (req: Request, res: Response) => {
         let nowDate = Math.round(nowDate_)
         let oneDay = 60 * 60 * 24 * 30 * 1000;
 
-        const result = await DHistories.aggregate([
+        const result = await HistoryModel.aggregate([
             {
                 $lookup: {
                     from: "users",
@@ -462,7 +463,7 @@ export const monthHistory = async (req: Request, res: Response) => {
             {
                 $limit: 20
             }
-        ]).toArray();
+        ]);
 
         res.json({ status: true, data: result });
     } catch (error) {
@@ -476,7 +477,7 @@ export const yearHistory = async (req: Request, res: Response) => {
         let nowDate_ = Date.now();
         let nowDate = Math.round(nowDate_)
         let oneDay = 60 * 60 * 24 * 365 * 1000;
-        const result = await DHistories.aggregate([
+        const result = await HistoryModel.aggregate([
             {
                 $lookup: {
                     from: "users",
@@ -498,7 +499,7 @@ export const yearHistory = async (req: Request, res: Response) => {
             {
                 $limit: 20
             }
-        ]).toArray();
+        ]);
         res.json({ status: true, data: result });
     } catch (error) {
         setlog('yearHistory', error)
