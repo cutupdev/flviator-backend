@@ -116,7 +116,7 @@ export const Authentication = async (token: string, UserID: string, currency: st
                     audioStatus: userData.audioStatus,
                     musicStatus: userData.musicStatus,
                     msgVisible: userData.msgVisible,
-                    avatar: _data.avatar,
+                    avatar: userData.avatar,
                 }
             };
         } else {
