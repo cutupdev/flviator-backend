@@ -59,7 +59,6 @@ export const GameLaunch = async (req: Request, res: Response) => {
                 }
             })
             var _data = resData.data;
-            console.log("_data", _data)
             if (!userData) {
                 _data = _data.data;
                 let balance = Number(_data.balance) || 0;
