@@ -364,9 +364,9 @@ export const getGameInfo = async (req: Request, res: Response) => {
 export const updateUserInfo = async (req: Request, res: Response) => {
     try {
         const { userId, updateData } = req.body as { userId: string, updateData: any }
-        if (!userId || !updateData) return res.status(404).send("Invalid paramters")
         console.log(userId, updateData);
-        await UserModel.findOneAndUpdate({ userId }, updateData, { upsert: true });
+        if (!userId || !updateData) return res.status(404).send("Invalid paramters")
+        await updateUserById(userId, updateData)
         res.json({ status: true });
     } catch (error) {
         setlog("updateUserInfo", error)
