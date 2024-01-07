@@ -17,20 +17,29 @@ const ChatSchema = new mongoose.Schema({
   userId: {
     type: String,
   },
+  userName: {
+    type: String,
+  },
+  avatar: {
+    type: String,
+  },
   message: {
     type: String,
   },
   img: {
     type: String,
   },
-  emoji: {
-    type: String,
-  },
   likes: {
     type: Number,
   },
+  likesIDs: {
+    type: Array<String>,
+  },
   disLikes: {
     type: Number,
+  },
+  disLikesIDs: {
+    type: Array<String>,
   },
 });
 
@@ -39,11 +48,8 @@ const ChatModel = mongoose.model("chat", ChatSchema);
 
 export const getAllChatHistory = async () => {
   try {
-    const cancelBet = await ChatModel.find({})
-    return {
-      status: true,
-      data: cancelBet
-    }
+    const chathistory = await ChatModel.find({})
+    return chathistory
   } catch (error) {
     setlog('getAllChat', error)
     return { status: false, message: "Something went wrong." }
@@ -52,18 +58,22 @@ export const getAllChatHistory = async () => {
 
 export const addChat = async (
   userId: string,
+  userName: string,
+  avatar: string,
   message: string,
   img: string,
-  emoji: string,
 ) => {
   try {
     const row: any = await ChatModel.create({
       userId,
+      userName,
+      avatar,
       message,
       img,
-      emoji,
       likes: 0,
+      likesIDs: [],
       disLikes: 0,
+      disLikesIDs: [],
     })
     return {
       _id: row._id,
@@ -72,6 +82,29 @@ export const addChat = async (
   } catch (error) {
     setlog('addChat', error)
     return false
+  }
+}
+
+
+export const likesToChat = async (chatID: number, userId: string) => {
+  try {
+    const result = await ChatModel.findOne({ _id: new Types.ObjectId(chatID), likesIDs: { $in: [userId] } });
+    let shouldAdd = result === null;
+
+    const updateQuery: any = shouldAdd
+      ? {
+        $addToSet: { likesIDs: userId },
+        $inc: { likes: 1 }
+      }
+      : {
+        $pull: { likesIDs: userId },
+        $inc: { likes: -1 }
+      };
+
+    await ChatModel.updateOne({ _id: new Types.ObjectId(chatID) }, updateQuery);
+    return { status: true };
+  } catch (error) {
+    return { status: false };
   }
 }
 

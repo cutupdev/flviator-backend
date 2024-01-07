@@ -1,4 +1,7 @@
 import { setlog } from "../helper";
+import projectConfig from '../config.json'
+
+export const DEFAULT_GAMEID = 1
 
 // declare interface SchemaGameSettingModel {
 //   _id: number
@@ -33,6 +36,21 @@ export const getAllGameSetting = async () => {
     setlog('getAllGameSetting', error)
     return { status: false, message: "Something went wrong." }
   }
+}
+
+
+
+export const getBettingAmounts = async () => {
+  try {
+    const d: any = await GameSettingModel.findOne({ _id: DEFAULT_GAMEID })
+    const minBetAmount = d?.minBetAmount || projectConfig.betting.min;
+    const maxBetAmount = d?.maxBetAmount || projectConfig.betting.max;
+    return { minBetAmount, maxBetAmount }
+  } catch (error) {
+    setlog('getBettingAmounts', error)
+    return { minBetAmount: projectConfig.betting.min, maxBetAmount: projectConfig.betting.max }
+  }
+
 }
 
 export const addGameSetting = async (

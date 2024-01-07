@@ -347,14 +347,24 @@ export const initSocket = (io: Server) => {
 
         // msg section
         socket.on("sendMsg", async ({ msgType, msgContent }) => {
-            let data: any = await addChat(users[socket.id].userId, msgContent, msgType === "img" ? msgContent : "", msgContent)
+            let data: any = await addChat(
+                users[socket.id].userId,
+                users[socket.id].userName,
+                users[socket.id].avatar,
+                msgContent,
+                msgType === "gif" ? msgContent : "")
+            let emptyArray: any[] = [];
             let sendObj = {
                 _id: data._id,
                 userId: users[socket.id].userId,
                 userName: users[socket.id].userName,
                 avatar: users[socket.id].avatar,
-                msgType,
-                msg: msgContent
+                message: msgContent,
+                img: msgType === "gif" ? msgContent : "",
+                likes: 0,
+                likesIDs: emptyArray,
+                disLikes: 0,
+                disLikesIDs: emptyArray,
             }
             socket.emit("newMsg", sendObj);
             socket.broadcast.emit("newMsg", sendObj);
