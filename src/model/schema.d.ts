@@ -233,7 +233,7 @@
 //     currency: string
 //     balance: number
 //     soundStatus: boolean
-//     musicStatus: boolean
+//     isMusicEnable: boolean
 //     msgVisible: boolean
 //     session_created: number
 //     updated: number

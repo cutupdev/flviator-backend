@@ -95,8 +95,8 @@ export const Authentication = async (token: string, UserID: string, currency: st
         //         userName: "_data.userName",
         //         balance: 50000,
         //         currency: "INR",
-        //         audioStatus: true,
-        //         musicStatus: true,
+        //         isSoundEnable: true,
+        //         isMusicEnable: true,
         //         msgVisible: true,
         //         avatar: "./avatars/av-3.png",
         //     }
@@ -134,8 +134,8 @@ export const Authentication = async (token: string, UserID: string, currency: st
                     userName: userData.userName,
                     balance,
                     currency: userData.currency,
-                    audioStatus: userData.isSoundEnable,
-                    musicStatus: userData.isMusicEnable,
+                    isSoundEnable: userData.isSoundEnable,
+                    isMusicEnable: userData.isMusicEnable,
                     msgVisible: userData.isChatEnable,
                     avatar: userData.avatar,
                 }

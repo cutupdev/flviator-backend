@@ -10,8 +10,8 @@ export interface UserType {
     Session_Token: string
     bot: boolean
     userType: boolean
-    audioStatus: boolean
-    musicStatus: boolean
+    isSoundEnable: boolean
+    isMusicEnable: boolean
     f: {
         auto: boolean
         betted: boolean

@@ -13,8 +13,8 @@ export const DEFAULT_USER = {
     Session_Token: '',
     bot: false,
     userType: false,
-    audioStatus: false,
-    musicStatus: false,
+    isSoundEnable: false,
+    isMusicEnable: false,
     f: {
         betid: 0,
         auto: false,
