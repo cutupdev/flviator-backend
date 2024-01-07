@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 
-import { setlog, getPaginationMeta } from "../helper";
+import { setlog, getPaginationMeta, getIPAddress } from "../helper";
 import axios from "axios";
 import crypto from 'crypto';
 import { addAuthenticationLog } from "../model/authenticationlog";
@@ -43,7 +43,8 @@ export const GameLaunch = async (req: Request, res: Response) => {
 
 
             let userData: any = await UserModel.findOne({ userId: UserID });
-            let ipAddress = req.socket.remoteAddress || "0.0.0.0";
+            let ipAddressInfo: any = getIPAddress(req);
+            console.log(ipAddressInfo)
 
             var Session_Token = crypto.randomUUID();
             const sendData = {
@@ -63,7 +64,7 @@ export const GameLaunch = async (req: Request, res: Response) => {
             if (!userData) {
                 _data = _data.data;
                 let balance = Number(_data.balance) || 0;
-                userData = await addUser(_data.userName || "username", UserID, _data.currency || "INR", balance || 0, _data.avatar || "", "", "admin", ipAddress || "0.0.0.0")
+                userData = await addUser(_data.userName || "username", UserID, _data.currency || "INR", balance || 0, _data.avatar || "", "", "admin", ipAddressInfo.ip)
             }
 
 
