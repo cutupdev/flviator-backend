@@ -5,7 +5,7 @@ import bodyParser from "body-parser";
 import { Server } from 'socket.io'
 import path from 'path';
 
-import { setlog } from './helper'
+import { getIPAddress, setlog } from './helper'
 import routers from './routers'
 import { initSocket } from './socket'
 import connectDB from './model/db';
@@ -32,7 +32,14 @@ try {
         app.use(bodyParser.text({ type: "text/html" }));
         app.use("/api", routers);
         app.use(express.static(path.join(__dirname, "../build")));
-        app.get("*", (req, res) => res.sendFile(path.join(__dirname, "../build/index.html")));
+        app.get("*", (req, res) => {
+            const { UserID, token, currency } = req.query;
+            console.log(UserID, token, currency);
+            
+            let ipAddressInfo: any = getIPAddress(req);
+            console.log(ipAddressInfo)
+            res.sendFile(path.join(__dirname, "../build/index.html"))
+        });
 
         const io = new Server(server, { cors: { origin: "*", methods: ["GET", "POST"] } });
         initSocket(io);
