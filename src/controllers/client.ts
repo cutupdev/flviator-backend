@@ -135,9 +135,9 @@ export const Authentication = async (token: string, UserID: string, currency: st
                     userName: userData.userName,
                     balance,
                     currency: userData.currency,
-                    audioStatus: userData.audioStatus,
-                    musicStatus: userData.musicStatus,
-                    msgVisible: userData.msgVisible,
+                    audioStatus: userData.isSoundEnable,
+                    musicStatus: userData.isMusicEnable,
+                    msgVisible: userData.isChatEnable,
                     avatar: userData.avatar,
                 }
             };
