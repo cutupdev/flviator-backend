@@ -365,6 +365,7 @@ export const updateUserInfo = async (req: Request, res: Response) => {
     try {
         const { userId, updateData } = req.body as { userId: string, updateData: any }
         if (!userId || !updateData) return res.status(404).send("Invalid paramters")
+        console.log(userId, updateData);
         await UserModel.findOneAndUpdate({ userId }, updateData, { upsert: true });
         res.json({ status: true });
     } catch (error) {
