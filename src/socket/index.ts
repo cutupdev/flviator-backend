@@ -387,7 +387,6 @@ export const initSocket = (io: Server) => {
             token = decodeURIComponent(token);
             UserID = decodeURIComponent(UserID);
             currency = decodeURIComponent(currency);
-            console.log(token, UserID, currency)
 
             socket.emit('getBetLimits', { max: localconfig.betting.max, min: localconfig.betting.min });
             if (token !== null && token !== undefined) {
