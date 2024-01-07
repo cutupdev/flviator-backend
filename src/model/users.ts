@@ -98,10 +98,8 @@ export const addUser = async (
   ipAddress: string
 ) => {
   try {
-    let dt = Date.now();
     const user = await UserModel.findOne({ userId });
     let userData = {
-      _id: dt,
       userName,
       userId,
       currency,
@@ -110,7 +108,6 @@ export const addUser = async (
       isActive: true,
       isBetAllow: true,
       platform,
-      createdDate: dt,
       createdBy,
       isSoundEnable: true,
       isMusicEnable: true,
