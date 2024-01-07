@@ -1,7 +1,6 @@
 import { setlog } from "../helper";
-import { TblChat } from "./index";
 
-// declare interface SchemaTblChat {
+// declare interface SchemaChatModel {
 //   _id: number
 //   userId: string
 //   message: string
@@ -12,9 +11,35 @@ import { TblChat } from "./index";
 //   disLikes: number
 // }
 
+import mongoose, { Types } from "mongoose";
+
+const ChatSchema = new mongoose.Schema({
+  userId: {
+    type: String,
+  },
+  message: {
+    type: String,
+  },
+  img: {
+    type: String,
+  },
+  emoji: {
+    type: String,
+  },
+  likes: {
+    type: Number,
+  },
+  disLikes: {
+    type: Number,
+  },
+});
+
+const ChatModel = mongoose.model("chat", ChatSchema);
+
+
 export const getAllChatHistory = async () => {
   try {
-    const cancelBet = await TblChat.find({})
+    const cancelBet = await ChatModel.find({})
     return {
       status: true,
       data: cancelBet
@@ -32,19 +57,16 @@ export const addChat = async (
   emoji: string,
 ) => {
   try {
-    let dt = Date.now();
-    await TblChat.insertOne({
-      _id: dt,
+    const row: any = await ChatModel.create({
       userId,
       message,
       img,
       emoji,
-      createdDate: dt,
       likes: 0,
       disLikes: 0,
     })
     return {
-      _id: dt,
+      _id: row._id,
       status: true
     }
   } catch (error) {
@@ -58,9 +80,7 @@ export const updateChat = async (
   updateData: object,
 ) => {
   try {
-    await TblChat.updateOne({ _id }, {
-      $set: updateData
-    })
+    await ChatModel.findOneAndUpdate({ _id: new Types.ObjectId(_id) }, updateData)
     return true
   } catch (error) {
     setlog('updateChat', error)
@@ -72,10 +92,12 @@ export const deleteChat = async (
   _id: number
 ) => {
   try {
-    await TblChat.deleteOne({ _id })
+    await ChatModel.deleteOne({ _id: new Types.ObjectId(_id) })
     return true
   } catch (error) {
     setlog('deleteChat', error)
     return false
   }
 }
+
+export default ChatModel;

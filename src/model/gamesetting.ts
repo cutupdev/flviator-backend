@@ -1,7 +1,6 @@
 import { setlog } from "../helper";
-import { TblGameSetting } from "./index";
 
-// declare interface SchemaTblGameSetting {
+// declare interface SchemaGameSettingModel {
 //   _id: number
 //   minBetAmount: number
 //   maxBetAmount: number
@@ -12,9 +11,20 @@ import { TblGameSetting } from "./index";
 //   isGameEnable: boolean
 // }
 
+import mongoose, { Types } from "mongoose";
+
+const GameSettingSchema = new mongoose.Schema({
+  userName: {
+    type: String,
+  },
+});
+
+const GameSettingModel = mongoose.model("gamesetting", GameSettingSchema);
+
+
 export const getAllGameSetting = async () => {
   try {
-    const flydetails = await TblGameSetting.find({})
+    const flydetails = await GameSettingModel.find({})
     return {
       status: true,
       data: flydetails
@@ -35,9 +45,7 @@ export const addGameSetting = async (
   isGameEnable: boolean,
 ) => {
   try {
-    let dt = Date.now();
-    await TblGameSetting.insertOne({
-      _id: dt,
+    await GameSettingModel.create({
       minBetAmount,
       maxBetAmount,
       RTP,
@@ -58,9 +66,7 @@ export const updateGameSetting = async (
   updateData: object,
 ) => {
   try {
-    await TblGameSetting.updateOne({ _id }, {
-      $set: updateData
-    })
+    await GameSettingModel.updateOne({ _id: new Types.ObjectId(_id) }, updateData)
     return true
   } catch (error) {
     setlog('updateGameSetting', error)
@@ -72,10 +78,12 @@ export const deleteGameSetting = async (
   _id: number
 ) => {
   try {
-    await TblGameSetting.deleteOne({ _id })
+    await GameSettingModel.deleteOne({ _id: new Types.ObjectId(_id) })
     return true
   } catch (error) {
     setlog('deleteGameSetting', error)
     return false
   }
 }
+
+export default GameSettingModel;

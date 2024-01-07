@@ -1,7 +1,6 @@
 import { setlog } from "../helper";
-import { TblAuthenticationLog } from "./index";
 
-// declare interface SchemaTblAuthenticationLog {
+// declare interface SchemaAuthenticationLogModel {
 //   _id: number
 //   userId: string
 //   code: number
@@ -13,9 +12,40 @@ import { TblAuthenticationLog } from "./index";
 //   responseTime: number
 // }
 
+import mongoose, { Types } from "mongoose";
+
+const AuthenticationLogSchema = new mongoose.Schema({
+  userId: {
+    type: String,
+  },
+  code: {
+    type: Number,
+  },
+  message: {
+    type: String,
+  },
+  hashKey: {
+    type: String,
+  },
+  requestJson: {
+    type: Object,
+  },
+  responseJson: {
+    type: Object,
+  },
+  requestTime: {
+    type: Number,
+  },
+  responseTime: {
+    type: Number,
+  },
+});
+
+const AuthenticationLogModel = mongoose.model("authenticationlog", AuthenticationLogSchema);
+
 export const getAllAuthenticationLog = async () => {
   try {
-    const cancelBet = await TblAuthenticationLog.find({})
+    const cancelBet = await AuthenticationLogModel.find({})
     return {
       status: true,
       data: cancelBet
@@ -37,9 +67,7 @@ export const addAuthenticationLog = async (
   responseTime: number,
 ) => {
   try {
-    let dt = Date.now();
-    await TblAuthenticationLog.insertOne({
-      _id: dt,
+    await AuthenticationLogModel.create({
       userId,
       code,
       message,
@@ -51,7 +79,7 @@ export const addAuthenticationLog = async (
     })
     return true
   } catch (error) {
-    setlog('addAuthenticationLog', error)
+    setlog('add AuthenticationLog', error)
     return false
   }
 }
@@ -61,12 +89,10 @@ export const updateAuthenticationLog = async (
   updateData: object,
 ) => {
   try {
-    await TblAuthenticationLog.updateOne({ _id }, {
-      $set: updateData
-    })
+    await AuthenticationLogModel.findOneAndUpdate({ _id: new Types.ObjectId(_id) }, updateData)
     return true
   } catch (error) {
-    setlog('updateAuthenticationLog', error)
+    setlog('update AuthenticationLog', error)
     return false
   }
 }
@@ -75,10 +101,12 @@ export const deleteAuthenticationLog = async (
   _id: number
 ) => {
   try {
-    await TblAuthenticationLog.deleteOne({ _id })
+    await AuthenticationLogModel.deleteOne({ _id: new Types.ObjectId(_id) })
     return true
   } catch (error) {
-    setlog('deleteAuthenticationLog', error)
+    setlog('delete AuthenticationLog', error)
     return false
   }
 }
+
+export default AuthenticationLogModel;

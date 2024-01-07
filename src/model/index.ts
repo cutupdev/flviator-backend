@@ -3,7 +3,7 @@ import { MongoClient } from 'mongodb';
 import projectConfig from '../config.json'
 import { currentTime, setlog } from '../helper';
 import { addCurrency } from './currency';
-import { addGameSetting } from './gamesetting';
+import GameSettingModel, { addGameSetting } from './gamesetting';
 import { addCancelBet } from './cancelbet';
 import { addCancelBetLog } from './cancelbetlog';
 import HistoryModel from './history';
@@ -22,25 +22,27 @@ const client = new MongoClient(mongoURL);
 const db = client.db(dbName);
 export const DEFAULT_GAMEID = 1
 
-export const TblCurrency = db.collection<SchemaTblCurrency>('currency');
+// export const TblCurrency = db.collection<SchemaTblCurrency>('currency');
 // export const UserModel = db.collection<SchemaUserModel>('users');
-export const TblSession = db.collection<SchemaTblSession>('sessions');
-export const TblFlyDetail = db.collection<SchemaTblFlyDetail>('flydetail');
-export const TblGameSetting = db.collection<SchemaTblGameSetting>('gamesetting');
-export const TblBet = db.collection<SchemaTblBet>('bet');
-export const TblCashout = db.collection<SchemaTblCashout>('cashout');
-export const TblCancelBet = db.collection<SchemaTblCancelBet>('cancelbet');
-export const TblBetLog = db.collection<SchemaTblBetLog>('betlog');
-export const TblCashoutLog = db.collection<SchemaTblCashoutLog>('cashoutlog');
-export const TblCancelBetLog = db.collection<SchemaTblCancelBetLog>('cancelbetlog');
-export const TblAuthenticationLog = db.collection<SchemaTblAuthenticationLog>('authenticationlog');
-export const TblGameLaunch = db.collection<SchemaTblGameLaunch>('gamelaunch');
-export const TblChat = db.collection<SchemaTblChat>('chat');
-export const TblBlock = db.collection<SchemaTblBlock>('block');
+// export const TblSession = db.collection<SchemaTblSession>('sessions');
+// export const TblFlyDetail = db.collection<SchemaTblFlyDetail>('flydetail');
+// export const TblGameSetting = db.collection<SchemaTblGameSetting>('gamesetting');
+// export const TblCashout = db.collection<SchemaTblCashout>('cashout');
+// export const TblCancelBetLog = db.collection<SchemaTblCancelBetLog>('cancelbetlog');
 
-export const DGame = db.collection<SchemaGame>('game');
+// export const TblGameLaunch = db.collection<SchemaTblGameLaunch>('gamelaunch');
+// export const TblChat = db.collection<SchemaTblChat>('chat');
+
+// export const DGame = db.collection<SchemaGame>('game');
 // export const HistoryModel = db.collection<SchemaHistory>('histories');
 export const DChatHistories = db.collection<SchemaChatHistory>('chat-histories');
+
+// export const TblBet = db.collection<SchemaTblBet>('bet');
+// export const TblBetLog = db.collection<SchemaTblBetLog>('betlog');
+// export const TblAuthenticationLog = db.collection<SchemaTblAuthenticationLog>('authenticationlog');
+// export const TblBlock = db.collection<SchemaTblBlock>('block');
+// export const TblCancelBet = db.collection<SchemaTblCancelBet>('cancelbet');
+// export const TblCashoutLog = db.collection<SchemaTblCashoutLog>('cashoutlog');
 
 const lastIds = {
     lastHistoryId: 0,
@@ -102,7 +104,7 @@ export const connect = async () => {
 
 export const getBettingAmounts = async () => {
     try {
-        const d = await DGame.findOne({ _id: DEFAULT_GAMEID })
+        const d: any = await GameSettingModel.findOne({ _id: DEFAULT_GAMEID })
         const minBetAmount = d?.minBetAmount || projectConfig.betting.min;
         const maxBetAmount = d?.maxBetAmount || projectConfig.betting.max;
         return { minBetAmount, maxBetAmount }

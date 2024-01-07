@@ -1,7 +1,6 @@
 import { setlog } from "../helper";
-import { TblGameLaunch } from "./index";
 
-// declare interface SchemaTblGameLaunch {
+// declare interface SchemaGameLaunchModel {
 //   _id: number
 //   userId: string
 //   code: number
@@ -13,9 +12,40 @@ import { TblGameLaunch } from "./index";
 //   responseTime: number
 // }
 
+import mongoose, { Types } from "mongoose";
+
+const GameLaunchSchema = new mongoose.Schema({
+  userId: {
+    type: String,
+  },
+  code: {
+    type: Number,
+  },
+  message: {
+    type: String,
+  },
+  hashKey: {
+    type: String,
+  },
+  requestJson: {
+    type: Object,
+  },
+  responseJson: {
+    type: Object,
+  },
+  requestTime: {
+    type: Date,
+  },
+  responseTime: {
+    type: Date,
+  },
+});
+
+const GameLaunchModel = mongoose.model("gamelaunch", GameLaunchSchema);
+
 export const getAllGameLaunch = async () => {
   try {
-    const cancelBet = await TblGameLaunch.find({})
+    const cancelBet = await GameLaunchModel.find({})
     return {
       status: true,
       data: cancelBet
@@ -37,9 +67,7 @@ export const addGameLaunch = async (
   responseTime: number,
 ) => {
   try {
-    let dt = Date.now();
-    await TblGameLaunch.insertOne({
-      _id: dt,
+    await GameLaunchModel.create({
       userId,
       code,
       message,
@@ -61,9 +89,7 @@ export const updateGameLaunch = async (
   updateData: object,
 ) => {
   try {
-    await TblGameLaunch.updateOne({ _id }, {
-      $set: updateData
-    })
+    await GameLaunchModel.findOneAndUpdate({ _id: new Types.ObjectId(_id) }, updateData)
     return true
   } catch (error) {
     setlog('updateGameLaunch', error)
@@ -75,10 +101,13 @@ export const deleteGameLaunch = async (
   _id: number
 ) => {
   try {
-    await TblGameLaunch.deleteOne({ _id })
+    await GameLaunchModel.deleteOne({ _id: new Types.ObjectId(_id) })
     return true
   } catch (error) {
     setlog('deleteGameLaunch', error)
     return false
   }
 }
+
+
+export default GameLaunchModel;

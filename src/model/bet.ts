@@ -1,7 +1,6 @@
 import { setlog } from "../helper";
-import { TblBet } from "./index";
 
-// declare interface SchemaTblBet {
+// declare interface SchemaBetModel {
 //   _id: number
 //   userId: string
 //   betId: string
@@ -17,9 +16,19 @@ import { TblBet } from "./index";
 //   cancelTime: number
 // }
 
+import mongoose, { Types } from "mongoose";
+
+const BetSchema = new mongoose.Schema({
+  userName: {
+    type: String,
+  },
+});
+
+const BetModel = mongoose.model("bet", BetSchema);
+
 export const getAllBet = async () => {
   try {
-    const gameSetting = await TblBet.find({})
+    const gameSetting = await BetModel.find({})
     return {
       status: true,
       data: gameSetting
@@ -44,9 +53,7 @@ export const addBet = async (
   cancelTime: number,
 ) => {
   try {
-    let dt = Date.now();
-    await TblBet.insertOne({
-      _id: dt,
+    await BetModel.create({
       userId,
       betId,
       beforeBalance,
@@ -55,7 +62,6 @@ export const addBet = async (
       responseBalance,
       currency,
       sessionToken,
-      createdDate: dt,
       platform,
       isCancel,
       cancelTime,
@@ -72,7 +78,7 @@ export const updateBet = async (
   updateData: object,
 ) => {
   try {
-    await TblBet.updateOne({ _id }, {
+    await BetModel.findOneAndUpdate({ _id: new Types.ObjectId(_id) }, {
       $set: updateData
     })
     return true
@@ -87,7 +93,7 @@ export const updateBetByBetId = async (
   updateData: object,
 ) => {
   try {
-    await TblBet.updateOne({ betId }, {
+    await BetModel.updateOne({ betId }, {
       $set: updateData
     })
     return true
@@ -101,10 +107,12 @@ export const deleteBet = async (
   _id: number
 ) => {
   try {
-    await TblBet.deleteOne({ _id })
+    await BetModel.deleteOne({ _id: new Types.ObjectId(_id) })
     return true
   } catch (error) {
     setlog('deleteBet', error)
     return false
   }
 }
+
+export default BetModel;

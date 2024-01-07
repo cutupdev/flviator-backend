@@ -1,7 +1,6 @@
 import { setlog } from "../helper";
-import { TblCashoutLog } from "./index";
 
-// declare interface SchemaTblCashoutLog {
+// declare interface SchemaCashoutLogModel {
 //   _id: number
 //   userId: string
 //   betId: string
@@ -15,9 +14,47 @@ import { TblCashoutLog } from "./index";
 //   responseTime: number
 // }
 
+import mongoose, { Types } from "mongoose";
+
+const CashoutLogSchema = new mongoose.Schema({
+  userId: {
+    type: String,
+  },
+  betId: {
+    type: String,
+  },
+  cashoutID: {
+    type: Number,
+  },
+  code: {
+    type: Number,
+  },
+  message: {
+    type: String,
+  },
+  hashKey: {
+    type: String,
+  },
+  requestJson: {
+    type: Object,
+  },
+  responseJson: {
+    type: Object,
+  },
+  requestTime: {
+    type: Date,
+  },
+  responseTime: {
+    type: Date,
+  },
+});
+
+const CashoutLogModel = mongoose.model("cashoutlog", CashoutLogSchema);
+
+
 export const getAllCashoutLog = async () => {
   try {
-    const cancelBet = await TblCashoutLog.find({})
+    const cancelBet = await CashoutLogModel.find({})
     return {
       status: true,
       data: cancelBet
@@ -41,9 +78,7 @@ export const addCashoutLog = async (
   responseTime: number,
 ) => {
   try {
-    let dt = Date.now();
-    await TblCashoutLog.insertOne({
-      _id: dt,
+    await CashoutLogModel.create({
       userId,
       betId,
       cashoutID,
@@ -67,9 +102,7 @@ export const updateCashoutLog = async (
   updateData: object,
 ) => {
   try {
-    await TblCashoutLog.updateOne({ _id }, {
-      $set: updateData
-    })
+    await CashoutLogModel.findOneAndUpdate({ _id: new Types.ObjectId(_id) }, updateData)
     return true
   } catch (error) {
     setlog('updateCashoutLog', error)
@@ -81,10 +114,12 @@ export const deleteCashoutLog = async (
   _id: number
 ) => {
   try {
-    await TblCashoutLog.deleteOne({ _id })
+    await CashoutLogModel.deleteOne({ _id: new Types.ObjectId(_id) })
     return true
   } catch (error) {
     setlog('deleteCashoutLog', error)
     return false
   }
 }
+
+export default CashoutLogModel;

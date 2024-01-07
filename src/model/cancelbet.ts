@@ -1,7 +1,6 @@
 import { setlog } from "../helper";
-import { TblCancelBet } from "./index";
 
-// declare interface SchemaTblCancelBet {
+// declare interface SchemaCancelBetModel {
 //   _id: number
 //   userId: string
 //   betId: string
@@ -14,9 +13,19 @@ import { TblCancelBet } from "./index";
 //   createdDate: number
 // }
 
+import mongoose, { Types } from "mongoose";
+
+const CancelBetSchema = new mongoose.Schema({
+  userName: {
+    type: String,
+  },
+});
+
+const CancelBetModel = mongoose.model("cancelbet", CancelBetSchema);
+
 export const getAllCancelBet = async () => {
   try {
-    const cancelBet = await TblCancelBet.find({})
+    const cancelBet = await CancelBetModel.find({})
     return {
       status: true,
       data: cancelBet
@@ -39,9 +48,7 @@ export const addCancelBet = async (
   createdDate: number,
 ) => {
   try {
-    let dt = Date.now();
-    await TblCancelBet.insertOne({
-      _id: dt,
+    await CancelBetModel.create({
       userId,
       betId,
       betAmount,
@@ -64,9 +71,7 @@ export const updateCancelBet = async (
   updateData: object,
 ) => {
   try {
-    await TblCancelBet.updateOne({ _id }, {
-      $set: updateData
-    })
+    await CancelBetModel.findOneAndUpdate({ _id: new Types.ObjectId(_id) }, updateData)
     return true
   } catch (error) {
     setlog('updateCancelBet', error)
@@ -78,10 +83,13 @@ export const deleteCancelBet = async (
   _id: number
 ) => {
   try {
-    await TblCancelBet.deleteOne({ _id })
+    await CancelBetModel.deleteOne({ _id: new Types.ObjectId(_id) })
     return true
   } catch (error) {
     setlog('deleteCancelBet', error)
     return false
   }
 }
+
+
+export default CancelBetModel;

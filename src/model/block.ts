@@ -1,7 +1,6 @@
 import { setlog } from "../helper";
-import { TblBlock } from "./index";
 
-// declare interface SchemaTblBlock {
+// declare interface SchemaBlockModel {
 //   _id: number
 //   text: string
 //   emails: string
@@ -10,9 +9,32 @@ import { TblBlock } from "./index";
 //   users: string
 // }
 
+import mongoose, { Types } from "mongoose";
+
+const BlockSchema = new mongoose.Schema({
+  text: {
+    type: String,
+  },
+  emails: {
+    type: String,
+  },
+  phoneno: {
+    type: String,
+  },
+  urls: {
+    type: String,
+  },
+  users: {
+    type: String,
+  },
+});
+
+const BlockModel = mongoose.model("block", BlockSchema);
+
+
 export const getAllBlock = async () => {
   try {
-    const cancelBet = await TblBlock.find({})
+    const cancelBet = await BlockModel.find({})
     return {
       status: true,
       data: cancelBet
@@ -31,9 +53,7 @@ export const addBlock = async (
   users: string,
 ) => {
   try {
-    let dt = Date.now();
-    await TblBlock.insertOne({
-      _id: dt,
+    await BlockModel.create({
       text,
       emails,
       phoneno,
@@ -52,9 +72,7 @@ export const updateBlock = async (
   updateData: object,
 ) => {
   try {
-    await TblBlock.updateOne({ _id }, {
-      $set: updateData
-    })
+    await BlockModel.findOneAndUpdate({ _id: new Types.ObjectId(_id) }, updateData)
     return true
   } catch (error) {
     setlog('updateBlock', error)
@@ -66,10 +84,12 @@ export const deleteBlock = async (
   _id: number
 ) => {
   try {
-    await TblBlock.deleteOne({ _id })
+    await BlockModel.deleteOne({ _id: new Types.ObjectId(_id) })
     return true
   } catch (error) {
     setlog('deleteBlock', error)
     return false
   }
 }
+
+export default BlockModel;

@@ -1,7 +1,6 @@
 import { setlog } from "../helper";
-import { TblCurrency } from "./index";
 
-// declare interface SchemaTblCurrency {
+// declare interface SchemaCurrencyModel {
 //   _id: number
 //   currencyName: string
 //   country: string
@@ -11,9 +10,31 @@ import { TblCurrency } from "./index";
 //   createdBy: string
 // }
 
+import mongoose, { Types } from "mongoose";
+
+const CurrencySchema = new mongoose.Schema({
+  currencyName: {
+    type: String,
+  },
+  country: {
+    type: String,
+  },
+  code: {
+    type: Number,
+  },
+  isActive: {
+    type: Boolean,
+  },
+  createdBy: {
+    type: String,
+  },
+});
+
+const CurrencyModel = mongoose.model("currency", CurrencySchema);
+
 export const getAllCurrency = async () => {
   try {
-    const currencies = await TblCurrency.find({})
+    const currencies = await CurrencyModel.find({})
     return {
       status: true,
       data: currencies
@@ -32,14 +53,11 @@ export const addCurrency = async (
   createdBy: string
 ) => {
   try {
-    let dt = Date.now();
-    await TblCurrency.insertOne({
-      _id: dt,
+    await CurrencyModel.create({
       currencyName,
       country,
       code,
       isActive,
-      createdDate: dt,
       createdBy,
     })
     return true
@@ -54,9 +72,7 @@ export const updateCurrency = async (
   updateData: object,
 ) => {
   try {
-    await TblCurrency.updateOne({ _id }, {
-      $set: updateData
-    })
+    await CurrencyModel.findOneAndUpdate({ _id: new Types.ObjectId(_id) }, updateData)
     return true
   } catch (error) {
     setlog('updateCurrency', error)
@@ -68,10 +84,13 @@ export const deleteCurrency = async (
   _id: number
 ) => {
   try {
-    await TblCurrency.deleteOne({ _id })
+    await CurrencyModel.deleteOne({ _id: new Types.ObjectId(_id) })
     return true
   } catch (error) {
     setlog('deleteCurrency', error)
     return false
   }
 }
+
+
+export default CurrencyModel;

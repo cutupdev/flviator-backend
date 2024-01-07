@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 
-import { DEFAULT_GAMEID, DGame, getBettingAmounts, likesToChat } from "../model";
+import { DEFAULT_GAMEID, getBettingAmounts, likesToChat } from "../model";
 import { setlog, getPaginationMeta } from "../helper";
 import axios from "axios";
 import crypto from 'crypto';
@@ -16,6 +16,7 @@ import { getAllChatHistory } from "../model/chat";
 import { addCancelBet } from "../model/cancelbet";
 import { addCancelBetLog } from "../model/cancelbetlog";
 import HistoryModel from "../model/history";
+import GameSettingModel from "../model/gamesetting";
 
 const serverURL = process.env.SERVER_URL || 'https://crash.casinocarnival.games';
 const API_URL = process.env.API_URL || 'https://crashgame.vkingplays.com';
@@ -378,7 +379,7 @@ export const updateGameInfo = async (req: Request, res: Response) => {
         const minBetAmount = Number(min)
         const maxBetAmount = Number(max)
         if (isNaN(minBetAmount) || isNaN(maxBetAmount)) return res.status(404).send("invalid paramters")
-        await DGame.updateOne({ _id: DEFAULT_GAMEID }, { $set: { minBetAmount, maxBetAmount } }, { upsert: true });
+        await GameSettingModel.updateOne({ _id: DEFAULT_GAMEID }, { $set: { minBetAmount, maxBetAmount } }, { upsert: true });
         res.json({ status: true });
     } catch (error) {
         setlog("updateGameInfo", error)

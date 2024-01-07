@@ -1,7 +1,6 @@
 import { setlog } from "../helper";
-import { TblCashout } from "./index";
 
-// declare interface SchemaTblCashout {
+// declare interface SchemaCashoutModel {
 //   _id: number
 //   userId: string
 //   betId: string
@@ -16,9 +15,46 @@ import { TblCashout } from "./index";
 //   createdDate: number
 // }
 
+import mongoose, { Types } from "mongoose";
+
+const CashoutSchema = new mongoose.Schema({
+  userId: {
+    type: String,
+  },
+  betId: {
+    type: String,
+  },
+  betAmount: {
+    type: Number,
+  },
+  afterBalance: {
+    type: Number,
+  },
+  cashoutId: {
+    type: Number,
+  },
+  cashoutAt: {
+    type: Number,
+  },
+  cashoutAmount: {
+    type: Number,
+  },
+  responseBalance: {
+    type: Number,
+  },
+  flyAway: {
+    type: Number,
+  },
+  sessionToken: {
+    type: String,
+  },
+});
+
+const CashoutModel = mongoose.model("cashout", CashoutSchema);
+
 export const getAllCashout = async () => {
   try {
-    const gameSetting = await TblCashout.find({})
+    const gameSetting = await CashoutModel.find({})
     return {
       status: true,
       data: gameSetting
@@ -42,9 +78,7 @@ export const addCashout = async (
   sessionToken: string,
 ) => {
   try {
-    let dt = Date.now();
-    await TblCashout.insertOne({
-      _id: dt,
+    await CashoutModel.create({
       userId,
       betId,
       betAmount,
@@ -55,7 +89,6 @@ export const addCashout = async (
       responseBalance,
       flyAway,
       sessionToken,
-      createdDate: dt,
     })
     return true
   } catch (error) {
@@ -69,9 +102,7 @@ export const updateCashout = async (
   updateData: object,
 ) => {
   try {
-    await TblCashout.updateOne({ _id }, {
-      $set: updateData
-    })
+    await CashoutModel.findOneAndUpdate({ _id: new Types.ObjectId(_id) }, updateData)
     return true
   } catch (error) {
     setlog('updateCashout', error)
@@ -84,7 +115,7 @@ export const updateCashoutByBetId = async (
   updateData: object,
 ) => {
   try {
-    await TblCashout.updateOne({ betId }, {
+    await CashoutModel.updateOne({ betId }, {
       $set: updateData
     })
     return true
@@ -98,10 +129,13 @@ export const deleteCashout = async (
   _id: number
 ) => {
   try {
-    await TblCashout.deleteOne({ _id })
+    await CashoutModel.deleteOne({ _id: new Types.ObjectId(_id) })
     return true
   } catch (error) {
     setlog('deleteCashout', error)
     return false
   }
 }
+
+
+export default CashoutModel;

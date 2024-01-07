@@ -5,8 +5,7 @@ import mongoose, { Types } from "mongoose";
 const UserSchema = new mongoose.Schema({
   userName: {
     type: String,
-    require: true,
-    index: true
+    require: true
   },
   userId: {
     type: String,
@@ -133,7 +132,7 @@ export const updateUser = async (
   updateData: object,
 ) => {
   try {
-    await UserModel.findOneAndUpdate({ _id }, updateData)
+    await UserModel.findOneAndUpdate({ _id: new Types.ObjectId(_id) }, updateData)
     return true
   } catch (error) {
     setlog('updateUser', error)

@@ -1,7 +1,6 @@
 import { setlog } from "../helper";
-import { TblSession } from "./index";
 
-// declare interface SchemaTblSession {
+// declare interface SchemaSessionModel {
 //   _id: number
 //   userId: string
 //   sessionToken: string
@@ -12,9 +11,37 @@ import { TblSession } from "./index";
 //   ipAddress: string
 // }
 
+import mongoose, { Types } from "mongoose";
+
+const SessionSchema = new mongoose.Schema({
+  userId: {
+    type: String,
+  },
+  sessionToken: {
+    type: String,
+  },
+  userToken: {
+    type: String,
+  },
+  userBalance: {
+    type: Number,
+  },
+  startTime: {
+    type: Date,
+  },
+  endTime: {
+    type: Date,
+  },
+  ipAddress: {
+    type: String,
+  },
+});
+
+const SessionModel = mongoose.model("session", SessionSchema);
+
 export const getAllSessions = async () => {
   try {
-    const sessions = await TblSession.find({})
+    const sessions = await SessionModel.find({})
     return {
       status: true,
       data: sessions
@@ -33,9 +60,8 @@ export const addSession = async (
   ipAddress: string
 ) => {
   try {
-    let dt = Date.now();
-    await TblSession.insertOne({
-      _id: dt,
+    const dt = Date.now();
+    await SessionModel.create({
       userId,
       sessionToken,
       userToken,
@@ -56,9 +82,7 @@ export const updateSession = async (
   updateData: object,
 ) => {
   try {
-    await TblSession.updateOne({ _id }, {
-      $set: updateData
-    })
+    await SessionModel.findOneAndUpdate({ _id: new Types.ObjectId(_id) }, updateData)
     return true
   } catch (error) {
     setlog('updateSession', error)
@@ -70,10 +94,13 @@ export const deleteSession = async (
   _id: number
 ) => {
   try {
-    await TblSession.deleteOne({ _id })
+    await SessionModel.deleteOne({ _id: new Types.ObjectId(_id) })
     return true
   } catch (error) {
     setlog('deleteSession', error)
     return false
   }
 }
+
+
+export default SessionModel;

@@ -54,7 +54,7 @@ const FlyDetailSchema = new mongoose.Schema({
 });
 
 
-const FlyDetailModel = mongoose.model("fly-details", FlyDetailSchema);
+const FlyDetailModel = mongoose.model("flydetail", FlyDetailSchema);
 
 export const getAllFlyDetail = async () => {
   try {
@@ -133,7 +133,7 @@ export const deleteFlyDetail = async (
   _id: number
 ) => {
   try {
-    await FlyDetailModel.deleteOne({ _id })
+    await FlyDetailModel.deleteOne({ _id: new Types.ObjectId(_id) })
     return true
   } catch (error) {
     setlog('deleteFlyDetail', error)

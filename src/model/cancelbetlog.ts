@@ -1,7 +1,6 @@
 import { setlog } from "../helper";
-import { TblCancelBetLog } from "./index";
 
-// declare interface SchemaTblCancelBetLog {
+// declare interface SchemaCancelBetLogModel {
 //   _id: number
 //   userId: string
 //   betId: string
@@ -15,9 +14,47 @@ import { TblCancelBetLog } from "./index";
 //   responseTime: number
 // }
 
+import mongoose, { Types } from "mongoose";
+
+const CancelBetLogSchema = new mongoose.Schema({
+  userId: {
+    type: String,
+  },
+  betId: {
+    type: String,
+  },
+  cancelBetID: {
+    type: String,
+  },
+  code: {
+    type: Number,
+  },
+  message: {
+    type: String,
+  },
+  hashKey: {
+    type: String,
+  },
+  requestJson: {
+    type: Object,
+  },
+  responseJson: {
+    type: Object,
+  },
+  requestTime: {
+    type: Date,
+  },
+  responseTime: {
+    type: Date,
+  },
+});
+
+const CancelBetLogModel = mongoose.model("cancelbetlog", CancelBetLogSchema);
+
+
 export const getAllCancelBetLog = async () => {
   try {
-    const cancelBet = await TblCancelBetLog.find({})
+    const cancelBet = await CancelBetLogModel.find({})
     return {
       status: true,
       data: cancelBet
@@ -41,9 +78,7 @@ export const addCancelBetLog = async (
   responseTime: number,
 ) => {
   try {
-    let dt = Date.now();
-    await TblCancelBetLog.insertOne({
-      _id: dt,
+    await CancelBetLogModel.create({
       userId,
       betId,
       cancelBetID,
@@ -67,9 +102,7 @@ export const updateCancelBetLog = async (
   updateData: object,
 ) => {
   try {
-    await TblCancelBetLog.updateOne({ _id }, {
-      $set: updateData
-    })
+    await CancelBetLogModel.findOneAndUpdate({ _id: new Types.ObjectId(_id) }, updateData)
     return true
   } catch (error) {
     setlog('updateCancelBetLog', error)
@@ -81,10 +114,12 @@ export const deleteCancelBetLog = async (
   _id: number
 ) => {
   try {
-    await TblCancelBetLog.deleteOne({ _id })
+    await CancelBetLogModel.deleteOne({ _id: new Types.ObjectId(_id) })
     return true
   } catch (error) {
     setlog('deleteCancelBetLog', error)
     return false
   }
 }
+
+export default CancelBetLogModel;
