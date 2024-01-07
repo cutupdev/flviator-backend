@@ -412,6 +412,7 @@ export const initSocket = (io: Server) => {
                         currency: userInfo.data.currency,
                         isSoundEnable: userInfo.data.isSoundEnable,
                         isMusicEnable: userInfo.data.isMusicEnable,
+                        ipAddress: userInfo.data.ipAddress,
                         Session_Token,
                         token,
                         socketId: socket.id

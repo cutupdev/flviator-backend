@@ -10,6 +10,7 @@ export const DEFAULT_USER = {
     avatar: './avatars/av-5.png',
     token: '',
     socketId: '',
+    ipAddress: '',
     Session_Token: '',
     bot: false,
     userType: false,

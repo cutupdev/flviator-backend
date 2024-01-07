@@ -43,8 +43,8 @@ export const GameLaunch = async (req: Request, res: Response) => {
 
 
             let userData: any = await UserModel.findOne({ userId: UserID });
-            let ipAddressInfo: any = getIPAddress(req);
-            console.log(ipAddressInfo)
+            // let ipAddressInfo: any = getIPAddress(req);
+            // console.log(ipAddressInfo)
 
             var Session_Token = crypto.randomUUID();
             const sendData = {
@@ -64,7 +64,7 @@ export const GameLaunch = async (req: Request, res: Response) => {
             if (!userData) {
                 _data = _data.data;
                 let balance = Number(_data.balance) || 0;
-                userData = await addUser(_data.userName || "username", UserID, _data.currency || "INR", balance || 0, _data.avatar || "", "", "admin", ipAddressInfo.ip)
+                userData = await addUser(_data.userName || "username", UserID, _data.currency || "INR", balance || 0, _data.avatar || "", "", "admin", "0.0.0.0")
             }
 
 
@@ -122,12 +122,12 @@ export const Authentication = async (token: string, UserID: string, currency: st
             let userData: any = await UserModel.findOne({ userId: UserID });
             let balance = Number(_data.balance) || 0;
             if (!userData) {
-                userData = await addUser(_data.userName, UserID, _data.currency, balance, _data.avatar, "", "admin", "server")
+                userData = await addUser(_data.userName, UserID, _data.currency, balance, _data.avatar, "", "admin", "0.0.0.0")
             }
             await updateUserById(UserID, { balance })
             let responseTime = Date.now()
             await addAuthenticationLog(UserID, _data.code, _data.message, hashed, sendData, resData.data, requestTime, responseTime)
-            await addSession(UserID, Session_Token, token, balance, userData.ipAddress || "server")
+            await addSession(UserID, Session_Token, token, balance, userData.ipAddress || "0.0.0.0")
             return {
                 status: true,
                 data: {
@@ -139,6 +139,7 @@ export const Authentication = async (token: string, UserID: string, currency: st
                     isMusicEnable: userData.isMusicEnable,
                     msgVisible: userData.isChatEnable,
                     avatar: userData.avatar,
+                    ipAddress: userData.ipAddress,
                 }
             };
         } else {

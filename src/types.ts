@@ -7,6 +7,7 @@ export interface UserType {
     avatar: string
     token: string
     socketId: string
+    ipAddress: string
     Session_Token: string
     bot: boolean
     userType: boolean
