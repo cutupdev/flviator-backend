@@ -48,6 +48,9 @@ const CashoutSchema = new mongoose.Schema({
   sessionToken: {
     type: String,
   },
+}, {
+  timestamps: true,
+  versionKey: false
 });
 
 const CashoutModel = mongoose.model("cashout", CashoutSchema);

@@ -16,9 +16,36 @@ import { setlog } from "../helper";
 import mongoose, { Types } from "mongoose";
 
 const CancelBetSchema = new mongoose.Schema({
-  userName: {
+  userId: {
     type: String,
   },
+  betId: {
+    type: String,
+  },
+  betAmount: {
+    type: Number,
+  },
+  cancelBetId: {
+    type: String,
+  },
+  sessionToken: {
+    type: String,
+  },
+  beforeBalance: {
+    type: Number,
+  },
+  afterBalance: {
+    type: Number,
+  },
+  responseBalance: {
+    type: Number,
+  },
+  createdDate: {
+    type: Number,
+  },
+}, {
+  timestamps: true,
+  versionKey: false
 });
 
 const CancelBetModel = mongoose.model("cancelbet", CancelBetSchema);

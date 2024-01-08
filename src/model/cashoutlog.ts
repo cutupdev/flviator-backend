@@ -47,6 +47,9 @@ const CashoutLogSchema = new mongoose.Schema({
   responseTime: {
     type: Date,
   },
+}, {
+  timestamps: true,
+  versionKey: false
 });
 
 const CashoutLogModel = mongoose.model("cashoutlog", CashoutLogSchema);

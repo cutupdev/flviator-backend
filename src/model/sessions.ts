@@ -35,6 +35,9 @@ const SessionSchema = new mongoose.Schema({
   ipAddress: {
     type: String,
   },
+}, {
+  timestamps: true,
+  versionKey: false
 });
 
 const SessionModel = mongoose.model("session", SessionSchema);

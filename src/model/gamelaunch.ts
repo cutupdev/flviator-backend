@@ -39,6 +39,9 @@ const GameLaunchSchema = new mongoose.Schema({
   responseTime: {
     type: Date,
   },
+}, {
+  timestamps: true,
+  versionKey: false
 });
 
 const GameLaunchModel = mongoose.model("gamelaunch", GameLaunchSchema);

@@ -28,6 +28,9 @@ const CurrencySchema = new mongoose.Schema({
   createdBy: {
     type: String,
   },
+}, {
+  timestamps: true,
+  versionKey: false
 });
 
 const CurrencyModel = mongoose.model("currency", CurrencySchema);

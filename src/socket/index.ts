@@ -27,6 +27,7 @@ import { updateBetByBetId } from '../model/bet';
 import { updateCashoutByBetId } from '../model/cashout';
 import { addFlyDetail, updateFlyDetailByBetId } from '../model/flydetail';
 import { addHistory } from '../model/history';
+import { addSocketUser, deleteSocketUserBySocketId, getUserBySocketId, updateSocketUser, updateSocketUserBySocketId } from '../model/socketuser';
 
 let mysocketIo: Server;
 let users = {} as { [key: string]: UserType }
@@ -347,18 +348,19 @@ export const initSocket = (io: Server) => {
 
         // msg section
         socket.on("sendMsg", async ({ msgType, msgContent }) => {
+            let u: any = { ...await getUserBySocketId(socket.id) };
             let data: any = await addChat(
-                users[socket.id].userId,
-                users[socket.id].userName,
-                users[socket.id].avatar,
+                u.userId,
+                u.userName,
+                u.avatar,
                 msgContent,
                 msgType === "gif" ? msgContent : "")
             let emptyArray: any[] = [];
             let sendObj = {
                 _id: data._id,
-                userId: users[socket.id].userId,
-                userName: users[socket.id].userName,
-                avatar: users[socket.id].avatar,
+                userId: u.userId,
+                userName: u.userName,
+                avatar: u.avatar,
                 message: msgContent,
                 img: msgType === "gif" ? msgContent : "",
                 likes: 0,
@@ -372,24 +374,26 @@ export const initSocket = (io: Server) => {
 
         sockets.push(socket);
         socket.on('disconnect', async () => {
+            let u: any = { ...await getUserBySocketId(socket.id) };
             const checkIndex = sockets.findIndex((s) => (
                 s.id === socket.id
             ))
 
             if (checkIndex > -1) {
-                if (users[socket.id]?.f?.betid > 0 || users[socket.id]?.s?.betid > 0) {
+                if (u?.f?.betid > 0 || u?.s?.betid > 0) {
                     let betAmount = 0;
-                    if (users[socket.id].f.betted && !users[socket.id].f.cashouted) {
-                        betAmount += users[socket.id].f.betAmount;
-                        cancelBet(users[socket.id].userId, `${users[socket.id].f.betid}`, `${betAmount}`, users[socket.id].token, users[socket.id].Session_Token);
+                    if (u.f.betted && !u.f.cashouted) {
+                        betAmount += u.f.betAmount;
+                        cancelBet(u.userId, `${u.f.betid}`, `${betAmount}`, u.token, u.Session_Token);
                     }
-                    if (users[socket.id].s.betted && !users[socket.id].s.cashouted) {
-                        betAmount += users[socket.id].s.betAmount;
-                        cancelBet(users[socket.id].userId, `${users[socket.id].s.betid}`, `${betAmount}`, users[socket.id].token, users[socket.id].Session_Token);
+                    if (u.s.betted && !u.s.cashouted) {
+                        betAmount += u.s.betAmount;
+                        cancelBet(u.userId, `${u.s.betid}`, `${betAmount}`, u.token, u.Session_Token);
                     }
                 }
                 sockets.splice(checkIndex, 1);
                 delete users[socket.id];
+                await deleteSocketUserBySocketId(socket.id);
             }
         })
         socket.on('enterRoom', async (props) => {
@@ -403,7 +407,7 @@ export const initSocket = (io: Server) => {
                 var Session_Token = crypto.randomUUID();
                 const userInfo = await Authentication(token, UserID, currency, Session_Token);
                 if (userInfo.status) {
-                    users[socket.id] = {
+                    let storeObj: any = {
                         ...DEFAULT_USER,
                         userId: UserID,
                         userName: userInfo.data.userName || getRandomName(),
@@ -417,20 +421,17 @@ export const initSocket = (io: Server) => {
                         token,
                         socketId: socket.id
                     }
-                    socket.emit('myInfo', users[socket.id]);
+                    users[socket.id] = storeObj;
+                    await addSocketUser(socket.id, UserID, storeObj);
+                    socket.emit('myInfo', storeObj);
                     io.emit('history', history);
                     const time = Date.now() - startTime;
                     io.emit('gameState', { currentNum, currentSecondNum, GameState, time });
                 } else {
-                    console.log("Unregistered User")
-                    socket.emit("deny", { message: "Unregistered User" });
+                    console.log("Unregistered User at https://uat.vkingplays.com/")
+                    socket.emit("deny", { message: "Unregistered User at https://uat.vkingplays.com/" });
                 }
             } else {
-                // users[socket.id] = {
-                //     ...DEFAULT_USER,
-                //     balance: 50000,
-                //     socketId: socket.id
-                // }
                 console.log("User token is invalid")
                 socket.emit("deny", { message: "User token is invalid" });
             }
@@ -438,7 +439,7 @@ export const initSocket = (io: Server) => {
         socket.on('playBet', async (data: any) => {
             const { betAmount, target, type, auto } = data;
             if (GameState === "BET") {
-                let u = users[socket.id];
+                let u: any = await getUserBySocketId(socket.id);
                 if (!!u) {
                     if (betAmount >= localconfig.betting.min && betAmount <= localconfig.betting.max) {
                         if (u.balance - betAmount >= 0) {
@@ -451,7 +452,7 @@ export const initSocket = (io: Server) => {
                                 betid = sbetid;
                                 sbeted = true;
                             }
-                            const betRes = await bet(users[socket.id].userId, `${betid}`, u.balance, `${betAmount}`, u.currency, u.Session_Token);
+                            const betRes = await bet(u.userId, `${betid}`, u.balance, `${betAmount}`, u.currency, u.Session_Token);
                             if (betRes.status) {
                                 if (type === 'f') {
                                     u.f.betAmount = betAmount;
@@ -467,7 +468,10 @@ export const initSocket = (io: Server) => {
                                     u.s.target = target;
                                 }
                                 u.balance = betRes.balance;
-                                // users[socket.id] = u;
+
+                                users[socket.id] = u;
+                                await updateSocketUserBySocketId(socket.id, u);
+
                                 betNum++;
                                 totalBetAmount += betAmount;
                                 if (totalBetAmount > Number.MAX_SAFE_INTEGER) {
@@ -500,7 +504,7 @@ export const initSocket = (io: Server) => {
         })
         socket.on('cashOut', async (data) => {
             const { type, endTarget } = data;
-            let u = users[socket.id];
+            let u: any = { ...await getUserBySocketId(socket.id) };
             let player: any;
             if (type === 'f')
                 player = u.f
@@ -510,7 +514,7 @@ export const initSocket = (io: Server) => {
                 if (GameState === "PLAYING") {
                     if (!player.cashouted && player.betted) {
                         if (endTarget <= currentSecondNum && endTarget * player.betAmount) {
-                            var returnData: any = await settle(users[socket.id].userId, `${player.betid}`, player.betAmount.toFixed(2), endTarget.toFixed(2), (endTarget * player.betAmount).toFixed(2), u.currency, u.Session_Token);
+                            var returnData: any = await settle(u.userId, `${player.betid}`, player.betAmount.toFixed(2), endTarget.toFixed(2), (endTarget * player.betAmount).toFixed(2), u.currency, u.Session_Token);
                             player.cashouted = true;
                             player.cashAmount = endTarget * player.betAmount;
                             player.betted = false;
@@ -527,7 +531,8 @@ export const initSocket = (io: Server) => {
                                 totalCashout: cashoutNum,
                                 totalCashoutAmount: cashoutAmount
                             })
-                            // users[socket.id] = u;
+                            users[socket.id] = u;
+                            await updateSocketUserBySocketId(socket.id, u);
                             socket.emit("finishGame", u);
                             // socket.emit("success", `Successfully CashOuted ${Number(player.cashAmount).toFixed(2)}`);
                             socket.emit("success", {

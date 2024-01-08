@@ -10,7 +10,6 @@ import { setlog } from "../helper";
 //   responseBalance: number
 //   currency: string
 //   sessionToken: string
-//   createdDate: string
 //   platform: string
 //   isCancel: boolean
 //   cancelTime: number
@@ -19,9 +18,42 @@ import { setlog } from "../helper";
 import mongoose, { Types } from "mongoose";
 
 const BetSchema = new mongoose.Schema({
-  userName: {
+  userId: {
     type: String,
   },
+  betId: {
+    type: String,
+  },
+  beforeBalance: {
+    type: Number,
+  },
+  betAmount: {
+    type: Number,
+  },
+  afterBalance: {
+    type: Number,
+  },
+  responseBalance: {
+    type: Number,
+  },
+  currency: {
+    type: String,
+  },
+  sessionToken: {
+    type: String,
+  },
+  platform: {
+    type: String,
+  },
+  isCancel: {
+    type: Boolean,
+  },
+  cancelTime: {
+    type: Number,
+  },
+}, {
+  timestamps: true,
+  versionKey: false
 });
 
 const BetModel = mongoose.model("bet", BetSchema);

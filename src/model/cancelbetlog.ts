@@ -47,6 +47,9 @@ const CancelBetLogSchema = new mongoose.Schema({
   responseTime: {
     type: Date,
   },
+}, {
+  timestamps: true,
+  versionKey: false
 });
 
 const CancelBetLogModel = mongoose.model("cancelbetlog", CancelBetLogSchema);

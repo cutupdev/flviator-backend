@@ -41,6 +41,9 @@ const ChatSchema = new mongoose.Schema({
   disLikesIDs: {
     type: Array<String>,
   },
+}, {
+  timestamps: true,
+  versionKey: false
 });
 
 const ChatModel = mongoose.model("chat", ChatSchema);

@@ -27,6 +27,9 @@ const BlockSchema = new mongoose.Schema({
   users: {
     type: String,
   },
+}, {
+  timestamps: true,
+  versionKey: false
 });
 
 const BlockModel = mongoose.model("block", BlockSchema);

@@ -16,6 +16,7 @@ import { addCancelBet } from "../model/cancelbet";
 import { addCancelBetLog } from "../model/cancelbetlog";
 import HistoryModel from "../model/history";
 import GameSettingModel, { DEFAULT_GAMEID, getBettingAmounts } from "../model/gamesetting";
+import { addErrorLog } from "../model/errorlog";
 
 const serverURL = process.env.SERVER_URL || 'https://crash.casinocarnival.games';
 const API_URL = process.env.API_URL || 'https://crashgame.vkingplays.com';
@@ -61,6 +62,7 @@ export const GameLaunch = async (req: Request, res: Response) => {
                 }
             })
             var _data = resData.data;
+            console.log("Game Launch URL Request", _data);
             if (!userData) {
                 _data = _data.data;
                 let balance = Number(_data.balance) || 0;
@@ -117,6 +119,7 @@ export const Authentication = async (token: string, UserID: string, currency: st
         })
         let requestTime = Date.now()
         var _data = resData.data;
+        console.log("Authentication Request", _data);
         if (_data.code === 200) {
             _data = _data.data;
             let userData: any = await UserModel.findOne({ userId: UserID });
@@ -143,6 +146,7 @@ export const Authentication = async (token: string, UserID: string, currency: st
                 }
             };
         } else {
+            await addErrorLog(UserID, "Authentication Request", _data.message);
             return {
                 status: false,
                 message: _data.message
@@ -150,6 +154,7 @@ export const Authentication = async (token: string, UserID: string, currency: st
         }
 
     } catch (err) {
+        await addErrorLog(UserID, "Authentication Request", err);
         console.log(err);
         return {
             status: false
@@ -195,6 +200,7 @@ export const bet = async (UserID: string, betid: string, beforeBalance: number, 
                 balance: resBalance
             };
         } else {
+            await addErrorLog(UserID, "Place Bet Request", _data.message);
             return {
                 status: false,
                 message: _data.message
@@ -202,6 +208,7 @@ export const bet = async (UserID: string, betid: string, beforeBalance: number, 
         }
 
     } catch (err) {
+        await addErrorLog(UserID, "Place Bet Request", err);
         console.log(err);
         return {
             status: false,
@@ -256,6 +263,7 @@ export const settle = async (
                 betid: betid
             };
         } else {
+            await addErrorLog(UserID, "Cashout Request", _data.message);
             await cancelBet(UserID, betid, amount, currency, Session_Token);
             return {
                 status: false,
@@ -264,6 +272,7 @@ export const settle = async (
         }
 
     } catch (err) {
+        await addErrorLog(UserID, "Place Bet Request",err);
         console.log(err);
         await cancelBet(UserID, betid, amount, currency, Session_Token);
         return {
@@ -304,6 +313,7 @@ export const cancelBet = async (UserID: string, betid: string, amount: string, c
                 betid: betid
             };
         } else {
+            await addErrorLog(UserID, "Cancel Bet Request", _data.message);
             return {
                 status: false,
                 message: _data.message
@@ -312,6 +322,7 @@ export const cancelBet = async (UserID: string, betid: string, amount: string, c
 
     } catch (err) {
         console.log(err);
+        await addErrorLog(UserID, "Cancel Bet Request", err);
         return {
             status: false,
             message: "Internal Exception"

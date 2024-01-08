@@ -23,6 +23,9 @@ const HistorySchema = new mongoose.Schema({
         default: Date.now,
         index: true
     },
+}, {
+    timestamps: true,
+    versionKey: false
 });
 
 

@@ -39,6 +39,9 @@ const AuthenticationLogSchema = new mongoose.Schema({
   responseTime: {
     type: Number,
   },
+}, {
+  timestamps: true,
+  versionKey: false
 });
 
 const AuthenticationLogModel = mongoose.model("authenticationlog", AuthenticationLogSchema);

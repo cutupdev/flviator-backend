@@ -51,6 +51,9 @@ const FlyDetailSchema = new mongoose.Schema({
   flyEndTime: {
     type: Number,
   },
+}, {
+  timestamps: true,
+  versionKey: false
 });
 
 

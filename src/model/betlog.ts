@@ -43,6 +43,9 @@ const BetLogSchema = new mongoose.Schema({
   responseTime: {
     type: Date,
   },
+}, {
+  timestamps: true,
+  versionKey: false
 });
 
 const BetLogModel = mongoose.model("betlog", BetLogSchema);

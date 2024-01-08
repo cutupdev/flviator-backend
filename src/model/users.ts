@@ -55,6 +55,9 @@ const UserSchema = new mongoose.Schema({
     type: String,
     default: "0.0.0.0"
   },
+}, {
+  timestamps: true,
+  versionKey: false
 });
 
 const UserModel = mongoose.model("users", UserSchema);

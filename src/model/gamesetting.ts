@@ -17,9 +17,30 @@ export const DEFAULT_GAMEID = 1
 import mongoose, { Types } from "mongoose";
 
 const GameSettingSchema = new mongoose.Schema({
-  userName: {
-    type: String,
+  minBetAmount: {
+    type: Number,
   },
+  maxBetAmount: {
+    type: Number,
+  },
+  RTP: {
+    type: Number,
+  },
+  userSessionTime: {
+    type: Number,
+  },
+  isChatEnable: {
+    type: Boolean,
+  },
+  isBetAllow: {
+    type: Boolean,
+  },
+  isGameEnable: {
+    type: Boolean,
+  },
+}, {
+  timestamps: true,
+  versionKey: false
 });
 
 const GameSettingModel = mongoose.model("gamesetting", GameSettingSchema);
