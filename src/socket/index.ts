@@ -342,12 +342,12 @@ export const initSocket = (io: Server) => {
                 socket.emit('sessionSecure', { sessionStatus: true })
         })
 
-        socket.on("getSeed", () => {
+        socket.on('getSeed', () => {
             socket.emit("serverSeed", seed);
         })
 
         // msg section
-        socket.on("sendMsg", async ({ msgType, msgContent }) => {
+        socket.on('sendMsg', async ({ msgType, msgContent }) => {
             let u: any = { ...await getUserBySocketId(socket.id) };
             let data: any = await addChat(
                 u.userId,
@@ -551,6 +551,14 @@ export const initSocket = (io: Server) => {
             } else
                 socket.emit('error', { message: 'Undefined User', index: type });
         })
+
+        socket.off('sessionCheck', () => {})
+        socket.off('getSeed', () => {})
+        socket.off('sendMsg', () => {})
+        socket.off('disconnect', () => {})
+        socket.off('enterRoom', () => {})
+        socket.off('playBet', () => {})
+        socket.off('cashOut', () => {})
 
         // setInterval(() => {
         // if (GameState === NextGameState) {
