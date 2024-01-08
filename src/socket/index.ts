@@ -422,6 +422,7 @@ export const initSocket = (io: Server) => {
                         token,
                         socketId: socket.id
                     }
+                    console.log(storeObj);
                     users[socket.id] = storeObj;
                     await addSocketUser(socket.id, UserID, storeObj);
                     socket.emit('myInfo', storeObj);
