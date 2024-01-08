@@ -552,13 +552,16 @@ export const initSocket = (io: Server) => {
                 socket.emit('error', { message: 'Undefined User', index: type });
         })
 
-        socket.off('sessionCheck', () => {})
-        socket.off('getSeed', () => {})
-        socket.off('sendMsg', () => {})
-        socket.off('disconnect', () => {})
-        socket.off('enterRoom', () => {})
-        socket.off('playBet', () => {})
-        socket.off('cashOut', () => {})
+        return () => {
+            socket.off('sessionCheck', () => {})
+            socket.off('getSeed', () => {})
+            socket.off('sendMsg', () => {})
+            socket.off('disconnect', () => {})
+            socket.off('enterRoom', () => {})
+            socket.off('playBet', () => {})
+            socket.off('cashOut', () => {})
+        }
+
 
         // setInterval(() => {
         // if (GameState === NextGameState) {
