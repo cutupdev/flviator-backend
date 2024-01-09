@@ -27,7 +27,12 @@ import { updateBetByBetId } from '../model/bet';
 import { updateCashoutByBetId } from '../model/cashout';
 import { addFlyDetail, updateFlyDetailByBetId } from '../model/flydetail';
 import { addHistory } from '../model/history';
-import { addSocketUser, deleteSocketUserBySocketId, getUserBySocketId, updateSocketUser, updateSocketUserBySocketId } from '../model/socketuser';
+import { 
+    addSocketUser, 
+    getUserById, 
+    getUserBySocketId, 
+    updateSocketUserByUserId
+} from '../model/socketuser';
 
 let mysocketIo: Server;
 let users = {} as { [key: string]: UserType }
@@ -140,6 +145,7 @@ const gameRun = async () => {
                         flyAway: currentSecondNum
                     })
                 }
+                previousHand = users;
                 sendPreviousHand();
                 currentSecondNum = 0;
                 currentNum = target;
@@ -393,7 +399,7 @@ export const initSocket = (io: Server) => {
                 }
                 sockets.splice(checkIndex, 1);
                 delete users[socket.id];
-                await deleteSocketUserBySocketId(socket.id);
+                // await deleteSocketUserBySocketId(socket.id);
             }
         })
         socket.on('enterRoom', async (props) => {
@@ -422,7 +428,6 @@ export const initSocket = (io: Server) => {
                         token,
                         socketId: socket.id
                     }
-                    console.log(storeObj);
                     users[socket.id] = storeObj;
                     await addSocketUser(socket.id, UserID, storeObj);
                     socket.emit('myInfo', storeObj);
@@ -439,9 +444,13 @@ export const initSocket = (io: Server) => {
             }
         })
         socket.on('playBet', async (data: any) => {
-            const { betAmount, target, type, auto } = data;
+            const { userId, betAmount, target, type, auto } = data;
             if (GameState === "BET") {
-                let u: any = await getUserBySocketId(socket.id);
+                let u: any = users[socket.id];
+                if (!u) {
+                    u = { ...await getUserById(userId) };
+                    users[socket.id] = u;
+                }
                 if (!!u) {
                     if (betAmount >= localconfig.betting.min && betAmount <= localconfig.betting.max) {
                         if (u.balance - betAmount >= 0) {
@@ -472,7 +481,9 @@ export const initSocket = (io: Server) => {
                                 u.balance = betRes.balance;
 
                                 users[socket.id] = u;
-                                await updateSocketUserBySocketId(socket.id, u);
+                                await updateSocketUserByUserId(userId, {
+                                    userInfo: u
+                                });
 
                                 betNum++;
                                 totalBetAmount += betAmount;
@@ -505,8 +516,8 @@ export const initSocket = (io: Server) => {
             }
         })
         socket.on('cashOut', async (data) => {
-            const { type, endTarget } = data;
-            let u: any = { ...await getUserBySocketId(socket.id) };
+            const { userId, type, endTarget } = data;
+            let u: any = { ...await getUserById(userId) };
             let player: any;
             if (type === 'f')
                 player = u.f
@@ -534,7 +545,9 @@ export const initSocket = (io: Server) => {
                                 totalCashoutAmount: cashoutAmount
                             })
                             users[socket.id] = u;
-                            await updateSocketUserBySocketId(socket.id, u);
+                            await updateSocketUserByUserId(userId, {
+                                userInfo: u
+                            });
                             socket.emit("finishGame", u);
                             // socket.emit("success", `Successfully CashOuted ${Number(player.cashAmount).toFixed(2)}`);
                             socket.emit("success", {

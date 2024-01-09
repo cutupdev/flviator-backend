@@ -66,7 +66,7 @@ export const GameLaunch = async (req: Request, res: Response) => {
             if (!userData) {
                 _data = _data.data;
                 let balance = Number(_data.balance) || 0;
-                userData = await addUser(_data.userName || "username", UserID, _data.currency || "INR", balance || 0, _data.avatar || "", "", "admin", "0.0.0.0")
+                userData = await addUser(_data.userName || "username", UserID, _data.currency || "INR", balance || 0, _data.avatar || "desktop", "", "admin", "0.0.0.0")
             }
 
 
@@ -125,7 +125,7 @@ export const Authentication = async (token: string, UserID: string, currency: st
             let userData: any = await UserModel.findOne({ userId: UserID });
             let balance = Number(_data.balance) || 0;
             if (!userData) {
-                userData = await addUser(_data.userName, UserID, _data.currency, balance, _data.avatar, "", "admin", "0.0.0.0")
+                userData = await addUser(_data.userName, UserID, _data.currency, balance, _data.avatar, "desktop", "admin", "0.0.0.0")
             }
             await updateUserById(UserID, { balance })
             let responseTime = Date.now()
@@ -272,7 +272,7 @@ export const settle = async (
         }
 
     } catch (err) {
-        await addErrorLog(UserID, "Place Bet Request",err);
+        await addErrorLog(UserID, "Place Bet Request", err);
         console.log(err);
         await cancelBet(UserID, betid, amount, currency, Session_Token);
         return {
@@ -413,33 +413,32 @@ export const myInfo = async (req: Request, res: Response) => {
 
 export const dayHistory = async (req: Request, res: Response) => {
     try {
-        let nowDate_ = Date.now();
-        let nowDate = Math.round(nowDate_)
-        let oneDay = 60 * 60 * 24 * 1000;
+        const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
         const result = await HistoryModel.aggregate([
-            {
-                $lookup: {
-                    from: "users",
-                    localField: "userId",
-                    foreignField: "userId",
-                    as: "userinfo"
-                }
-            },
             {
                 $match: {
                     userId: { $ne: "0" },
                     cashouted: true,
-                    date: { $gte: (nowDate - oneDay), $lt: nowDate }
+                    createdAt: { $gte: oneDayAgo }
                 }
             },
             {
-                $sort: { date: -1 }
+                $lookup: {
+                    from: "users", // The name of the collection to join
+                    localField: "userId",
+                    foreignField: "userId",
+                    as: "userinfo" // The name of the field to add the joined data
+                }
+            },
+
+            {
+                $sort: { createdAt: -1 } // Sort by createdAt field in descending order (-1 for descending, 1 for ascending)
             },
             {
                 $limit: 20
             }
-        ]);
+        ]).exec();
 
         res.json({ status: true, data: result });
     } catch (error) {
@@ -450,33 +449,32 @@ export const dayHistory = async (req: Request, res: Response) => {
 
 export const monthHistory = async (req: Request, res: Response) => {
     try {
-        let nowDate_ = Date.now();
-        let nowDate = Math.round(nowDate_)
-        let oneDay = 60 * 60 * 24 * 30 * 1000;
+        const oneMonthAgo = new Date(Date.now() - 31 * 24 * 60 * 60 * 1000);
 
         const result = await HistoryModel.aggregate([
-            {
-                $lookup: {
-                    from: "users",
-                    localField: "userId",
-                    foreignField: "userId",
-                    as: "userinfo"
-                }
-            },
             {
                 $match: {
                     userId: { $ne: "0" },
                     cashouted: true,
-                    date: { $gte: (nowDate - oneDay), $lt: nowDate }
+                    createdAt: { $gte: oneMonthAgo }
                 }
             },
             {
-                $sort: { date: -1 }
+                $lookup: {
+                    from: "users", // The name of the collection to join
+                    localField: "userId",
+                    foreignField: "userId",
+                    as: "userinfo" // The name of the field to add the joined data
+                }
+            },
+
+            {
+                $sort: { createdAt: -1 } // Sort by createdAt field in descending order (-1 for descending, 1 for ascending)
             },
             {
                 $limit: 20
             }
-        ]);
+        ]).exec();
 
         res.json({ status: true, data: result });
     } catch (error) {
@@ -487,32 +485,32 @@ export const monthHistory = async (req: Request, res: Response) => {
 
 export const yearHistory = async (req: Request, res: Response) => {
     try {
-        let nowDate_ = Date.now();
-        let nowDate = Math.round(nowDate_)
-        let oneDay = 60 * 60 * 24 * 365 * 1000;
+        const oneYearAgo = new Date(Date.now() - 365 * 24 * 60 * 60 * 1000);
+
         const result = await HistoryModel.aggregate([
-            {
-                $lookup: {
-                    from: "users",
-                    localField: "userId",
-                    foreignField: "userId",
-                    as: "userinfo"
-                }
-            },
             {
                 $match: {
                     userId: { $ne: "0" },
                     cashouted: true,
-                    date: { $gte: (nowDate - oneDay), $lt: nowDate }
+                    createdAt: { $gte: oneYearAgo }
                 }
             },
             {
-                $sort: { date: -1 }
+                $lookup: {
+                    from: "users", // The name of the collection to join
+                    localField: "userId",
+                    foreignField: "userId",
+                    as: "userinfo" // The name of the field to add the joined data
+                }
+            },
+
+            {
+                $sort: { createdAt: -1 } // Sort by createdAt field in descending order (-1 for descending, 1 for ascending)
             },
             {
                 $limit: 20
             }
-        ]);
+        ]).exec();
         res.json({ status: true, data: result });
     } catch (error) {
         setlog('yearHistory', error)

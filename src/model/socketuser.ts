@@ -24,7 +24,7 @@ const SocketUserModel = mongoose.model("socketuser", SocketUserSchema);
 
 export const getAllUsers = async () => {
     try {
-        const users = await SocketUserModel.find({})
+        const users = await SocketUserModel.findOne({})
         return {
             status: true,
             data: users
@@ -37,31 +37,23 @@ export const getAllUsers = async () => {
 
 export const getUserBySocketId = async (socketId: string) => {
     try {
-        const user = await SocketUserModel.find({ socketId })
-        return {
-            status: true,
-            data: user
-        }
+        const user: any = await SocketUserModel.findOne({ socketId })
+        return user?.userInfo
     } catch (error) {
-        setlog('getSocketUserBySocketId', error)
+        setlog('getUserBySocketId', error)
         return { status: false, message: "Something went wrong." }
     }
 }
 
 export const getUserById = async (userId: string) => {
     try {
-        const user = await SocketUserModel.find({ userId })
-        return {
-            status: true,
-            data: user
-        }
+        const user: any = await SocketUserModel.findOne({ userId })
+        return user?.userInfo
     } catch (error) {
         setlog('getSocketUserById', error)
         return { status: false, message: "Something went wrong." }
     }
 }
-
-
 
 export const addSocketUser = async (
     socketId: string,
@@ -76,9 +68,10 @@ export const addSocketUser = async (
             userInfo
         }
         if (!user) {
+            await SocketUserModel.deleteOne({ userId })
             await SocketUserModel.create(userData)
         } else {
-            userData = await SocketUserModel.findOneAndUpdate({ socketId }, userData)
+            userData = await SocketUserModel.findOneAndUpdate({ userId }, userData)
         }
         return userData
     } catch (error) {

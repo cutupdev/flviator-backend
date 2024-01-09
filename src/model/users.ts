@@ -77,11 +77,8 @@ export const getAllUsers = async () => {
 
 export const getUserById = async (userId: string) => {
   try {
-    const user = await UserModel.find({ userId })
-    return {
-      status: true,
-      data: user
-    }
+    const user = await UserModel.findOne({ userId })
+    return user
   } catch (error) {
     setlog('getAllUsers', error)
     return { status: false, message: "Something went wrong." }

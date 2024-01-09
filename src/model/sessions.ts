@@ -75,7 +75,7 @@ export const addSession = async (
     })
     return true
   } catch (error) {
-    setlog('addUser', error)
+    setlog('addSession', error)
     return false
   }
 }

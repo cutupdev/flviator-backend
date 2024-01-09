@@ -18,11 +18,6 @@ const HistorySchema = new mongoose.Schema({
         type: Boolean,
         require: true
     },
-    date: {
-        type: Date,
-        default: Date.now,
-        index: true
-    },
 }, {
     timestamps: true,
     versionKey: false
