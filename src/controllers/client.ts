@@ -110,6 +110,7 @@ export const Authentication = async (token: string, UserID: string, currency: st
             Session_Token,
             currency
         }
+        console.log("Authenticatoin ===> ", sendData)
         var hashed = await hashFunc(sendData);
         const resData = await axios.post(getBalanceUrl, sendData, {
             headers: {
@@ -178,7 +179,7 @@ export const bet = async (UserID: string, betid: string, beforeBalance: number, 
             currency,
             Session_Token
         }
-        // console.log(sendData)
+        console.log("PlaceBet ===> ", sendData)
         var hashed = await hashFunc(sendData);
         let requestTime = Date.now();
         const resData = await axios.post(betUrl, sendData, {
@@ -245,6 +246,7 @@ export const settle = async (
             Session_Token,
             cashoutid
         }
+        console.log("Cashout ===> ", sendData)
         var hashed = await hashFunc(sendData);
         let requestTime = Date.now();
         const resData = await axios.post(cashoutUrl, sendData, {
@@ -297,6 +299,7 @@ export const cancelBet = async (UserID: string, betid: string, amount: string, c
             Session_Token,
             cancelbetid: cancelbetid,
         }
+        console.log("CancelBet ===> ", sendData)
         let userData: any = await getUserById(UserID);
         var hashed = await hashFunc(sendData);
         let requestTime = Date.now();
