@@ -422,27 +422,25 @@ export const initSocket = (io: Server) => {
         }
 
         const playBetHandler = async (data: any) => {
-            const { userInfo, betAmount, target, betid, type, auto } = data;
+            const { userInfo, betAmount, target, type, auto } = data;
             if (GameState === "BET") {
                 let usrInfo: any = { ...userInfo };
                 if (!!usrInfo) {
                     if (betAmount >= localconfig.betting.min && betAmount <= localconfig.betting.max) {
                         if (usrInfo.balance - betAmount >= 0) {
 
-                            const betRes = await bet(usrInfo.userId, `${betid}`, usrInfo.balance, `${betAmount}`, usrInfo.currency, usrInfo.Session_Token);
+                            const betRes = await bet(usrInfo.userId, `${usrInfo[type].betid}`, usrInfo.balance, `${betAmount}`, usrInfo.currency, usrInfo.Session_Token);
                             if (betRes.status) {
                                 if (type === 'f') {
-                                    fbetid = betid;
+                                    fbetid = usrInfo[type].betid;
                                     usrInfo.f.betAmount = betAmount;
                                     usrInfo.f.betted = true;
-                                    usrInfo.f.betid = betid;
                                     usrInfo.f.auto = auto;
                                     usrInfo.f.target = target;
                                 } else if (type === 's') {
-                                    sbetid = betid;
+                                    sbetid = usrInfo[type].betid;
                                     usrInfo.s.betAmount = betAmount;
                                     usrInfo.s.betted = true;
-                                    usrInfo.s.betid = betid;
                                     usrInfo.s.auto = auto;
                                     usrInfo.s.target = target;
                                 }
@@ -457,7 +455,7 @@ export const initSocket = (io: Server) => {
                                 }
 
                                 socket.emit("myBetState", { user: usrInfo, type });
-                                await updateFlyDetailByBetId(`${betid}`, {
+                                await updateFlyDetailByBetId(`${usrInfo[type].betid}`, {
                                     totalUsers: betNum,
                                     totalBets: betNum,
                                     totalBetsAmount: totalBetAmount,
