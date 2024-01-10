@@ -53,10 +53,8 @@ let totalBetAmount = 0;
 const diffLimit = 9; // When we lost money, decrease RTP by this value, but be careful, if this value is high, the more 1.00 x will appear and users might complain.
 const salt = process.env.SALT || '8783642fc5b7f51c08918793964ca303edca39823325a3729ad62f0a2';
 var seed = crypto.createHash('sha256').update(`${Date.now()}`).digest('hex');
-let fbetid = 0;
-let fbeted = false;
-let sbetid = 0;
-let sbeted = false;
+let fbetid = '0';
+let sbetid = '0';
 let betNum = 0;
 let cashoutNum = 0;
 
@@ -424,23 +422,24 @@ export const initSocket = (io: Server) => {
         }
 
         const playBetHandler = async (data: any) => {
-            const { userInfo, betAmount, target, type, auto } = data;
+            const { userInfo, betAmount, target, betid, type, auto } = data;
             if (GameState === "BET") {
                 let usrInfo: any = { ...userInfo };
                 if (!!usrInfo) {
                     if (betAmount >= localconfig.betting.min && betAmount <= localconfig.betting.max) {
                         if (usrInfo.balance - betAmount >= 0) {
 
-                            let betid = Date.now();
                             const betRes = await bet(usrInfo.userId, `${betid}`, usrInfo.balance, `${betAmount}`, usrInfo.currency, usrInfo.Session_Token);
                             if (betRes.status) {
                                 if (type === 'f') {
+                                    fbetid = betid;
                                     usrInfo.f.betAmount = betAmount;
                                     usrInfo.f.betted = true;
                                     usrInfo.f.betid = betid;
                                     usrInfo.f.auto = auto;
                                     usrInfo.f.target = target;
                                 } else if (type === 's') {
+                                    sbetid = betid;
                                     usrInfo.s.betAmount = betAmount;
                                     usrInfo.s.betted = true;
                                     usrInfo.s.betid = betid;
@@ -499,7 +498,7 @@ export const initSocket = (io: Server) => {
                                 player.cashouted = true;
                                 player.cashAmount = endTarget * player.betAmount;
                                 player.betted = false;
-                                player.betid = 0;
+                                player.betid = '0';
                                 player.target = endTarget;
                                 usrInfo.balance = returnData.balance;
                                 cashoutNum++;
@@ -507,10 +506,7 @@ export const initSocket = (io: Server) => {
 
                                 users[socket.id] = usrInfo;
 
-                                let betid = 0;
-                                if (type === 'f') betid = fbetid;
-                                if (type === 's') betid = sbetid;
-                                await updateFlyDetailByBetId(`${betid}`, {
+                                await updateFlyDetailByBetId(`${player.betid}`, {
                                     totalCashout: cashoutNum,
                                     totalCashoutAmount: cashoutAmount
                                 })
