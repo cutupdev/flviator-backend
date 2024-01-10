@@ -45,7 +45,7 @@ export const getUserBySocketId = async (socketId: string) => {
     }
 }
 
-export const getUserById = async (userId: string) => {
+export const getSocketUserById = async (userId: string) => {
     try {
         const user: any = await SocketUserModel.findOne({ userId })
         return user?.userInfo
@@ -68,7 +68,6 @@ export const addSocketUser = async (
             userInfo
         }
         if (!user) {
-            await SocketUserModel.deleteOne({ userId })
             await SocketUserModel.create(userData)
         } else {
             userData = await SocketUserModel.findOneAndUpdate({ userId }, userData)

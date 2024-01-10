@@ -146,6 +146,7 @@ export const Authentication = async (token: string, UserID: string, currency: st
                 }
             };
         } else {
+            console.log(_data)
             await addErrorLog(UserID, "Authentication Request", _data.message);
             return {
                 status: false,
@@ -154,8 +155,8 @@ export const Authentication = async (token: string, UserID: string, currency: st
         }
 
     } catch (err) {
-        await addErrorLog(UserID, "Authentication Request", err);
         console.log(err);
+        await addErrorLog(UserID, "Authentication Request", err);
         return {
             status: false
         }
@@ -177,6 +178,7 @@ export const bet = async (UserID: string, betid: string, beforeBalance: number, 
             currency,
             Session_Token
         }
+        // console.log(sendData)
         var hashed = await hashFunc(sendData);
         let requestTime = Date.now();
         const resData = await axios.post(betUrl, sendData, {
@@ -200,6 +202,7 @@ export const bet = async (UserID: string, betid: string, beforeBalance: number, 
                 balance: resBalance
             };
         } else {
+            console.log(_data)
             await addErrorLog(UserID, "Place Bet Request", _data.message);
             return {
                 status: false,
@@ -208,8 +211,8 @@ export const bet = async (UserID: string, betid: string, beforeBalance: number, 
         }
 
     } catch (err) {
-        await addErrorLog(UserID, "Place Bet Request", err);
         console.log(err);
+        await addErrorLog(UserID, "Place Bet Request", err);
         return {
             status: false,
             message: "Internal Exception"
@@ -263,6 +266,7 @@ export const settle = async (
                 betid: betid
             };
         } else {
+            console.log(_data)
             await addErrorLog(UserID, "Cashout Request", _data.message);
             await cancelBet(UserID, betid, amount, currency, Session_Token);
             return {
@@ -272,8 +276,8 @@ export const settle = async (
         }
 
     } catch (err) {
-        await addErrorLog(UserID, "Place Bet Request", err);
         console.log(err);
+        await addErrorLog(UserID, "Place Bet Request", err);
         await cancelBet(UserID, betid, amount, currency, Session_Token);
         return {
             status: false,
@@ -313,6 +317,7 @@ export const cancelBet = async (UserID: string, betid: string, amount: string, c
                 betid: betid
             };
         } else {
+            console.log(_data)
             await addErrorLog(UserID, "Cancel Bet Request", _data.message);
             return {
                 status: false,
@@ -375,7 +380,6 @@ export const getGameInfo = async (req: Request, res: Response) => {
 export const updateUserInfo = async (req: Request, res: Response) => {
     try {
         const { userId, updateData } = req.body as { userId: string, updateData: any }
-        console.log(userId, updateData);
         if (!userId || !updateData) return res.status(404).send("Invalid paramters")
         await updateUserById(userId, updateData)
         res.json({ status: true });

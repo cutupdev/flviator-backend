@@ -27,10 +27,10 @@ import { updateBetByBetId } from '../model/bet';
 import { updateCashoutByBetId } from '../model/cashout';
 import { addFlyDetail, updateFlyDetailByBetId } from '../model/flydetail';
 import { addHistory } from '../model/history';
-import { 
-    addSocketUser, 
-    getUserById, 
-    getUserBySocketId, 
+import {
+    addSocketUser,
+    getSocketUserById,
+    getUserBySocketId,
     updateSocketUserByUserId
 } from '../model/socketuser';
 
@@ -101,10 +101,10 @@ const gameRun = async () => {
                 GameState = "PLAYING";
                 NextState = "GAMEEND";
                 startTime = Date.now();
-                fbeted = false;
-                sbeted = false;
-                fbetid = Date.now() + Math.floor(Math.random() * 1000);
-                sbetid = Date.now() + Math.floor(Math.random() * 1000);
+                // fbeted = false;
+                // sbeted = false;
+                // fbetid = Date.now() + Math.floor(Math.random() * 1000);
+                // sbetid = Date.now() + Math.floor(Math.random() * 1000);
                 const time = Date.now() - startTime;
                 await addFlyDetail(`${fbetid}`, startTime, startTime, startTime, 0, 0, 0, 0, 0, 0, 0);
                 await addFlyDetail(`${sbetid}`, startTime, startTime, startTime, 0, 0, 0, 0, 0, 0, 0);
@@ -118,34 +118,34 @@ const gameRun = async () => {
 
             let time = Date.now() - startTime;
             if (currentTime > gameTime) {
-                let cancelTime = Date.now()
-                if (fbeted === true) {
-                    await updateFlyDetailByBetId(`${fbetid}`, {
-                        flyEndTime: cancelTime,
-                        flyAway: currentSecondNum
-                    })
-                    await updateBetByBetId(`${fbetid}`, {
-                        isCancel: true,
-                        cancelTime
-                    })
-                    await updateCashoutByBetId(`${fbetid}`, {
-                        flyAway: currentSecondNum
-                    })
-                }
-                if (sbeted === true) {
-                    await updateFlyDetailByBetId(`${sbetid}`, {
-                        flyEndTime: cancelTime,
-                        flyAway: currentSecondNum
-                    })
-                    await updateBetByBetId(`${sbetid}`, {
-                        isCancel: true,
-                        cancelTime
-                    })
-                    await updateCashoutByBetId(`${sbetid}`, {
-                        flyAway: currentSecondNum
-                    })
-                }
-                previousHand = users;
+                // let cancelTime = Date.now()
+                // if (fbeted === true) {
+                //     await updateFlyDetailByBetId(`${fbetid}`, {
+                //         flyEndTime: cancelTime,
+                //         flyAway: currentSecondNum
+                //     })
+                //     await updateBetByBetId(`${fbetid}`, {
+                //         isCancel: true,
+                //         cancelTime
+                //     })
+                //     await updateCashoutByBetId(`${fbetid}`, {
+                //         flyAway: currentSecondNum
+                //     })
+                // }
+                // if (sbeted === true) {
+                //     await updateFlyDetailByBetId(`${sbetid}`, {
+                //         flyEndTime: cancelTime,
+                //         flyAway: currentSecondNum
+                //     })
+                //     await updateBetByBetId(`${sbetid}`, {
+                //         isCancel: true,
+                //         cancelTime
+                //     })
+                //     await updateCashoutByBetId(`${sbetid}`, {
+                //         flyAway: currentSecondNum
+                //     })
+                // }
+                // previousHand = users;
                 sendPreviousHand();
                 currentSecondNum = 0;
                 currentNum = target;
@@ -154,7 +154,7 @@ const gameRun = async () => {
                 startTime = Date.now();
                 for (const k in users) {
                     const i = users[k];
-                    let fBetted = i.f.betted;
+                    // let fBetted = i.f.betted;
                     if (i.f.betted || i.f.cashouted) {
                         addHistory(i.userId, i.f.betAmount, i.f.target, i.f.cashouted)
                     }
@@ -162,7 +162,7 @@ const gameRun = async () => {
                     i.f.cashouted = false;
                     i.f.betAmount = 0;
                     i.f.cashAmount = 0;
-                    let sBetted = i.s.betted;
+                    // let sBetted = i.s.betted;
                     if (i.s.betted || i.s.cashouted) {
                         addHistory(i.userId, i.s.betAmount, i.s.target, i.s.cashouted)
                     }
@@ -171,7 +171,11 @@ const gameRun = async () => {
                     i.s.betAmount = 0;
                     i.s.cashAmount = 0;
                     sockets.map((socket) => {
-                        if (socket.id === i.socketId && (fBetted || sBetted)) {
+                        // if (socket.id === i.socketId && (fBetted || sBetted)) {
+                        //     console.log("Here")
+                        //     socket.emit("finishGame", i);
+                        // }
+                        if (socket.id === i.socketId) {
                             socket.emit("finishGame", i);
                         }
                     })
@@ -193,9 +197,9 @@ const gameRun = async () => {
                 let interval = setInterval(() => {
                     betBot(botIds[i]);
                     i++;
-                    sendInfo();
                     if (i > 15) clearInterval(interval);
                 }, 100)
+                sendInfo();
 
                 startTime = Date.now();
                 GameState = "BET";
@@ -343,18 +347,19 @@ export const initSocket = (io: Server) => {
     mysocketIo = io;
     io.on("connection", async (socket) => {
 
-        socket.on('sessionCheck', async ({ token, UserID, currency, returnurl }) => {
+        sockets.push(socket);
+
+        const sessionCheckHandler = async ({ token, UserID, currency, returnurl }: any) => {
             if (token && UserID && currency && returnurl)
                 socket.emit('sessionSecure', { sessionStatus: true })
-        })
+        }
 
-        socket.on('getSeed', () => {
+        const getSeedHandler = () => {
             socket.emit("serverSeed", seed);
-        })
+        }
 
-        // msg section
-        socket.on('sendMsg', async ({ msgType, msgContent }) => {
-            let u: any = { ...await getUserBySocketId(socket.id) };
+        const sendMsgHandler = async ({ msgType, msgContent }: any) => {
+            var u: any = users[socket.id];
             let data: any = await addChat(
                 u.userId,
                 u.userName,
@@ -376,11 +381,162 @@ export const initSocket = (io: Server) => {
             }
             socket.emit("newMsg", sendObj);
             socket.broadcast.emit("newMsg", sendObj);
-        })
+        }
 
-        sockets.push(socket);
-        socket.on('disconnect', async () => {
-            let u: any = { ...await getUserBySocketId(socket.id) };
+        const enterRoomHandler = async (props: any) => {
+            var { token, UserID, currency } = props;
+            token = decodeURIComponent(token);
+            UserID = decodeURIComponent(UserID);
+            currency = decodeURIComponent(currency);
+
+            socket.emit('getBetLimits', { max: localconfig.betting.max, min: localconfig.betting.min });
+            if (token !== null && token !== undefined) {
+                var Session_Token = crypto.randomUUID();
+                const userInfo = await Authentication(token, UserID, currency, Session_Token);
+                if (userInfo.status) {
+                    users[socket.id] = {
+                        ...DEFAULT_USER,
+                        userId: UserID,
+                        userName: userInfo.data.userName || getRandomName(),
+                        balance: userInfo.data.balance,
+                        avatar: userInfo.data.avatar,
+                        currency: userInfo.data.currency,
+                        isSoundEnable: userInfo.data.isSoundEnable,
+                        isMusicEnable: userInfo.data.isMusicEnable,
+                        ipAddress: userInfo.data.ipAddress,
+                        Session_Token,
+                        token,
+                        socketId: socket.id
+                    }
+                    socket.emit('myInfo', users[socket.id]);
+                    sendInfo();
+                    io.emit('history', history);
+                    const time = Date.now() - startTime;
+                    io.emit('gameState', { currentNum, currentSecondNum, GameState, time });
+                } else {
+                    console.log("Unregistered User at https://uat.vkingplays.com/")
+                    socket.emit("deny", { message: "Unregistered User at https://uat.vkingplays.com/" });
+                }
+            } else {
+                console.log("User token is invalid")
+                socket.emit("deny", { message: "User token is invalid" });
+            }
+        }
+
+        const playBetHandler = async (data: any) => {
+            const { userInfo, betAmount, target, type, auto } = data;
+            if (GameState === "BET") {
+                let usrInfo: any = { ...userInfo };
+                if (!!usrInfo) {
+                    if (betAmount >= localconfig.betting.min && betAmount <= localconfig.betting.max) {
+                        if (usrInfo.balance - betAmount >= 0) {
+
+                            let betid = Date.now();
+                            const betRes = await bet(usrInfo.userId, `${betid}`, usrInfo.balance, `${betAmount}`, usrInfo.currency, usrInfo.Session_Token);
+                            if (betRes.status) {
+                                if (type === 'f') {
+                                    usrInfo.f.betAmount = betAmount;
+                                    usrInfo.f.betted = true;
+                                    usrInfo.f.betid = betid;
+                                    usrInfo.f.auto = auto;
+                                    usrInfo.f.target = target;
+                                } else if (type === 's') {
+                                    usrInfo.s.betAmount = betAmount;
+                                    usrInfo.s.betted = true;
+                                    usrInfo.s.betid = betid;
+                                    usrInfo.s.auto = auto;
+                                    usrInfo.s.target = target;
+                                }
+                                usrInfo.balance = betRes.balance;
+                                users[socket.id] = usrInfo;
+
+                                betNum++;
+                                totalBetAmount += betAmount;
+                                if (totalBetAmount > Number.MAX_SAFE_INTEGER) {
+                                    totalBetAmount = betAmount;
+                                    cashoutAmount = 0;
+                                }
+
+                                socket.emit("myBetState", { user: usrInfo, type });
+                                await updateFlyDetailByBetId(`${betid}`, {
+                                    totalUsers: betNum,
+                                    totalBets: betNum,
+                                    totalBetsAmount: totalBetAmount,
+                                    flyEndTime: Date.now()
+                                })
+                            } else {
+                                socket.emit('error', { message: betRes.message, index: type, userInfo: usrInfo });
+                            }
+                        } else {
+                            socket.emit('error', { message: "Your balance is not enough", index: type });
+                        }
+                    } else {
+                        socket.emit('error', { message: `Your bet range is ${localconfig.betting.min}~${localconfig.betting.max}`, index: type });
+                    }
+                } else {
+                    socket.emit('error', { message: "Undefined User", index: type });
+                }
+            } else {
+                socket.emit('error', { message: "You can't bet. Try again at next round!", index: type });
+            }
+        }
+
+        const cashoutHandler = async (data: { userInfo: any, usrId: string, type: string, endTarget: number }) => {
+            const { userInfo, type, endTarget } = data;
+            let usrInfo: any = { ...userInfo };
+            var player: any;
+            if (type === 'f')
+                player = usrInfo.f
+            else if (type === 's')
+                player = usrInfo.s
+            if (!!usrInfo) {
+                if (GameState === "PLAYING") {
+                    if (!player.cashouted && player.betted) {
+                        if (endTarget <= currentSecondNum && endTarget * player.betAmount) {
+                            var returnData: any = await settle(usrInfo.userId, `${player.betid}`, player.betAmount.toFixed(2), endTarget.toFixed(2), (endTarget * player.betAmount).toFixed(2), usrInfo.currency, usrInfo.Session_Token);
+                            if (returnData.status === true) {
+
+                                player.cashouted = true;
+                                player.cashAmount = endTarget * player.betAmount;
+                                player.betted = false;
+                                player.betid = 0;
+                                player.target = endTarget;
+                                usrInfo.balance = returnData.balance;
+                                cashoutNum++;
+                                cashoutAmount += endTarget * player.betAmount;
+
+                                users[socket.id] = usrInfo;
+
+                                let betid = 0;
+                                if (type === 'f') betid = fbetid;
+                                if (type === 's') betid = sbetid;
+                                await updateFlyDetailByBetId(`${betid}`, {
+                                    totalCashout: cashoutNum,
+                                    totalCashoutAmount: cashoutAmount
+                                })
+                                socket.emit("finishGame", usrInfo);
+                                socket.emit("success", {
+                                    msg: "You have cashed out!",
+                                    currency: player.currency,
+                                    point: endTarget.toFixed(2),
+                                    cashoutAmount: (endTarget * player.betAmount).toFixed(2),
+                                });
+                            } else {
+                                socket.emit("error", { message: "You can't cash out!", index: type });
+                            }
+                        } else {
+                            socket.emit("error", { message: "You can't cash out!", index: type });
+                        }
+                    }
+                } else
+                    socket.emit('error', { message: "You can't cash out!", index: type });
+            } else
+                socket.emit('error', { message: 'Undefined User', index: type });
+        }
+
+        const disconnectHandler = async () => {
+            // var u: any = { ...await getUserBySocketId(socket.id) };
+            var u: any = users[socket.id];
             const checkIndex = sockets.findIndex((s) => (
                 s.id === socket.id
             ))
@@ -401,170 +557,27 @@ export const initSocket = (io: Server) => {
                 delete users[socket.id];
                 // await deleteSocketUserBySocketId(socket.id);
             }
-        })
-        socket.on('enterRoom', async (props) => {
-            var { token, UserID, currency } = props;
-            console.log("token, UserID, currency", token, UserID, currency);
-            token = decodeURIComponent(token);
-            UserID = decodeURIComponent(UserID);
-            currency = decodeURIComponent(currency);
+        }
 
-            socket.emit('getBetLimits', { max: localconfig.betting.max, min: localconfig.betting.min });
-            if (token !== null && token !== undefined) {
-                var Session_Token = crypto.randomUUID();
-                const userInfo = await Authentication(token, UserID, currency, Session_Token);
-                if (userInfo.status) {
-                    let storeObj: any = {
-                        ...DEFAULT_USER,
-                        userId: UserID,
-                        userName: userInfo.data.userName || getRandomName(),
-                        balance: userInfo.data.balance,
-                        avatar: userInfo.data.avatar,
-                        currency: userInfo.data.currency,
-                        isSoundEnable: userInfo.data.isSoundEnable,
-                        isMusicEnable: userInfo.data.isMusicEnable,
-                        ipAddress: userInfo.data.ipAddress,
-                        Session_Token,
-                        token,
-                        socketId: socket.id
-                    }
-                    users[socket.id] = storeObj;
-                    await addSocketUser(socket.id, UserID, storeObj);
-                    socket.emit('myInfo', storeObj);
-                    io.emit('history', history);
-                    const time = Date.now() - startTime;
-                    io.emit('gameState', { currentNum, currentSecondNum, GameState, time });
-                } else {
-                    console.log("Unregistered User at https://uat.vkingplays.com/")
-                    socket.emit("deny", { message: "Unregistered User at https://uat.vkingplays.com/" });
-                }
-            } else {
-                console.log("User token is invalid")
-                socket.emit("deny", { message: "User token is invalid" });
-            }
-        })
-        socket.on('playBet', async (data: any) => {
-            const { userId, betAmount, target, type, auto } = data;
-            if (GameState === "BET") {
-                let u: any = users[socket.id];
-                if (!u) {
-                    u = { ...await getUserById(userId) };
-                    users[socket.id] = u;
-                }
-                if (!!u) {
-                    if (betAmount >= localconfig.betting.min && betAmount <= localconfig.betting.max) {
-                        if (u.balance - betAmount >= 0) {
-                            let betid = 0;
-                            if (type === 'f') {
-                                betid = fbetid;
-                                fbeted = true;
-                            }
-                            if (type === 's') {
-                                betid = sbetid;
-                                sbeted = true;
-                            }
-                            const betRes = await bet(u.userId, `${betid}`, u.balance, `${betAmount}`, u.currency, u.Session_Token);
-                            if (betRes.status) {
-                                if (type === 'f') {
-                                    u.f.betAmount = betAmount;
-                                    u.f.betted = true;
-                                    u.f.betid = betid;
-                                    u.f.auto = auto;
-                                    u.f.target = target;
-                                } else if (type === 's') {
-                                    u.s.betAmount = betAmount;
-                                    u.s.betted = true;
-                                    u.s.betid = betid;
-                                    u.s.auto = auto;
-                                    u.s.target = target;
-                                }
-                                u.balance = betRes.balance;
 
-                                users[socket.id] = u;
-                                await updateSocketUserByUserId(userId, {
-                                    userInfo: u
-                                });
 
-                                betNum++;
-                                totalBetAmount += betAmount;
-                                if (totalBetAmount > Number.MAX_SAFE_INTEGER) {
-                                    totalBetAmount = betAmount;
-                                    cashoutAmount = 0;
-                                }
-                                await updateFlyDetailByBetId(`${betid}`, {
-                                    totalUsers: betNum,
-                                    totalBets: betNum,
-                                    totalBetsAmount: totalBetAmount,
-                                    flyEndTime: Date.now()
-                                })
+        socket.on('sessionCheck', sessionCheckHandler)
+        socket.on('getSeed', getSeedHandler)
+        socket.on('sendMsg', sendMsgHandler)
+        socket.on('enterRoom', enterRoomHandler)
+        socket.on('playBet', playBetHandler)
+        socket.on('cashOut', cashoutHandler)
+        socket.on('disconnect', disconnectHandler)
 
-                                socket.emit("myBetState", { user: u, type });
-                            } else {
-                                socket.emit('error', { message: betRes.message, index: type, userInfo: u });
-                            }
-                        } else {
-                            socket.emit('error', { message: "Your balance is not enough", index: type });
-                        }
-                    } else {
-                        socket.emit('error', { message: `Your bet range is ${localconfig.betting.min}~${localconfig.betting.max}`, index: type });
-                    }
-                } else {
-                    socket.emit('error', { message: "Undefined User", index: type });
-                }
-            } else {
-                socket.emit('error', { message: "You can't bet. Try again at next round!", index: type });
-            }
-        })
-        socket.on('cashOut', async (data) => {
-            const { userId, type, endTarget } = data;
-            let u: any = { ...await getUserById(userId) };
-            let player: any;
-            if (type === 'f')
-                player = u.f
-            else if (type === 's')
-                player = u.s
-            if (!!u) {
-                if (GameState === "PLAYING") {
-                    if (!player.cashouted && player.betted) {
-                        if (endTarget <= currentSecondNum && endTarget * player.betAmount) {
-                            var returnData: any = await settle(u.userId, `${player.betid}`, player.betAmount.toFixed(2), endTarget.toFixed(2), (endTarget * player.betAmount).toFixed(2), u.currency, u.Session_Token);
-                            player.cashouted = true;
-                            player.cashAmount = endTarget * player.betAmount;
-                            player.betted = false;
-                            player.betid = 0;
-                            player.target = endTarget;
-                            // u.balance += endTarget * player.betAmount;
-                            u.balance = returnData.balance;
-                            cashoutNum++;
-                            cashoutAmount += endTarget * player.betAmount;
-                            let betid = 0;
-                            if (type === 'f') betid = fbetid;
-                            if (type === 's') betid = sbetid;
-                            await updateFlyDetailByBetId(`${betid}`, {
-                                totalCashout: cashoutNum,
-                                totalCashoutAmount: cashoutAmount
-                            })
-                            users[socket.id] = u;
-                            await updateSocketUserByUserId(userId, {
-                                userInfo: u
-                            });
-                            socket.emit("finishGame", u);
-                            // socket.emit("success", `Successfully CashOuted ${Number(player.cashAmount).toFixed(2)}`);
-                            socket.emit("success", {
-                                msg: "You have cashed out!",
-                                currency: player.currency,
-                                point: endTarget.toFixed(2),
-                                cashoutAmount: (endTarget * player.betAmount).toFixed(2),
-                            });
-                        } else {
-                            socket.emit("error", { message: "You can't cash out!", index: type });
-                        }
-                    }
-                } else
-                    socket.emit('error', { message: "You can't cash out!", index: type });
-            } else
-                socket.emit('error', { message: 'Undefined User', index: type });
-        })
+        return () => {
+            socket.off('sessionCheck', sessionCheckHandler)
+            socket.off('getSeed', getSeedHandler)
+            socket.off('sendMsg', sendMsgHandler)
+            socket.off('enterRoom', enterRoomHandler)
+            socket.off('playBet', playBetHandler)
+            socket.off('cashOut', cashoutHandler)
+            socket.off('disconnect', disconnectHandler)
+        }
 
         // setInterval(() => {
         // if (GameState === NextGameState) {
