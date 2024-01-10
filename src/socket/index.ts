@@ -433,12 +433,8 @@ export const initSocket = (io: Server) => {
                             if (betRes.status) {
                                 if (type === 'f') {
                                     fbetid = usrInfo[type].betid;
-                                    usrInfo.s.betid = usrInfo[type].betid;;
-                                    usrInfo.f.betted = true;
                                 } else if (type === 's') {
                                     sbetid = usrInfo[type].betid;
-                                    usrInfo.s.betid = usrInfo[type].betid;;
-                                    usrInfo.s.betted = true;
                                 }
                                 usrInfo.balance = betRes.balance;
                                 users[socket.id] = usrInfo;
