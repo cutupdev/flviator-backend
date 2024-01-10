@@ -195,9 +195,9 @@ const gameRun = async () => {
                 let interval = setInterval(() => {
                     betBot(botIds[i]);
                     i++;
+                    sendInfo();
                     if (i > 15) clearInterval(interval);
                 }, 100)
-                sendInfo();
 
                 startTime = Date.now();
                 GameState = "BET";
