@@ -422,37 +422,31 @@ export const initSocket = (io: Server) => {
         }
 
         const playBetHandler = async (data: any) => {
-            const { userInfo, betAmount, target, type, auto } = data;
+            const { userInfo, type } = data;
             if (GameState === "BET") {
                 let usrInfo: any = { ...userInfo };
                 if (!!usrInfo) {
-                    if (betAmount >= localconfig.betting.min && betAmount <= localconfig.betting.max) {
-                        if (usrInfo.balance - betAmount >= 0) {
+                    if (usrInfo[type].betAmount >= localconfig.betting.min && usrInfo[type].betAmount <= localconfig.betting.max) {
+                        if (usrInfo.balance - usrInfo[type].betAmount >= 0) {
 
-                            const betRes = await bet(usrInfo.userId, `${usrInfo[type].betid}`, usrInfo.balance, `${betAmount}`, usrInfo.currency, usrInfo.Session_Token);
+                            const betRes = await bet(usrInfo.userId, `${usrInfo[type].betid}`, usrInfo.balance, `${usrInfo[type].betAmount}`, usrInfo.currency, usrInfo.Session_Token);
                             if (betRes.status) {
                                 if (type === 'f') {
                                     fbetid = usrInfo[type].betid;
-                                    usrInfo.f.betAmount = betAmount;
                                     usrInfo.s.betid = usrInfo[type].betid;;
                                     usrInfo.f.betted = true;
-                                    usrInfo.f.auto = auto;
-                                    usrInfo.f.target = target;
                                 } else if (type === 's') {
                                     sbetid = usrInfo[type].betid;
-                                    usrInfo.s.betAmount = betAmount;
                                     usrInfo.s.betid = usrInfo[type].betid;;
                                     usrInfo.s.betted = true;
-                                    usrInfo.s.auto = auto;
-                                    usrInfo.s.target = target;
                                 }
                                 usrInfo.balance = betRes.balance;
                                 users[socket.id] = usrInfo;
 
                                 betNum++;
-                                totalBetAmount += betAmount;
+                                totalBetAmount += usrInfo[type].betAmount;
                                 if (totalBetAmount > Number.MAX_SAFE_INTEGER) {
-                                    totalBetAmount = betAmount;
+                                    totalBetAmount = usrInfo[type].betAmount;
                                     cashoutAmount = 0;
                                 }
 
