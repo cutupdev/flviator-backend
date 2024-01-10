@@ -428,7 +428,6 @@ export const initSocket = (io: Server) => {
                 if (!!usrInfo) {
                     if (usrInfo[type].betAmount >= localconfig.betting.min && usrInfo[type].betAmount <= localconfig.betting.max) {
                         if (usrInfo.balance - usrInfo[type].betAmount >= 0) {
-
                             const betRes = await bet(usrInfo.userId, `${usrInfo[type].betid}`, usrInfo.balance, `${usrInfo[type].betAmount}`, usrInfo.currency, usrInfo.Session_Token);
                             if (betRes.status) {
                                 if (type === 'f') {
@@ -445,7 +444,6 @@ export const initSocket = (io: Server) => {
                                     totalBetAmount = usrInfo[type].betAmount;
                                     cashoutAmount = 0;
                                 }
-
                                 socket.emit("myBetState", { user: usrInfo, type });
                                 await updateFlyDetailByBetId(`${usrInfo[type].betid}`, {
                                     totalUsers: betNum,
