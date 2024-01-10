@@ -66,7 +66,7 @@ export const GameLaunch = async (req: Request, res: Response) => {
             if (!userData) {
                 _data = _data.data;
                 let balance = Number(_data.balance) || 0;
-                userData = await addUser(_data.userName || "username", UserID, _data.currency || "INR", balance || 0, _data.avatar || "desktop", "", "admin", "0.0.0.0")
+                userData = await addUser(_data.userName || "username", UserID, _data.currency || "INR", balance || 0, _data.avatar || "", "desktop", "admin", "0.0.0.0")
             }
 
 
