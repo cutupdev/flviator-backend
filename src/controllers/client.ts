@@ -104,6 +104,9 @@ export const Authentication = async (token: string, UserID: string, currency: st
         //         avatar: "./avatars/av-3.png",
         //     }
         // };
+        if (!Session_Token) {
+            Session_Token = crypto.randomUUID();
+        }
         const sendData = {
             UserID,
             User_Token: token,
@@ -172,6 +175,9 @@ export const bet = async (UserID: string, betid: string, beforeBalance: number, 
         //     currency: "INR",
         //     balance: 5000
         // };
+        if (!Session_Token) {
+            Session_Token = crypto.randomUUID();
+        }
         const sendData = {
             UserID,
             betAmount,
@@ -236,6 +242,9 @@ export const settle = async (
         //     balance: 5000,
         //     betid: "_data.betid",
         // };
+        if (!Session_Token) {
+            Session_Token = crypto.randomUUID();
+        }
         const cashoutid = `${Date.now() + Math.floor(Math.random() * 1000)}`;
         const sendData = {
             UserID,
@@ -291,6 +300,9 @@ export const settle = async (
 export const cancelBet = async (UserID: string, betid: string, amount: string, currency: string, Session_Token: string) => {
     try {
         const cancelbetid = `CAN${Date.now() + Math.floor(Math.random() * 1000)}`;
+        if (!Session_Token) {
+            Session_Token = crypto.randomUUID();
+        }
         const sendData = {
             userID: UserID,
             betid,

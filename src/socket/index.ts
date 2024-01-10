@@ -53,8 +53,8 @@ let totalBetAmount = 0;
 const diffLimit = 9; // When we lost money, decrease RTP by this value, but be careful, if this value is high, the more 1.00 x will appear and users might complain.
 const salt = process.env.SALT || '8783642fc5b7f51c08918793964ca303edca39823325a3729ad62f0a2';
 var seed = crypto.createHash('sha256').update(`${Date.now()}`).digest('hex');
-let fbetid = '0';
-let sbetid = '0';
+let fbetid = `Crash-${Date.now()}-${Math.floor(Math.random() * 999999)}`;
+let sbetid = `Crash-${Date.now()}-${Math.floor(Math.random() * 999999)}`;
 let betNum = 0;
 let cashoutNum = 0;
 
@@ -434,12 +434,14 @@ export const initSocket = (io: Server) => {
                                 if (type === 'f') {
                                     fbetid = usrInfo[type].betid;
                                     usrInfo.f.betAmount = betAmount;
+                                    usrInfo.s.betid = usrInfo[type].betid;;
                                     usrInfo.f.betted = true;
                                     usrInfo.f.auto = auto;
                                     usrInfo.f.target = target;
                                 } else if (type === 's') {
                                     sbetid = usrInfo[type].betid;
                                     usrInfo.s.betAmount = betAmount;
+                                    usrInfo.s.betid = usrInfo[type].betid;;
                                     usrInfo.s.betted = true;
                                     usrInfo.s.auto = auto;
                                     usrInfo.s.target = target;
@@ -496,7 +498,7 @@ export const initSocket = (io: Server) => {
                                 player.cashouted = true;
                                 player.cashAmount = endTarget * player.betAmount;
                                 player.betted = false;
-                                player.betid = '0';
+                                // player.betid = '0';
                                 player.target = endTarget;
                                 usrInfo.balance = returnData.balance;
                                 cashoutNum++;
