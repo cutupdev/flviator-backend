@@ -51,7 +51,7 @@ let currentSecondNum: number;
 let target: number = -1;
 let cashoutAmount = 0;
 let totalBetAmount = 0;
-let flyDetailID: object = {};
+let flyDetailID: any = {};
 
 const diffLimit = 9; // When we lost money, decrease RTP by this value, but be careful, if this value is high, the more 1.00 x will appear and users might complain.
 const salt = process.env.SALT || '8783642fc5b7f51c08918793964ca303edca39823325a3729ad62f0a2';
@@ -452,6 +452,7 @@ export const initSocket = (io: Server) => {
         const cashoutHandler = async (data: { userInfo: any, usrId: string, type: string, endTarget: number }) => {
             const { userInfo, type, endTarget } = data;
             let usrInfo: any = { ...userInfo };
+            console.log(userInfo, type, endTarget);
             var player: any;
             if (type === 'f')
                 player = usrInfo.f
@@ -472,13 +473,8 @@ export const initSocket = (io: Server) => {
                                 usrInfo.balance = returnData.balance;
                                 cashoutNum++;
                                 cashoutAmount += endTarget * player.betAmount;
-
+                                usrInfo[type] = player;
                                 users[socket.id] = usrInfo;
-
-                                await updateFlyDetail(flyDetailID, {
-                                    totalCashout: cashoutNum,
-                                    totalCashoutAmount: cashoutAmount
-                                })
                                 socket.emit("finishGame", usrInfo);
                                 socket.emit("success", {
                                     msg: "You have cashed out!",
@@ -486,6 +482,11 @@ export const initSocket = (io: Server) => {
                                     point: endTarget.toFixed(2),
                                     cashoutAmount: (endTarget * player.betAmount).toFixed(2),
                                 });
+
+                                await updateFlyDetail(flyDetailID, {
+                                    totalCashout: cashoutNum,
+                                    totalCashoutAmount: cashoutAmount
+                                })
                             } else {
                                 console.log("1")
                                 socket.emit("error", { message: "You can't cash out!", index: type });

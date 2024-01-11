@@ -104,7 +104,7 @@ export const addFlyDetail = async (
 }
 
 export const updateFlyDetail = async (
-  _id: object,
+  _id: any,
   updateData: object,
 ) => {
   try {
