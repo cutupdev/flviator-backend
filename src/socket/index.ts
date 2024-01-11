@@ -25,7 +25,7 @@ import { botIds, initBots } from "./bots"
 import { addChat } from '../model/chat';
 import { updateBetByBetId } from '../model/bet';
 import { updateCashoutByBetId } from '../model/cashout';
-import { addFlyDetail, updateFlyDetailByBetId } from '../model/flydetail';
+import { addFlyDetail, updateFlyDetail } from '../model/flydetail';
 import { addHistory } from '../model/history';
 import {
     addSocketUser,
@@ -33,6 +33,7 @@ import {
     getUserBySocketId,
     updateSocketUserByUserId
 } from '../model/socketuser';
+import { getSessionByUserId } from '../model/sessions';
 
 let mysocketIo: Server;
 let users = {} as { [key: string]: UserType }
@@ -45,10 +46,12 @@ let NextState = "READY";
 let startTime = Date.now();
 let gameTime: number;
 let currentNum: number;
+let lastSecondNum: number;
 let currentSecondNum: number;
 let target: number = -1;
 let cashoutAmount = 0;
 let totalBetAmount = 0;
+let flyDetailID: object = {};
 
 const diffLimit = 9; // When we lost money, decrease RTP by this value, but be careful, if this value is high, the more 1.00 x will appear and users might complain.
 const salt = process.env.SALT || '8783642fc5b7f51c08918793964ca303edca39823325a3729ad62f0a2';
@@ -91,7 +94,7 @@ const gameRun = async () => {
                 gameTime = getTime(target);
                 const time = Date.now() - startTime;
 
-                mysocketIo.emit('gameState', { currentNum, currentSecondNum, GameState, time });
+                mysocketIo.emit('gameState', { currentNum, lastSecondNum, currentSecondNum, GameState, time });
             }
             break;
         case "READY":
@@ -104,45 +107,19 @@ const gameRun = async () => {
                 // fbetid = Date.now() + Math.floor(Math.random() * 1000);
                 // sbetid = Date.now() + Math.floor(Math.random() * 1000);
                 const time = Date.now() - startTime;
-                await addFlyDetail(`${fbetid}`, startTime, startTime, startTime, 0, 0, 0, 0, 0, 0, 0);
-                await addFlyDetail(`${sbetid}`, startTime, startTime, startTime, 0, 0, 0, 0, 0, 0, 0);
-                mysocketIo.emit('gameState', { currentNum, currentSecondNum, GameState, time });
+                let resp: any = await addFlyDetail(startTime, startTime, startTime, 0, 0, 0, 0, 0, 0, 0);
+                flyDetailID = resp._id;
+                mysocketIo.emit('gameState', { currentNum, lastSecondNum, currentSecondNum, GameState, time });
             }
             break;
         case "PLAYING":
             var currentTime = (Date.now() - startTime) / 1000;
             currentNum = 1 + 0.06 * currentTime + Math.pow((0.06 * currentTime), 2) - Math.pow((0.04 * currentTime), 3) + Math.pow((0.04 * currentTime), 4)
             currentSecondNum = currentNum;
+            lastSecondNum = currentNum;
 
             let time = Date.now() - startTime;
             if (currentTime > gameTime) {
-                // let cancelTime = Date.now()
-                // if (fbeted === true) {
-                //     await updateFlyDetailByBetId(`${fbetid}`, {
-                //         flyEndTime: cancelTime,
-                //         flyAway: currentSecondNum
-                //     })
-                //     await updateBetByBetId(`${fbetid}`, {
-                //         isCancel: true,
-                //         cancelTime
-                //     })
-                //     await updateCashoutByBetId(`${fbetid}`, {
-                //         flyAway: currentSecondNum
-                //     })
-                // }
-                // if (sbeted === true) {
-                //     await updateFlyDetailByBetId(`${sbetid}`, {
-                //         flyEndTime: cancelTime,
-                //         flyAway: currentSecondNum
-                //     })
-                //     await updateBetByBetId(`${sbetid}`, {
-                //         isCancel: true,
-                //         cancelTime
-                //     })
-                //     await updateCashoutByBetId(`${sbetid}`, {
-                //         flyAway: currentSecondNum
-                //     })
-                // }
                 // previousHand = users;
                 sendPreviousHand();
                 currentSecondNum = 0;
@@ -186,7 +163,7 @@ const gameRun = async () => {
                     users[item] = userItem
                 })
             }
-            mysocketIo.emit('gameState', { currentNum, currentSecondNum, GameState, time });
+            mysocketIo.emit('gameState', { currentNum, lastSecondNum, currentSecondNum, GameState, time });
             break;
         case "GAMEEND":
             if (Date.now() - startTime > GAMEENDTIME) {
@@ -205,7 +182,7 @@ const gameRun = async () => {
                 history.unshift(target);
                 mysocketIo.emit("history", history);
                 const time = Date.now() - startTime;
-                mysocketIo.emit('gameState', { currentNum, currentSecondNum, GameState, time });
+                mysocketIo.emit('gameState', { currentNum, lastSecondNum, currentSecondNum, GameState, time });
                 target = -1;
             }
             break;
@@ -389,7 +366,11 @@ export const initSocket = (io: Server) => {
 
             socket.emit('getBetLimits', { max: localconfig.betting.max, min: localconfig.betting.min });
             if (token !== null && token !== undefined) {
-                var Session_Token = crypto.randomUUID();
+                var Session_Token: string = crypto.randomUUID();
+                let session: any = await getSessionByUserId(UserID) || {}
+                if (session.sessionToken) {
+                    Session_Token = session.sessionToken;
+                }
                 const userInfo = await Authentication(token, UserID, currency, Session_Token);
                 if (userInfo.status) {
                     users[socket.id] = {
@@ -410,7 +391,7 @@ export const initSocket = (io: Server) => {
                     sendInfo();
                     io.emit('history', history);
                     const time = Date.now() - startTime;
-                    io.emit('gameState', { currentNum, currentSecondNum, GameState, time });
+                    io.emit('gameState', { currentNum, lastSecondNum, currentSecondNum, GameState, time });
                 } else {
                     console.log("Unregistered User at https://uat.vkingplays.com/")
                     socket.emit("deny", { message: "Unregistered User at https://uat.vkingplays.com/" });
@@ -445,7 +426,7 @@ export const initSocket = (io: Server) => {
                                     cashoutAmount = 0;
                                 }
                                 socket.emit("myBetState", { user: usrInfo, type });
-                                await updateFlyDetailByBetId(`${usrInfo[type].betid}`, {
+                                await updateFlyDetail(flyDetailID, {
                                     totalUsers: betNum,
                                     totalBets: betNum,
                                     totalBetsAmount: totalBetAmount,
@@ -494,7 +475,7 @@ export const initSocket = (io: Server) => {
 
                                 users[socket.id] = usrInfo;
 
-                                await updateFlyDetailByBetId(`${player.betid}`, {
+                                await updateFlyDetail(flyDetailID, {
                                     totalCashout: cashoutNum,
                                     totalCashoutAmount: cashoutAmount
                                 })
@@ -506,14 +487,18 @@ export const initSocket = (io: Server) => {
                                     cashoutAmount: (endTarget * player.betAmount).toFixed(2),
                                 });
                             } else {
+                                console.log("1")
                                 socket.emit("error", { message: "You can't cash out!", index: type });
                             }
                         } else {
+                            console.log("2")
                             socket.emit("error", { message: "You can't cash out!", index: type });
                         }
                     }
-                } else
+                } else {
+                    console.log("3")
                     socket.emit('error', { message: "You can't cash out!", index: type });
+                }
             } else
                 socket.emit('error', { message: 'Undefined User', index: type });
         }

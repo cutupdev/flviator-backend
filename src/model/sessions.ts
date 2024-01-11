@@ -55,6 +55,16 @@ export const getAllSessions = async () => {
   }
 }
 
+export const getSessionByUserId = async (userId: string) => {
+  try {
+    const session = await SessionModel.findOne({ userId })
+    return session
+  } catch (error) {
+    setlog('getAessionbyUserId', error)
+    return { status: false, message: "Something went wrong." }
+  }
+}
+
 export const addSession = async (
   userId: string,
   sessionToken: string,
@@ -86,6 +96,19 @@ export const updateSession = async (
 ) => {
   try {
     await SessionModel.findOneAndUpdate({ _id: new Types.ObjectId(_id) }, updateData)
+    return true
+  } catch (error) {
+    setlog('updateSession', error)
+    return false
+  }
+}
+
+export const updateSessionByUserId = async (
+  userId: string,
+  updateData: object,
+) => {
+  try {
+    await SessionModel.findOneAndUpdate({ userId }, updateData)
     return true
   } catch (error) {
     setlog('updateSession', error)

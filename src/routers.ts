@@ -9,6 +9,7 @@ import {
     yearHistory,
     likesToChatFunc,
     GameLaunch,
+    updateCashout,
     getAllChats
 } from './controllers/client';
 import { totalHistory, totalUsers } from './controllers/admin';
@@ -29,5 +30,6 @@ router.post('/get-all-chat', getAllChats);
 router.post('/like-chat', likesToChatFunc);
 router.post('/update-info', updateUserInfo);
 router.post("/update-game-info", updateGameInfo);
+router.post("/update-cashout", updateCashout);
 
 export default router

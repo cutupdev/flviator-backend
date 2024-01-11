@@ -5,10 +5,10 @@ import axios from "axios";
 import crypto from 'crypto';
 import { addAuthenticationLog } from "../model/authenticationlog";
 import UserModel, { addUser, getUserById, updateUserById } from "../model/users";
-import { addSession } from "../model/sessions";
+import { addSession, updateSessionByUserId } from "../model/sessions";
 import { addBet } from "../model/bet";
 import { addBetLog } from "../model/betlog";
-import { addCashout } from "../model/cashout";
+import { addCashout, updateCashoutByBetId } from "../model/cashout";
 import { addCashoutLog } from "../model/cashoutlog";
 import { addGameLaunch } from "../model/gamelaunch";
 import { getAllChatHistory, likesToChat } from "../model/chat";
@@ -69,6 +69,7 @@ export const GameLaunch = async (req: Request, res: Response) => {
                 userData = await addUser(_data.userName || "username", UserID, _data.currency || "INR", balance || 0, _data.avatar || "", "desktop", "admin", "0.0.0.0")
             }
 
+            await addSession(UserID, Session_Token, token, userData.balance, userData.ipAddress || "0.0.0.0")
 
             const responseJson = {
                 code: 200,
@@ -104,9 +105,9 @@ export const Authentication = async (token: string, UserID: string, currency: st
         //         avatar: "./avatars/av-3.png",
         //     }
         // };
-        if (!Session_Token) {
-            Session_Token = crypto.randomUUID();
-        }
+        // if (!Session_Token) {
+        //     Session_Token = crypto.randomUUID();
+        // }
         const sendData = {
             UserID,
             User_Token: token,
@@ -134,7 +135,6 @@ export const Authentication = async (token: string, UserID: string, currency: st
             await updateUserById(UserID, { balance })
             let responseTime = Date.now()
             await addAuthenticationLog(UserID, _data.code, _data.message, hashed, sendData, resData.data, requestTime, responseTime)
-            await addSession(UserID, Session_Token, token, balance, userData.ipAddress || "0.0.0.0")
             return {
                 status: true,
                 data: {
@@ -175,9 +175,9 @@ export const bet = async (UserID: string, betid: string, beforeBalance: number, 
         //     currency: "INR",
         //     balance: 5000
         // };
-        if (!Session_Token) {
-            Session_Token = crypto.randomUUID();
-        }
+        // if (!Session_Token) {
+        //     Session_Token = crypto.randomUUID();
+        // }
         const sendData = {
             UserID,
             betAmount,
@@ -242,9 +242,9 @@ export const settle = async (
         //     balance: 5000,
         //     betid: "_data.betid",
         // };
-        if (!Session_Token) {
-            Session_Token = crypto.randomUUID();
-        }
+        // if (!Session_Token) {
+        //     Session_Token = crypto.randomUUID();
+        // }
         const cashoutid = `${Date.now() + Math.floor(Math.random() * 1000)}`;
         const sendData = {
             UserID,
@@ -300,9 +300,9 @@ export const settle = async (
 export const cancelBet = async (UserID: string, betid: string, amount: string, currency: string, Session_Token: string) => {
     try {
         const cancelbetid = `CAN${Date.now() + Math.floor(Math.random() * 1000)}`;
-        if (!Session_Token) {
-            Session_Token = crypto.randomUUID();
-        }
+        // if (!Session_Token) {
+        //     Session_Token = crypto.randomUUID();
+        // }
         const sendData = {
             userID: UserID,
             betid,
@@ -397,6 +397,25 @@ export const updateUserInfo = async (req: Request, res: Response) => {
         const { userId, updateData } = req.body as { userId: string, updateData: any }
         if (!userId || !updateData) return res.status(404).send("Invalid paramters")
         await updateUserById(userId, updateData)
+        if (updateData.ipAddress) {
+            await updateSessionByUserId(userId, {
+                ipAddress: updateData.ipAddress
+            })
+        }
+        res.json({ status: true });
+    } catch (error) {
+        setlog("updateUserInfo", error)
+        res.json({ status: false });
+    }
+}
+
+export const updateCashout = async (req: Request, res: Response) => {
+    try {
+        const { betid, flyAway } = req.body as { betid: string, flyAway: number }
+        if (!betid || !flyAway) return res.status(404).send("Invalid paramters")
+        await updateCashoutByBetId(betid, {
+            flyAway
+        })
         res.json({ status: true });
     } catch (error) {
         setlog("updateUserInfo", error)

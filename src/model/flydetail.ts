@@ -2,7 +2,6 @@ import { currentTime, setlog } from "../helper";
 
 // declare interface SchemaFlyDetailModel {
 //   _id: number
-//   betId: string
 //   betStartTime: number
 //   betEndTime: number
 //   flyStartTime: number
@@ -18,9 +17,6 @@ import { currentTime, setlog } from "../helper";
 import mongoose, { Types } from "mongoose";
 
 const FlyDetailSchema = new mongoose.Schema({
-  betId: {
-    type: String,
-  },
   betStartTime: {
     type: Number,
   },
@@ -73,7 +69,6 @@ export const getAllFlyDetail = async () => {
 }
 
 export const addFlyDetail = async (
-  betId: string,
   betStartTime: number,
   betEndTime: number,
   flyStartTime: number,
@@ -86,8 +81,7 @@ export const addFlyDetail = async (
   flyEndTime: number,
 ) => {
   try {
-    await FlyDetailModel.create({
-      betId,
+    let flyDetail: any = await FlyDetailModel.create({
       betStartTime,
       betEndTime,
       flyStartTime,
@@ -99,7 +93,10 @@ export const addFlyDetail = async (
       flyAway,
       flyEndTime
     })
-    return true
+    return {
+      _id: flyDetail._id,
+      status: true
+    }
   } catch (error) {
     setlog('addFlyDetail', error)
     return false
@@ -107,11 +104,11 @@ export const addFlyDetail = async (
 }
 
 export const updateFlyDetail = async (
-  _id: number,
+  _id: object,
   updateData: object,
 ) => {
   try {
-    await FlyDetailModel.findOneAndUpdate({ _id: new Types.ObjectId(_id) }, updateData)
+    await FlyDetailModel.findOneAndUpdate({ _id }, updateData)
     return true
   } catch (error) {
     setlog('updateFlyDetail', error)
@@ -119,7 +116,7 @@ export const updateFlyDetail = async (
   }
 }
 
-export const updateFlyDetailByBetId = async (
+export const updateFlyDetailByUserId = async (
   betId: string,
   updateData: object,
 ) => {
