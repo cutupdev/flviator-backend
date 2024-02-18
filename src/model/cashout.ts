@@ -24,6 +24,9 @@ const CashoutSchema = new mongoose.Schema({
   betId: {
     type: String,
   },
+  flyDetailID: {
+    type: String,
+  },
   betAmount: {
     type: Number,
   },
@@ -71,6 +74,7 @@ export const getAllCashout = async () => {
 export const addCashout = async (
   userId: string,
   betId: string,
+  flyDetailID: string,
   betAmount: number,
   afterBalance: number,
   cashoutId: number,
@@ -84,6 +88,7 @@ export const addCashout = async (
     await CashoutModel.create({
       userId,
       betId,
+      flyDetailID,
       betAmount,
       afterBalance,
       cashoutId,
@@ -119,6 +124,21 @@ export const updateCashoutByBetId = async (
 ) => {
   try {
     await CashoutModel.updateOne({ betId }, {
+      $set: updateData
+    })
+    return true
+  } catch (error) {
+    setlog('updateCashout', error)
+    return false
+  }
+}
+
+export const updateCashoutsByFlyDetailId = async (
+  flyDetailID: string,
+  updateData: object,
+) => {
+  try {
+    await CashoutModel.updateMany({ flyDetailID }, {
       $set: updateData
     })
     return true

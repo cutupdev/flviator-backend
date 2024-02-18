@@ -18,13 +18,13 @@ import mongoose, { Types } from "mongoose";
 
 const FlyDetailSchema = new mongoose.Schema({
   betStartTime: {
-    type: Number,
+    type: Date,
   },
   betEndTime: {
-    type: Number,
+    type: Date,
   },
   flyStartTime: {
-    type: Number,
+    type: Date,
   },
   totalUsers: {
     type: Number,
@@ -45,7 +45,7 @@ const FlyDetailSchema = new mongoose.Schema({
     type: Number,
   },
   flyEndTime: {
-    type: Number,
+    type: Date,
   },
 }, {
   timestamps: true,

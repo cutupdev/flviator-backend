@@ -34,10 +34,10 @@ const AuthenticationLogSchema = new mongoose.Schema({
     type: Object,
   },
   requestTime: {
-    type: Number,
+    type: Date,
   },
   responseTime: {
-    type: Number,
+    type: Date,
   },
 }, {
   timestamps: true,

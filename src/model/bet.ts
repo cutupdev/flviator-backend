@@ -49,7 +49,7 @@ const BetSchema = new mongoose.Schema({
     type: Boolean,
   },
   cancelTime: {
-    type: Number,
+    type: Date,
   },
 }, {
   timestamps: true,

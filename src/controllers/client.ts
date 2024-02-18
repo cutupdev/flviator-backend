@@ -78,7 +78,7 @@ export const GameLaunch = async (req: Request, res: Response) => {
                     gameURL: `${serverURL}/?token=${encodeURIComponent(token)}&UserID=${encodeURIComponent(UserID)}&currency=${encodeURIComponent(currency)}&returnurl=${returnurl ? encodeURIComponent(returnurl) : encodeURIComponent(serverURL)}`
                 }
             }
-            await addGameLaunch(UserID, 200, "success", hashed, req.body, responseJson, Date.now(), Date.now());
+            await addGameLaunch(UserID, 200, "success", hashed, req.body, responseJson.data, Date.now(), Date.now());
             res.status(200).send(responseJson);
         } else {
             return res.status(401).send("User token is invalid");
@@ -124,7 +124,7 @@ export const Authentication = async (token: string, UserID: string, currency: st
         })
         let requestTime = Date.now()
         var _data = resData.data;
-        // console.log("Authentication Request", _data);
+        console.log("Authentication Request", resData);
         if (_data.code === 200) {
             _data = _data.data;
             let userData: any = await UserModel.findOne({ userId: UserID });
@@ -201,7 +201,7 @@ export const bet = async (UserID: string, betid: string, beforeBalance: number, 
             let responseTime = Date.now();
             await updateUserById(UserID, { balance: resBalance })
             await addBet(UserID, betid, beforeBalance, Number(betAmount), resBalance, resBalance, currency, Session_Token, "platform", false, 0);
-            await addBetLog(UserID, betid, _data.code, _data.message, hashed, sendData, _data, requestTime, responseTime);
+            await addBetLog(UserID, betid, _data.code, _data.message, hashed, sendData, _data.data, requestTime, responseTime);
             return {
                 status: true,
                 betid: _data.betid,
@@ -230,6 +230,7 @@ export const bet = async (UserID: string, betid: string, beforeBalance: number, 
 export const settle = async (
     UserID: string,
     betid: string,
+    flyDetailID: string,
     betAmount: string,
     cashoutPoint: string,
     amount: string,
@@ -269,8 +270,8 @@ export const settle = async (
             let afterBalance = Number(_data.data.updatedBalance) || 0
             let responseTime = Date.now();
             await updateUserById(UserID, { balance: afterBalance })
-            await addCashout(UserID, betid, Number(betAmount), afterBalance, Number(cashoutid), Number(cashoutPoint), Number(amount), afterBalance, 0, Session_Token);
-            await addCashoutLog(UserID, betid, Number(cashoutid), _data.code, _data.message, hashed, sendData, _data, requestTime, responseTime);
+            await addCashout(UserID, betid, flyDetailID, Number(betAmount), afterBalance, Number(cashoutid), Number(cashoutPoint), Number(amount), afterBalance, 0, Session_Token);
+            await addCashoutLog(UserID, betid, Number(cashoutid), _data.code, _data.message, hashed, sendData, _data.data, requestTime, responseTime);
             return {
                 status: true,
                 balance: afterBalance,
@@ -325,7 +326,7 @@ export const cancelBet = async (UserID: string, betid: string, amount: string, c
         if (_data.code === 200) {
             let responseTime = Date.now();
             await addCancelBet(UserID, betid, Number(amount), `${cancelbetid}`, Session_Token, userData.data.balance, userData.data.balance, userData.data.balance, Date.now())
-            await addCancelBetLog(UserID, betid, cancelbetid, _data.code, _data.message, hashed, sendData, _data, requestTime, responseTime);
+            await addCancelBetLog(UserID, betid, cancelbetid, _data.code, _data.message, hashed, sendData, _data.data, requestTime, responseTime);
             return {
                 status: true,
                 balance: Number(_data.data.updatedBalance) || 0,
@@ -349,38 +350,6 @@ export const cancelBet = async (UserID: string, betid: string, amount: string, c
         };
     }
 }
-
-// export const cancelBet = async (betid: number, balance: number, token: string) => {
-//     try {
-//         const resData = await axios.post(cancelUrl, {
-//             gameCode: 'Crash',
-//             betid,
-//             amount: balance,
-//             // token: testToken
-//             token
-//         })
-//         const _data = resData.data.data;
-//         if (!resData.data.success) {
-//             return {
-//                 status: false,
-//                 message: "Service Exception"
-//             };
-//         }
-
-//         return {
-//             status: true,
-//             balance: _data.amount,
-//             betid: _data.betid
-//         };
-
-//     } catch (err) {
-// console.log(err);
-//         return {
-//             status: false,
-//             message: "Internal Exception"
-//         };
-//     }
-// }
 
 export const getGameInfo = async (req: Request, res: Response) => {
     try {
