@@ -177,7 +177,7 @@ const gameRun = async () => {
                 mysocketIo.emit('gameState', { currentNum, lastSecondNum, currentSecondNum: gameEndTime, GameState, time });
 
                 flyEndTime = Date.now();
-                await updateFlyDetail(flyDetailID, { flyEndTime });
+                await updateFlyDetail(flyDetailID, { flyEndTime, flyAway: gameEndTime.toFixed(2) });
                 await updateCashoutsByFlyDetailId(flyDetailID, { flyAway: gameEndTime.toFixed(2) });
                 target = -1;
             }

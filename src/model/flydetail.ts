@@ -106,11 +106,11 @@ export const addFlyDetail = async (
 }
 
 export const updateFlyDetail = async (
-  _id: any,
+  flyDetailID: string,
   updateData: object,
 ) => {
   try {
-    await FlyDetailModel.findOneAndUpdate({ _id: new Types.ObjectId(_id) }, updateData)
+    await FlyDetailModel.findOneAndUpdate({ flyDetailID }, updateData)
     return true
   } catch (error) {
     setlog('updateFlyDetail', error)
