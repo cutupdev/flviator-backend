@@ -72,6 +72,7 @@ export const getAllFlyDetail = async () => {
 }
 
 export const addFlyDetail = async (
+  flyDetailID: string,
   betStartTime: number,
   betEndTime: number,
   flyStartTime: number,
@@ -84,7 +85,6 @@ export const addFlyDetail = async (
   flyEndTime: number,
 ) => {
   try {
-    let flyDetailID = `${Date.now()}`
     await FlyDetailModel.create({
       flyDetailID,
       betStartTime,

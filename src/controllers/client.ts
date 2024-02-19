@@ -114,7 +114,7 @@ export const Authentication = async (token: string, UserID: string, currency: st
             Session_Token,
             currency
         }
-        console.log("Authenticatoin ===> ", sendData)
+        // console.log("Authenticatoin ===> ", sendData)
         var hashed = await hashFunc(sendData);
         const resData = await axios.post(getBalanceUrl, sendData, {
             headers: {
@@ -124,7 +124,6 @@ export const Authentication = async (token: string, UserID: string, currency: st
         })
         let requestTime = Date.now()
         var _data = resData.data;
-        console.log("Authentication Request", resData);
         if (_data.code === 200) {
             // _data = _data.data;
             let userData: any = await UserModel.findOne({ userId: UserID });
@@ -204,6 +203,7 @@ export const bet = async (flyDetailID: string, UserID: string, betid: string, be
             await addBetLog(UserID, betid, _data.code, _data.message, hashed, sendData, _data.data, requestTime, responseTime);
             return {
                 status: true,
+                flyDetailID,
                 betid: _data.betid,
                 currency: _data.currency,
                 balance: resBalance
@@ -274,6 +274,7 @@ export const settle = async (
             await addCashoutLog(UserID, betid, Number(cashoutid), _data.code, _data.message, hashed, sendData, _data.data, requestTime, responseTime);
             return {
                 status: true,
+                flyDetailID,
                 balance: afterBalance,
                 betid: betid
             };
@@ -312,7 +313,7 @@ export const cancelBet = async (UserID: string, betid: string, amount: string, c
             Session_Token,
             cancelbetid: cancelbetid,
         }
-        console.log("CancelBet ===> ", sendData)
+        // console.log("CancelBet ===> ", sendData)
         let userData: any = await getUserById(UserID);
         var hashed = await hashFunc(sendData);
         let requestTime = Date.now();

@@ -29,11 +29,15 @@ import { addHistory } from '../model/history';
 import { getSessionByUserId } from '../model/sessions';
 
 let mysocketIo: Server;
+let totalUsers: any[] = [];
 let users = {} as { [key: string]: UserType }
 let sockets = [] as Socket[];
 let previousHand = users;
 let history = [] as number[];
 let GameState = "BET";
+let FlyDetailCreated = false;
+let betStartTime = Date.now();
+let betEndTime = Date.now();
 let NextGameState = "READY";
 let NextState = "READY";
 let flyAway = 1;
@@ -47,7 +51,7 @@ let currentSecondNum: number;
 let target: number = -1;
 let cashoutAmount = 0;
 let totalBetAmount = 0;
-let flyDetailID: any = {};
+let flyDetailID: any = '';
 
 const diffLimit = 9; // When we lost money, decrease RTP by this value, but be careful, if this value is high, the more 1.00 x will appear and users might complain.
 const salt = process.env.SALT || '8783642fc5b7f51c08918793964ca303edca39823325a3729ad62f0a2';
@@ -63,6 +67,7 @@ const gameRun = async () => {
     switch (GameState) {
         case "BET":
             if (target == -1) {
+                betStartTime = Date.now();
                 const nBits = 52;
                 seed = crypto.createHash('sha256').update(`${Date.now()}`).digest('hex');
                 let hash = crypto.createHmac("sha256", salt).update(seed).digest('hex');
@@ -81,6 +86,7 @@ const gameRun = async () => {
                 target = Math.max(1, Math.floor(X) / 100);
             }
             if (Date.now() - startTime > BETINGTIME) {
+                betEndTime = Date.now();
                 currentNum = 1;
                 GameState = "READY";
                 NextState = "PLAYING";
@@ -100,9 +106,20 @@ const gameRun = async () => {
                 // sbeted = false;
                 // fbetid = Date.now() + Math.floor(Math.random() * 1000);
                 // sbetid = Date.now() + Math.floor(Math.random() * 1000);
+                let flyStartTime = Date.now();
                 const time = Date.now() - startTime;
-                let resp: any = await addFlyDetail(startTime, startTime, startTime, 0, 0, 0, 0, 0, 0, startTime);
-                flyDetailID = resp._id;
+                if (FlyDetailCreated === false) {
+                    flyDetailID = `${Date.now()}`
+                    FlyDetailCreated = true;
+                    await addFlyDetail(flyDetailID, betStartTime, betEndTime, flyStartTime, totalUsers.length, 0, 0, 0, 0, 0, flyStartTime);
+                } else {
+                    await updateFlyDetail(flyDetailID, {
+                        betStartTime,
+                        betEndTime,
+                        flyStartTime,
+                    })
+                    console.log("===== here =====")
+                }
                 mysocketIo.emit('gameState', { currentNum, lastSecondNum, currentSecondNum, GameState, time });
             }
             break;
@@ -141,10 +158,6 @@ const gameRun = async () => {
                     i.s.betAmount = 0;
                     i.s.cashAmount = 0;
                     sockets.map((socket) => {
-                        // if (socket.id === i.socketId && (fBetted || sBetted)) {
-                        //     console.log("Here")
-                        //     socket.emit("finishGame", i);
-                        // }
                         if (socket.id === i.socketId) {
                             socket.emit("finishGame", i);
                         }
@@ -162,7 +175,6 @@ const gameRun = async () => {
             break;
         case "GAMEEND":
             if (Date.now() - startTime > GAMEENDTIME) {
-                let gameEndTime = currentSecondNum;
                 let i = 0;
                 let interval = setInterval(() => {
                     betBot(botIds[i]);
@@ -178,9 +190,9 @@ const gameRun = async () => {
                 history.unshift(target);
                 mysocketIo.emit("history", history);
                 const time = Date.now() - startTime;
+                FlyDetailCreated = false;
                 mysocketIo.emit('gameState', { currentNum, lastSecondNum, currentSecondNum: finishingNum, GameState, time });
 
-                flyEndTime = Date.now();
                 await updateFlyDetail(flyDetailID, { flyEndTime, flyAway: finishingNum.toFixed(2) });
                 await updateCashoutsByFlyDetailId(flyDetailID, { flyAway: finishingNum.toFixed(2) });
                 finishingNum = 0;
@@ -324,6 +336,10 @@ export const initSocket = (io: Server) => {
     io.on("connection", async (socket) => {
 
         sockets.push(socket);
+        let findIndex = totalUsers.findIndex(item => item.socketID === socket.id);
+        if (findIndex === -1) {
+            totalUsers.push({ socketID: socket.id })
+        }
 
         const sessionCheckHandler = async ({ token, UserID, currency, returnurl }: any) => {
             if (token && UserID && currency && returnurl)
@@ -410,6 +426,11 @@ export const initSocket = (io: Server) => {
                 if (!!usrInfo) {
                     if (usrInfo[type].betAmount >= localconfig.betting.min && usrInfo[type].betAmount <= localconfig.betting.max) {
                         if (usrInfo.balance - usrInfo[type].betAmount >= 0) {
+                            if (FlyDetailCreated === false) {
+                                flyDetailID = `${Date.now()}`
+                                FlyDetailCreated = true;
+                                await addFlyDetail(flyDetailID, Date.now(), Date.now(), 0, totalUsers.length, 0, 0, 0, 0, 0, Date.now());
+                            }
                             const betRes = await bet(flyDetailID, usrInfo.userId, `${usrInfo[type].betid}`, usrInfo.balance, `${usrInfo[type].betAmount}`, usrInfo.currency, usrInfo.Session_Token);
                             if (betRes.status) {
                                 usrInfo.balance = betRes.balance;
@@ -422,8 +443,8 @@ export const initSocket = (io: Server) => {
                                     cashoutAmount = 0;
                                 }
                                 socket.emit("myBetState", { user: usrInfo, type });
-                                await updateFlyDetail(flyDetailID, {
-                                    totalUsers: betNum,
+                                // console.log(`========== update bet ${flyDetailID} ==========`)
+                                await updateFlyDetail(betRes.flyDetailID, {
                                     totalBets: betNum,
                                     totalBetsAmount: totalBetAmount
                                 })
@@ -447,7 +468,6 @@ export const initSocket = (io: Server) => {
         const cashoutHandler = async (data: { userInfo: any, usrId: string, type: string, endTarget: number }) => {
             const { userInfo, type, endTarget } = data;
             let usrInfo: any = { ...userInfo };
-            console.log(userInfo, type, endTarget);
             var player: any;
             if (type === 'f')
                 player = usrInfo.f
@@ -478,21 +498,19 @@ export const initSocket = (io: Server) => {
                                     cashoutAmount: (endTarget * player.betAmount).toFixed(2),
                                 });
 
-                                await updateFlyDetail(flyDetailID, {
+                                // console.log(`========== update cashout ${flyDetailID} ==========`)
+                                await updateFlyDetail(returnData.flyDetailID, {
                                     totalCashout: cashoutNum,
                                     totalCashoutAmount: cashoutAmount
                                 })
                             } else {
-                                console.log("1")
                                 socket.emit("error", { message: "You can't cash out!", index: type });
                             }
                         } else {
-                            console.log("2")
                             socket.emit("error", { message: "You can't cash out!", index: type });
                         }
                     }
                 } else {
-                    console.log("3")
                     socket.emit('error', { message: "You can't cash out!", index: type });
                 }
             } else
@@ -500,6 +518,8 @@ export const initSocket = (io: Server) => {
         }
 
         const disconnectHandler = async () => {
+            totalUsers = totalUsers.filter(item => item.socketID !== socket.id);
+
             // var u: any = { ...await getUserBySocketId(socket.id) };
             var u: any = users[socket.id];
             const checkIndex = sockets.findIndex((s) => (
