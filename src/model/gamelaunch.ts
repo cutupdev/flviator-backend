@@ -92,7 +92,9 @@ export const updateGameLaunch = async (
   updateData: object,
 ) => {
   try {
-    await GameLaunchModel.findOneAndUpdate({ _id: new Types.ObjectId(_id) }, updateData)
+    await GameLaunchModel.findOneAndUpdate({ _id: new Types.ObjectId(_id) }, {
+      $set: updateData
+    })
     return true
   } catch (error) {
     setlog('updateGameLaunch', error)

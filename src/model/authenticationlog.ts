@@ -92,7 +92,9 @@ export const updateAuthenticationLog = async (
   updateData: object,
 ) => {
   try {
-    await AuthenticationLogModel.findOneAndUpdate({ _id: new Types.ObjectId(_id) }, updateData)
+    await AuthenticationLogModel.findOneAndUpdate({ _id: new Types.ObjectId(_id) }, {
+      $set: updateData
+    })
     return true
   } catch (error) {
     setlog('update AuthenticationLog', error)

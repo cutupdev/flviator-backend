@@ -116,7 +116,9 @@ export const updateChat = async (
   updateData: object,
 ) => {
   try {
-    await ChatModel.findOneAndUpdate({ _id: new Types.ObjectId(_id) }, updateData)
+    await ChatModel.findOneAndUpdate({ _id: new Types.ObjectId(_id) }, {
+      $set: updateData
+    })
     return true
   } catch (error) {
     setlog('updateChat', error)

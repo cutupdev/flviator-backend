@@ -64,7 +64,9 @@ export const updateErrorLog = async (
   updateData: object,
 ) => {
   try {
-    await ErrorLogModel.findOneAndUpdate({ _id: new Types.ObjectId(_id) }, updateData)
+    await ErrorLogModel.findOneAndUpdate({ _id: new Types.ObjectId(_id) }, {
+      $set: updateData
+    })
     return true
   } catch (error) {
     setlog('updateErrorLog', error)

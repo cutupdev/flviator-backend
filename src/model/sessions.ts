@@ -95,7 +95,9 @@ export const updateSession = async (
   updateData: object,
 ) => {
   try {
-    await SessionModel.findOneAndUpdate({ _id: new Types.ObjectId(_id) }, updateData)
+    await SessionModel.findOneAndUpdate({ _id: new Types.ObjectId(_id) }, {
+      $set: updateData
+    })
     return true
   } catch (error) {
     setlog('updateSession', error)
@@ -108,7 +110,9 @@ export const updateSessionByUserId = async (
   updateData: object,
 ) => {
   try {
-    await SessionModel.findOneAndUpdate({ userId }, updateData)
+    await SessionModel.findOneAndUpdate({ userId }, {
+      $set: updateData
+    })
     return true
   } catch (error) {
     setlog('updateSession', error)

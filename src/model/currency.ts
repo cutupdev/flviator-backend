@@ -75,7 +75,9 @@ export const updateCurrency = async (
   updateData: object,
 ) => {
   try {
-    await CurrencyModel.findOneAndUpdate({ _id: new Types.ObjectId(_id) }, updateData)
+    await CurrencyModel.findOneAndUpdate({ _id: new Types.ObjectId(_id) }, {
+      $set: updateData
+    })
     return true
   } catch (error) {
     setlog('updateCurrency', error)

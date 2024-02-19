@@ -113,7 +113,9 @@ export const updateFlyDetail = async (
   updateData: object,
 ) => {
   try {
-    await FlyDetailModel.findOneAndUpdate({ flyDetailID }, updateData)
+    await FlyDetailModel.findOneAndUpdate({ flyDetailID }, {
+      $set: updateData
+    })
     return true
   } catch (error) {
     setlog('updateFlyDetail', error)
@@ -126,7 +128,9 @@ export const updateFlyDetailByUserId = async (
   updateData: object,
 ) => {
   try {
-    await FlyDetailModel.findOneAndUpdate({ betId }, updateData)
+    await FlyDetailModel.findOneAndUpdate({ betId }, {
+      $set: updateData
+    })
     return true
   } catch (error) {
     setlog('updateFlyDetail', error)

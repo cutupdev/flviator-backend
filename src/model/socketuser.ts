@@ -84,7 +84,9 @@ export const updateSocketUser = async (
     updateData: object,
 ) => {
     try {
-        await SocketUserModel.findOneAndUpdate({ _id: new Types.ObjectId(_id) }, updateData)
+        await SocketUserModel.findOneAndUpdate({ _id: new Types.ObjectId(_id) }, {
+            $set: updateData
+          })
         return true
     } catch (error) {
         setlog('updateSocketUser', error)
@@ -97,7 +99,9 @@ export const updateSocketUserByUserId = async (
     updateData: object,
 ) => {
     try {
-        await SocketUserModel.findOneAndUpdate({ userId }, updateData)
+        await SocketUserModel.findOneAndUpdate({ userId }, {
+            $set: updateData
+          })
         return true
     } catch (error) {
         setlog('updateSocketUser', error)
@@ -110,7 +114,9 @@ export const updateSocketUserBySocketId = async (
     updateData: object,
 ) => {
     try {
-        await SocketUserModel.findOneAndUpdate({ socketId }, updateData)
+        await SocketUserModel.findOneAndUpdate({ socketId }, {
+            $set: updateData
+          })
         return true
     } catch (error) {
         setlog('updateSocketUser', error)

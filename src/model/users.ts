@@ -129,7 +129,9 @@ export const updateUser = async (
   updateData: object,
 ) => {
   try {
-    await UserModel.findOneAndUpdate({ _id: new Types.ObjectId(_id) }, updateData)
+    await UserModel.findOneAndUpdate({ _id: new Types.ObjectId(_id) }, {
+      $set: updateData
+    })
     return true
   } catch (error) {
     setlog('updateUser', error)
@@ -142,7 +144,9 @@ export const updateUserById = async (
   updateData: object,
 ) => {
   try {
-    await UserModel.findOneAndUpdate({ userId }, updateData)
+    await UserModel.findOneAndUpdate({ userId }, {
+      $set: updateData
+    })
     return true
   } catch (error) {
     setlog('updateUser', error)

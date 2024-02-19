@@ -110,7 +110,9 @@ export const updateCashout = async (
   updateData: object,
 ) => {
   try {
-    await CashoutModel.findOneAndUpdate({ _id: new Types.ObjectId(_id) }, updateData)
+    await CashoutModel.findOneAndUpdate({ _id: new Types.ObjectId(_id) }, {
+      $set: updateData
+    })
     return true
   } catch (error) {
     setlog('updateCashout', error)

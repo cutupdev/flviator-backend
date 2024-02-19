@@ -105,7 +105,9 @@ export const updateGameSetting = async (
   updateData: object,
 ) => {
   try {
-    await GameSettingModel.updateOne({ _id: new Types.ObjectId(_id) }, updateData)
+    await GameSettingModel.updateOne({ _id: new Types.ObjectId(_id) }, {
+      $set: updateData
+    })
     return true
   } catch (error) {
     setlog('updateGameSetting', error)

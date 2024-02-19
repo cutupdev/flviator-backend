@@ -98,7 +98,9 @@ export const updateCancelBet = async (
   updateData: object,
 ) => {
   try {
-    await CancelBetModel.findOneAndUpdate({ _id: new Types.ObjectId(_id) }, updateData)
+    await CancelBetModel.findOneAndUpdate({ _id: new Types.ObjectId(_id) }, {
+      $set: updateData
+    })
     return true
   } catch (error) {
     setlog('updateCancelBet', error)

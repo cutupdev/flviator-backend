@@ -98,7 +98,9 @@ export const updateBetLog = async (
   updateData: object,
 ) => {
   try {
-    await BetLogModel.findOneAndUpdate({ _id: new Types.ObjectId(_id) }, updateData)
+    await BetLogModel.findOneAndUpdate({ _id: new Types.ObjectId(_id) }, {
+      $set: updateData
+    })
     return true
   } catch (error) {
     setlog('updateBetLog', error)
