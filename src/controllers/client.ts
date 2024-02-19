@@ -167,7 +167,7 @@ export const Authentication = async (token: string, UserID: string, currency: st
     }
 }
 
-export const bet = async (flyDetailID: number, UserID: string, betid: string, beforeBalance: number, betAmount: string, currency: string, Session_Token: string) => {
+export const bet = async (flyDetailID: string, UserID: string, betid: string, beforeBalance: number, betAmount: string, currency: string, Session_Token: string) => {
     try {
         // return {
         //     status: true,

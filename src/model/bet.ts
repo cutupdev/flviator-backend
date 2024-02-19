@@ -23,7 +23,7 @@ const BetSchema = new mongoose.Schema({
     type: String,
   },
   flyDetailID: {
-    type: Number,
+    type: String,
   },
   betId: {
     type: String,
@@ -76,7 +76,7 @@ export const getAllBet = async () => {
 }
 
 export const addBet = async (
-  flyDetailID: number,
+  flyDetailID: string,
   userId: string,
   betId: string,
   beforeBalance: number,

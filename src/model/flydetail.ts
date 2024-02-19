@@ -81,7 +81,9 @@ export const addFlyDetail = async (
   flyEndTime: number,
 ) => {
   try {
-    let flyDetail: any = await FlyDetailModel.create({
+    let flyDetailID = Date.now()
+    await FlyDetailModel.create({
+      flyDetailID,
       betStartTime,
       betEndTime,
       flyStartTime,
@@ -94,7 +96,7 @@ export const addFlyDetail = async (
       flyEndTime
     })
     return {
-      _id: flyDetail._id,
+      _id: flyDetailID,
       status: true
     }
   } catch (error) {
