@@ -118,7 +118,6 @@ const gameRun = async () => {
                         betEndTime,
                         flyStartTime,
                     })
-                    console.log("===== here =====")
                 }
                 mysocketIo.emit('gameState', { currentNum, lastSecondNum, currentSecondNum, GameState, time });
             }
