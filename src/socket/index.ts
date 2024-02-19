@@ -42,6 +42,7 @@ let flyEndTime = Date.now();
 let gameTime: number;
 let currentNum: number;
 let lastSecondNum: number;
+let finishingNum: number;
 let currentSecondNum: number;
 let target: number = -1;
 let cashoutAmount = 0;
@@ -109,6 +110,7 @@ const gameRun = async () => {
             var currentTime = (Date.now() - startTime) / 1000;
             currentNum = 1 + 0.06 * currentTime + Math.pow((0.06 * currentTime), 2) - Math.pow((0.04 * currentTime), 3) + Math.pow((0.04 * currentTime), 4)
             currentSecondNum = currentNum;
+            finishingNum = currentNum;
             lastSecondNum = currentNum;
 
             let time = Date.now() - startTime;
@@ -164,6 +166,8 @@ const gameRun = async () => {
                 let i = 0;
                 let interval = setInterval(() => {
                     betBot(botIds[i]);
+
+
                     i++;
                     sendInfo();
                     if (i > 15) clearInterval(interval);
@@ -174,11 +178,12 @@ const gameRun = async () => {
                 history.unshift(target);
                 mysocketIo.emit("history", history);
                 const time = Date.now() - startTime;
-                mysocketIo.emit('gameState', { currentNum, lastSecondNum, currentSecondNum: gameEndTime, GameState, time });
+                mysocketIo.emit('gameState', { currentNum, lastSecondNum, currentSecondNum: finishingNum, GameState, time });
 
                 flyEndTime = Date.now();
-                await updateFlyDetail(flyDetailID, { flyEndTime, flyAway: gameEndTime.toFixed(2) });
-                await updateCashoutsByFlyDetailId(flyDetailID, { flyAway: gameEndTime.toFixed(2) });
+                await updateFlyDetail(flyDetailID, { flyEndTime, flyAway: finishingNum.toFixed(2) });
+                await updateCashoutsByFlyDetailId(flyDetailID, { flyAway: finishingNum.toFixed(2) });
+                finishingNum = 0;
                 target = -1;
             }
             break;
