@@ -126,15 +126,15 @@ export const Authentication = async (token: string, UserID: string, currency: st
         var _data = resData.data;
         console.log("Authentication Request", resData);
         if (_data.code === 200) {
-            _data = _data.data;
+            // _data = _data.data;
             let userData: any = await UserModel.findOne({ userId: UserID });
-            let balance = Number(_data.balance) || 0;
+            let balance = Number(_data.data.balance) || 0;
             if (!userData) {
-                userData = await addUser(_data.userName, UserID, _data.currency, balance, _data.avatar, "desktop", "admin", "0.0.0.0")
+                userData = await addUser(_data.data.userName, UserID, _data.data.currency, balance, _data.data.avatar, "desktop", "admin", "0.0.0.0")
             }
             await updateUserById(UserID, { balance })
             let responseTime = Date.now()
-            await addAuthenticationLog(UserID, _data.code, _data.message, hashed, sendData, resData.data, requestTime, responseTime)
+            await addAuthenticationLog(UserID, _data.code, _data.message, hashed, sendData, _data.data, requestTime, responseTime)
             return {
                 status: true,
                 data: {
