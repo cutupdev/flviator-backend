@@ -17,6 +17,9 @@ import { currentTime, setlog } from "../helper";
 import mongoose, { Types } from "mongoose";
 
 const FlyDetailSchema = new mongoose.Schema({
+  flyDetailID: {
+    type: String,
+  },
   betStartTime: {
     type: Date,
   },
