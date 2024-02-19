@@ -2,6 +2,7 @@ import { setlog } from "../helper";
 
 // declare interface SchemaBetModel {
 //   _id: number
+//   flyDetailID: string
 //   userId: string
 //   betId: string
 //   beforeBalance: number
@@ -20,6 +21,9 @@ import mongoose, { Types } from "mongoose";
 const BetSchema = new mongoose.Schema({
   userId: {
     type: String,
+  },
+  flyDetailID: {
+    type: Number,
   },
   betId: {
     type: String,
@@ -72,6 +76,7 @@ export const getAllBet = async () => {
 }
 
 export const addBet = async (
+  flyDetailID: number,
   userId: string,
   betId: string,
   beforeBalance: number,
@@ -86,6 +91,7 @@ export const addBet = async (
 ) => {
   try {
     await BetModel.create({
+      flyDetailID,
       userId,
       betId,
       beforeBalance,

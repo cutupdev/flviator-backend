@@ -405,7 +405,7 @@ export const initSocket = (io: Server) => {
                 if (!!usrInfo) {
                     if (usrInfo[type].betAmount >= localconfig.betting.min && usrInfo[type].betAmount <= localconfig.betting.max) {
                         if (usrInfo.balance - usrInfo[type].betAmount >= 0) {
-                            const betRes = await bet(usrInfo.userId, `${usrInfo[type].betid}`, usrInfo.balance, `${usrInfo[type].betAmount}`, usrInfo.currency, usrInfo.Session_Token);
+                            const betRes = await bet(flyDetailID, usrInfo.userId, `${usrInfo[type].betid}`, usrInfo.balance, `${usrInfo[type].betAmount}`, usrInfo.currency, usrInfo.Session_Token);
                             if (betRes.status) {
                                 usrInfo.balance = betRes.balance;
                                 users[socket.id] = usrInfo;

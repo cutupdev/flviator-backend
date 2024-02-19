@@ -167,7 +167,7 @@ export const Authentication = async (token: string, UserID: string, currency: st
     }
 }
 
-export const bet = async (UserID: string, betid: string, beforeBalance: number, betAmount: string, currency: string, Session_Token: string) => {
+export const bet = async (flyDetailID: number, UserID: string, betid: string, beforeBalance: number, betAmount: string, currency: string, Session_Token: string) => {
     try {
         // return {
         //     status: true,
@@ -200,7 +200,7 @@ export const bet = async (UserID: string, betid: string, beforeBalance: number, 
             let resBalance = Number(_data.data.updatedBalance) || 0;
             let responseTime = Date.now();
             await updateUserById(UserID, { balance: resBalance })
-            await addBet(UserID, betid, beforeBalance, Number(betAmount), resBalance, resBalance, currency, Session_Token, "platform", false, 0);
+            await addBet(flyDetailID, UserID, betid, beforeBalance, Number(betAmount), resBalance, resBalance, currency, Session_Token, "platform", false, 0);
             await addBetLog(UserID, betid, _data.code, _data.message, hashed, sendData, _data.data, requestTime, responseTime);
             return {
                 status: true,
